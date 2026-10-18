@@ -217,8 +217,11 @@ function renderRoute() {
     svg.append('path').attr('d', path).attr('fill', 'none').attr('stroke', css('--flying')).attr('stroke-width', 2.2).attr('stroke-dasharray', j.planned ? '7 6' : null);
     const mx = (x1 + x2) / 2, top = y0 - h;
     const q = j.q[kFull()].flying;
-    const summary = fit(optionSummary(o), Math.max(70, x2 - x1 + 30), 7);
-    svg.append('text').attr('class', 'lbl-strong').attr('x', mx).attr('y', top - 22).attr('text-anchor', 'middle').text(summary);
+    // short arcs get the summary on two lines ("flight via BCN, / CDG") rather than cut off
+    const summary = optionSummary(o), lines = wrapWords(summary, Math.floor(Math.max(70, x2 - x1 + 30) / 7));
+    if (lines.join(' ').length < summary.length) lines[lines.length - 1] += '…';
+    lines.forEach((ln, i) => svg.append('text').attr('class', 'lbl-strong').attr('x', mx)
+      .attr('y', top - 22 - (lines.length - 1 - i) * 14).attr('text-anchor', 'middle').text(ln));
     svg.append('text').attr('class', 'lbl').attr('x', mx).attr('y', top - 8).attr('text-anchor', 'middle').text(mass(q[1]));
     const hit = svg.append('path').attr('d', path).attr('fill', 'none').attr('stroke', 'transparent').attr('stroke-width', 16).datum(j);
     bindTip(hit, d => ({ head: `${d.title}: ${optionRoute(OPT.get(d.option))}`, rows: [
@@ -635,6 +638,38 @@ function editorData() {
 }
 
 const wpOption = w => ({ value: w.id, label: `${w.name}${w.arrive ? ` · ${fmtDate(w.arrive)}` : ''}` });
+const airportsOf = w => String(w?.airport || '').split(/\s+/).filter(Boolean);
+const airportList = text => [...new Set(String(text || '').toUpperCase().split(/[\s,;/]+/).filter(Boolean))].join(' ');
+const norm = text => String(text || '').toLowerCase().split(/\s+/).filter(Boolean).join(' ');
+/** Waypoints a from/to text lands on: id, else name, else a waypoint listing the airport code written
+ *  in it ("TFN" for El Medano with "TFS TFN"). Mirrors trip.Resolver, for display only. */
+function pointTargets(text, wps) {
+  const key = norm(text), t = String(text || '').trim();
+  const byId = wps.filter(w => w.id.toLowerCase() === key);
+  if (byId.length) return byId.map(w => ({ w }));
+  const byName = wps.filter(w => norm(w.name) === key);
+  if (byName.length) return byName.map(w => ({ w }));
+  const codes = /^[A-Za-z]{3}$/.test(t) ? [t.toUpperCase()] : [...t.matchAll(/(?<![A-Za-z])([A-Z]{3})(?![A-Za-z])/g)].map(m => m[1]);
+  return wps.flatMap(w => codes.filter(c => airportsOf(w).includes(c)).map(code => ({ w, code })));
+}
+const wpOf = (p, wps) => pointTargets(p, wps)[0]?.w.id;
+function pointText(p, wps) {
+  const hit = pointTargets(p, wps)[0];
+  return hit ? `${shortName(hit.w.name)}${hit.code ? ` (${hit.code})` : ''}` : p;
+}
+/** Live line under an alternative's From/To: where it starts and ends, or what is missing. */
+function altEnds(v, ed, existing) {
+  const from = String(v.from_alt || '').trim(), to = String(v.to_alt || '').trim();
+  if (!from || !to) return '';
+  const others = ed.alts.filter(a => a.option === v.option && a.id !== existing?.id);
+  const first = !others.some(a => norm(a.to) === norm(from));
+  const last = !others.some(a => norm(a.from) === norm(to));
+  const f = pointTargets(from, ed.wps)[0], t = pointTargets(to, ed.wps)[0];
+  const out = [];
+  if (first) out.push(f ? `Starts at ${pointText(from, ed.wps)}.` : `${from} is not a waypoint or one of their airports: an alternative must start at one.`);
+  if (last) out.push(t ? `Ends at ${pointText(to, ed.wps)}.` : `Continues from ${to}: add the next segment, up to a waypoint or one of its airports.`);
+  return out.join(' ');
+}
 
 function waypointForm(existing, ed = editorData()) {
   const countries = [...new Set(ed.wps.map(w => w.country).filter(Boolean))];
@@ -649,13 +684,13 @@ function waypointForm(existing, ed = editorData()) {
         { name: 'arrive', label: 'Arrive', type: 'date' },
         { name: 'depart', label: 'Depart', type: 'date' },
       ] },
-      { name: 'airport', label: 'Airport (IATA code, optional)', type: 'text', placeholder: 'e.g. SPC',
-        hint: 'Flights to or from here use this airport; their distance is then computed for you.' },
+      { name: 'airport', label: 'Airports (IATA codes, optional)', type: 'text', placeholder: 'e.g. SPC, or TFS TFN',
+        hint: 'Flights to or from here use the first, and their distance is computed for you. An alternative can also start or end at another one you list, e.g. TFN.' },
       { name: 'note', label: 'Note', type: 'text' },
     ],
     values: existing || { type: 'destination' },
     validate: v => (v.arrive && v.depart && v.depart < v.arrive ? 'Depart is before arrive'
-      : v.airport && !/^[A-Za-z]{3}$/.test(v.airport) ? 'Airport: use a 3-letter code like SPC' : ''),
+      : v.airport && !/^[\s,;/]*[A-Za-z]{3}([\s,;/]+[A-Za-z]{3})*[\s,;/]*$/.test(v.airport) ? 'Airports: 3-letter codes like SPC, separated by spaces' : ''),
     onSave: v => {
       let id = existing?.id;
       if (!id) {
@@ -663,7 +698,7 @@ function waypointForm(existing, ed = editorData()) {
         const base = store.slug(v.name);
         id = base; for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
       }
-      store.upsert('waypoints', { ...v, airport: (v.airport || '').toUpperCase(), id });
+      store.upsert('waypoints', { ...v, airport: airportList(v.airport), id });
       toast(existing ? 'Saved' : `Added ${v.name}`);
     },
     onDelete: existing ? () => {
@@ -677,8 +712,10 @@ function waypointForm(existing, ed = editorData()) {
 function travelForm(existing, preset = {}, ed = editorData()) {
   const wpOpts = [{ value: '', label: 'Choose…' }, ...ed.wps.map(wpOption)];
   const optionNames = [...new Set(ed.alts.map(a => a.option).filter(Boolean))];
+  const codes = new Set(ed.wps.flatMap(airportsOf));
   const pointList = [...ed.wps.map(w => ({ value: w.id, label: w.name })),
-    ...[...new Set(ed.alts.flatMap(a => [a.from, a.to]).filter(p => !ed.pos.has(p)))].map(p => ({ value: p, label: 'via point' }))];
+    ...ed.wps.flatMap(w => airportsOf(w).map(c => ({ value: c, label: `${w.name} airport` }))),
+    ...[...new Set(ed.alts.flatMap(a => [a.from, a.to]).filter(p => !ed.pos.has(p) && !codes.has(p)))].map(p => ({ value: p, label: 'via point' }))];
   const vehicles = (META?.vehicles || []).map(v => v.name);
   const values = existing ? { ...existing } : { type: 'leg', ...preset };
   values.from_leg = values.from_alt = values.from || '';
@@ -703,8 +740,9 @@ function travelForm(existing, preset = {}, ed = editorData()) {
       { type: 'row', fields: [
         { name: 'from_alt', label: 'From', type: 'datalist', datalist: pointList, show: isAlt, required: true },
         { name: 'to_alt', label: 'To', type: 'datalist', datalist: pointList, show: isAlt, required: true,
-          hint: 'Flights: write via airports as codes, e.g. BCN' },
+          hint: 'Flights: write airports as codes, e.g. BCN' },
       ] },
+      { name: 'alt_ends', type: 'info', show: isAlt, text: v => altEnds(v, ed, existing) },
       { name: 'date', label: 'Date', type: 'date', show: v => !isAlt(v), required: true, default: today },
       { type: 'row', fields: [
         { name: 'mode', label: 'Mode', type: 'select', required: true, options: MODES.map(m => ({ value: m, label: MODE_LABEL[m] || m })) },
@@ -790,7 +828,7 @@ function renderEditor() {
     const box = document.createElement('div'); box.className = 'ed-group';
     for (const w of ed.wps) {
       edRow(box, { title: w.name, value: w.type, pending: w._pending,
-        detail: [w.country, dateSpan(w.arrive, w.depart), w.airport && `airport ${w.airport}`, w.note].filter(Boolean).join(' · '),
+        detail: [w.country, dateSpan(w.arrive, w.depart), w.airport && `airport${airportsOf(w).length > 1 ? 's' : ''} ${airportsOf(w).join(', ')}`, w.note].filter(Boolean).join(' · '),
         onClick: () => waypointForm(w, ed) });
     }
     host.appendChild(box);
@@ -815,7 +853,7 @@ function renderEditor() {
         const base = `${store.slug(shortName(name(a)))}-${store.slug(shortName(name(b)))}`;
         const taken = new Set(ed.alts.map(x => x.option));
         let opt = base; for (let n = 2; taken.has(opt); n++) opt = `${base}-${n}`;
-        travelForm(null, { type: 'alt', option: opt, main: ed.alts.some(x => x.from === a && x.main) ? '' : '1', from: a, to: b, mode: 'plane' }, ed);
+        travelForm(null, { type: 'alt', option: opt, main: ed.alts.some(x => wpOf(x.from, ed.wps) === a && x.main) ? '' : '1', from: a, to: b, mode: 'plane' }, ed);
       });
       btns.appendChild(addAlt);
     }
@@ -856,7 +894,8 @@ function renderEditor() {
   for (let i = 0; i + 1 < dests.length; i++) {
     const a = dests[i].id, b = dests[i + 1].id;
     const legs = ed.legs.filter(t => between(t, a, b)).sort((p, q) => (ed.pos.get(p.from) - ed.pos.get(q.from)) || String(p.date).localeCompare(String(q.date)));
-    const opts = d3.group(ed.alts.filter(t => ed.pos.get(t.from) >= ed.pos.get(a) && ed.pos.get(t.from) < ed.pos.get(b)), t => t.option);
+    const startsIn = t => { const p = ed.pos.get(wpOf(t.from, ed.wps)); return p >= ed.pos.get(a) && p < ed.pos.get(b); };
+    const opts = d3.group(ed.alts.filter(startsIn), t => t.option);
     const box = group(`${shortName(name(a))} → ${shortName(name(b))}`, `${legs.length} leg${legs.length === 1 ? '' : 's'} · ${opts.size} alternative${opts.size === 1 ? '' : 's'}`, a, b);
     if (legs.length) { const s = document.createElement('div'); s.className = 'ed-sub'; s.textContent = 'Legs'; box.appendChild(s); }
     for (const t of legs) {
@@ -870,7 +909,7 @@ function renderEditor() {
       box.appendChild(s);
       for (const t of rows) {
         placed.add(t.id);
-        edRow(box, { title: `${shortName(name(t.from))} → ${shortName(name(t.to))}`, value: kmText(t), pending: t._pending,
+        edRow(box, { title: `${pointText(t.from, ed.wps)} → ${pointText(t.to, ed.wps)}`, value: kmText(t), pending: t._pending,
           detail: travelDetail(t), onClick: () => travelForm(t, {}, ed) });
       }
     }
@@ -884,7 +923,7 @@ function renderEditor() {
     const box = [...host.querySelectorAll('.ed-sub')].find(s => s.textContent.startsWith(`Alternative: ${t.option}`));
     if (box) {
       const holder = document.createElement('div');
-      edRow(holder, { title: `${shortName(name(t.from))} → ${shortName(name(t.to))}`, value: kmText(t), pending: t._pending,
+      edRow(holder, { title: `${pointText(t.from, ed.wps)} → ${pointText(t.to, ed.wps)}`, value: kmText(t), pending: t._pending,
         detail: travelDetail(t), onClick: () => travelForm(t, {}, ed) });
       let after = box; while (after.nextElementSibling && after.nextElementSibling.classList.contains('ed-row')) after = after.nextElementSibling;
       after.after(holder.firstChild);

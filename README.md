@@ -48,6 +48,8 @@ later.
 **Waypoints:**
 
 - `type` is `destination` (a place you'd have gone anyway) or `stop`.
+- `airport` lists the IATA codes of the airports a flight from here would use, e.g. `SPC` or
+  `TFS TFN`. The first is the default.
 
 **Travel:**
 
@@ -57,7 +59,9 @@ later.
 - `main = 1` marks the alternative that counts for that span.
 - A leg with the same `from` and `to` is a local trip, e.g. driving around La Palma. It has no
   alternative and counts the same in both worlds. In the form, tick "Local trip".
-- `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text.
+- `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text. A
+  flight alternative may also start or end at an airport its waypoint lists, e.g. `TFN` for
+  El Médano (`TFS TFN`), so you can write the whole connection in codes: `TFN → BCN → CDG → FDF`.
 - `km` is entered by hand. For flights, either enter the great-circle distance or leave `km`
   empty: the build then computes it from airport codes, i.e. the waypoint's `airport` or a code in
   a via point such as `BCN` or `Barcelona (BCN)`. It is also optional when `fuel_l` or `engine_h`

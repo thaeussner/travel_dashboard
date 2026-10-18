@@ -2,7 +2,8 @@
 
 - Waypoints are typed by hand: `destination` (a place you'd have gone anyway) or `stop`.
 - An alternative *option* is a chain of `alt` rows sharing an option name. It replaces every leg
-  between its first and last waypoint. Intermediate points (e.g. "Paris Orly") are plain text.
+  between its first and last waypoint. Intermediate points (e.g. "Paris Orly") are plain text. A
+  flight may start or end at a waypoint's airport instead ("TFN" for El Medano with "TFS TFN").
 - Level "destination": one journey per pair of consecutive destinations, compared against the
   main option spanning exactly that pair.
 - Level "stop": inside each destination span, stop-level options (at least one end is a stop) are
@@ -15,6 +16,7 @@ import datetime as dt
 from collections import defaultdict
 from dataclasses import dataclass, field
 
+from . import geo
 from .tables import Issue, Travel, Waypoint
 
 LEVELS = ("destination", "stop")
@@ -67,21 +69,30 @@ def _norm(text: str) -> str:
     return " ".join(text.lower().split())
 
 
-def resolver(waypoints: list[Waypoint]):
-    """Map a from/to text to a waypoint id: exact id first, then a unique name."""
-    ids = {w.id.lower(): w.id for w in waypoints}
-    names: dict[str, list[str]] = defaultdict(list)
-    for w in waypoints:
-        names[_norm(w.name)].append(w.id)
+class Resolver:
+    """Map a from/to text to waypoint ids: the exact id, else the name, else the waypoints that list
+    the airport code written in the text. Calling it gives the id only when that is unambiguous."""
 
-    def resolve(text: str) -> str | None:
+    def __init__(self, waypoints: list[Waypoint]):
+        self.ids = {w.id.lower(): w.id for w in waypoints}
+        self.names: dict[str, list[str]] = defaultdict(list)
+        self.codes: dict[str, list[str]] = defaultdict(list)
+        for w in waypoints:
+            self.names[_norm(w.name)].append(w.id)
+            for c in w.airports:
+                self.codes[c].append(w.id)
+
+    def candidates(self, text: str) -> list[str]:
         key = _norm(text)
-        if key in ids:
-            return ids[key]
-        hits = names.get(key, [])
-        return hits[0] if len(hits) == 1 else None
+        if key in self.ids:
+            return [self.ids[key]]
+        if key in self.names:
+            return self.names[key]
+        return list(dict.fromkeys(w for c in geo.written_codes(text) for w in self.codes.get(c, [])))
 
-    return resolve
+    def __call__(self, text: str) -> str | None:
+        hits = self.candidates(text)
+        return hits[0] if len(hits) == 1 else None
 
 
 def order_waypoints(waypoints: list[Waypoint], legs: list[Travel], resolve, issues: list[Issue]) -> list[Waypoint]:
@@ -162,7 +173,7 @@ def _chain(rows: list[Travel]) -> list[Travel] | None:
 
 
 def build(waypoints: list[Waypoint], travel: list[Travel], issues: list[Issue]) -> Trip:
-    resolve = resolver(waypoints)
+    resolve = Resolver(waypoints)
     raw_legs = [t for t in travel if t.is_leg]
     ordered = order_waypoints(waypoints, raw_legs, resolve, issues)
     pos = {w.id: i for i, w in enumerate(ordered)}
@@ -202,13 +213,22 @@ def build(waypoints: list[Waypoint], travel: list[Travel], issues: list[Issue]) 
         if chain is None:
             issues.append(Issue("travel", name, "the rows of this alternative don't form one chain; option skipped", "error"))
             continue
-        a, b = resolve(chain[0].from_), resolve(chain[-1].to)
-        if not a or not b:
-            issues.append(Issue("travel", name, "an alternative must start and end at waypoints; option skipped", "error"))
+        starts, ends = resolve.candidates(chain[0].from_), resolve.candidates(chain[-1].to)
+        if not starts or not ends:
+            where = chain[0].from_ if not starts else chain[-1].to
+            issues.append(Issue("travel", name, f"{where!r} is not a waypoint, nor an airport listed on one: an alternative "
+                                                "must start and end at waypoints; option skipped", "error"))
             continue
-        if pos[b] <= pos[a]:
+        # a name or airport may fit several waypoints (e.g. a second visit): take the shortest span
+        pairs = sorted(((a, b) for a in starts for b in ends if pos[a] < pos[b]),
+                       key=lambda ab: (pos[ab[1]] - pos[ab[0]], pos[ab[0]]))
+        if not pairs:
             issues.append(Issue("travel", name, "alternative ends before it starts; option skipped", "error"))
             continue
+        a, b = pairs[0]
+        if len(pairs) > 1:
+            issues.append(Issue("travel", name, f"{chain[0].from_!r} → {chain[-1].to!r} fits several waypoints; "
+                                                f"using {a} → {b}"))
         chain[0].from_, chain[-1].to = a, b
         level = "destination" if wtype[a] == "destination" and wtype[b] == "destination" else "stop"
         options.append(Option(name, chain, a, b, level, any(r.main for r in rows)))

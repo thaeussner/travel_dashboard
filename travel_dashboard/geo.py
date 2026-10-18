@@ -5,8 +5,10 @@ scheduled passenger service and an IATA code. Refresh it with `python -m travel_
 
 A flight row (leg or alternative) may leave `km` empty. The build then takes the great-circle
 distance between the airports at both ends:
-- a waypoint id → that waypoint's `airport` column (e.g. la-palma → SPC)
-- a via point → an IATA code in the text: "BCN", "Barcelona (BCN)" or "Barcelona El Prat BCN"
+- a waypoint id → the first code in that waypoint's `airport` column (e.g. la-palma → SPC)
+- anything else → an IATA code in the text: "BCN", "Barcelona (BCN)" or "Barcelona El Prat BCN".
+  An alternative may also start or end at another airport its waypoint lists, e.g. "TFN" for a
+  waypoint with "TFS TFN"; trip.Resolver ties it to that waypoint.
 The flight model adds its routing uplift on top, as for any flight distance.
 """
 
@@ -70,32 +72,41 @@ def load_airports(path: Path) -> dict[str, tuple[float, float]]:
         return {r["iata"]: (float(r["lat"]), float(r["lon"])) for r in csv.DictReader(f)}
 
 
+def written_codes(text: str) -> list[str]:
+    """IATA codes written in a from/to text: the whole text if it is three letters ("tfn"), else the
+    upper-case codes in it ("Barcelona (BCN)")."""
+    t = text.strip()
+    if len(t) == 3 and t.isalpha():
+        return [t.upper()]
+    return [m.group(1) for m in _CODE.finditer(t)]
+
+
 def airport_code(text: str, waypoint_airports: dict[str, str], airports: dict[str, tuple[float, float]]) -> str | None:
-    """IATA code for a from/to value: a waypoint's airport, or a code written in the text."""
+    """IATA code for a from/to value: a waypoint's (first) airport, or a code written in the text."""
     t = text.strip()
     if t.lower() in waypoint_airports:
         return waypoint_airports[t.lower()]
-    if len(t) == 3 and t.upper() in airports:
-        return t.upper()
-    for m in _CODE.finditer(t):
-        if m.group(1) in airports:
-            return m.group(1)
-    return None
+    return next((c for c in written_codes(t) if c in airports), None)
 
 
 def fill_flight_km(travel: list[Travel], waypoints: list[Waypoint], airports: dict[str, tuple[float, float]],
                    issues: list[Issue]) -> list[Travel]:
-    """Give flight rows without km the great-circle distance between their airports."""
+    """Give flight rows their airport codes and, when km is empty, the great-circle km between them.
+
+    Runs before trip.build, which replaces an alternative's end codes (e.g. "TFN") by waypoint ids."""
     wp_air: dict[str, str] = {}
     for w in waypoints:
-        if w.airport:
-            wp_air[w.id.lower()] = w.airport
-            wp_air.setdefault(w.name.lower(), w.airport)
+        if w.airports:
+            wp_air[w.id.lower()] = w.airports[0]
+            wp_air.setdefault(w.name.lower(), w.airports[0])
     out: list[Travel] = []
     for t in travel:
+        if t.mode != "plane":       # other rows without km are fuel-based (litres or engine hours)
+            out.append(t)
+            continue
+        a, b = airport_code(t.from_, wp_air, airports), airport_code(t.to, wp_air, airports)
+        t.from_code, t.to_code = a or "", b or ""
         if t.km is None:
-            a = airport_code(t.from_, wp_air, airports)
-            b = airport_code(t.to, wp_air, airports)
             if not a or not b:
                 missing = t.from_ if not a else t.to
                 issues.append(Issue("travel", t.id, f"no km and no airport code for {missing!r}: give the waypoint an "

@@ -61,10 +61,6 @@ def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: in
     airports = airports or {}
     travel = geo.fill_flight_km(tables.travel, tables.waypoints, airports, issues)
     trip = trip_mod.build(tables.waypoints, travel, issues)
-    wp_air = {w.id.lower(): w.airport for w in tables.waypoints if w.airport}
-
-    def code(text: str, mode: str) -> str | None:
-        return geo.airport_code(text, wp_air, airports) if mode == "plane" else None
     mc = montecarlo.run(trip, profiles, today, draws, seed)
     prof, tdims = mc["profiles"], mc["dims"]
 
@@ -76,7 +72,7 @@ def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: in
             "from": t.from_, "to": t.to, "from_name": trip.name(t.from_), "to_name": trip.name(t.to),
             "mode": t.mode, "vehicle": t.vehicle, "km": t.km, "occ_max": t.occ_max, "occ_obs": t.occ_obs,
             "fuel_l": t.fuel_l, "note": t.note, "planned": planned, "local": t.is_leg and t.from_ == t.to,
-            "km_note": t.km_note, "from_code": code(t.from_, t.mode), "to_code": code(t.to, t.mode),
+            "km_note": t.km_note, "from_code": t.from_code or None, "to_code": t.to_code or None,
             "engine_h": t.engine_h,
             "ship": {o: ship_breakdown(t, p, o) for o in ("observed", "typical")} if p.kind == "ship" else None,
             "profile": p.label, "grade": p.grade, "grade_note": GRADE_NOTES[p.grade],

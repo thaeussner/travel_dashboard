@@ -20,6 +20,7 @@ TRAVEL_TYPES = ("leg", "alt")
 MODES = (
     "train", "bus", "coach", "ferry", "fast_ferry", "plane", "car", "taxi", "sail", "bike", "walk", "other",
 )
+FUEL_MODES = ("sail", "car", "taxi")   # litres (or a yacht's engine hours) replace the distance
 
 COLUMNS = {
     "costs": ["id", "date", "amount", "category", "country"],
@@ -58,7 +59,11 @@ class Waypoint:
     arrive: dt.date | None = None
     depart: dt.date | None = None
     note: str = ""
-    airport: str = ""     # IATA code of the airport a flight to or from here would use
+    airport: str = ""     # IATA codes of airports a flight here would use, e.g. "TFS TFN"; the first is the default
+
+    @property
+    def airports(self) -> list[str]:
+        return self.airport.split()
 
 
 @dataclass
@@ -79,6 +84,8 @@ class Travel:
     engine_h: float | None = None   # engine and generator hours (sailing yachts)
     note: str = ""
     km_note: str = ""     # where a computed distance came from, e.g. "great circle ZRH–BCN"
+    from_code: str = ""   # airport codes at both ends of a flight (geo.fill_flight_km)
+    to_code: str = ""
 
     @property
     def is_leg(self) -> bool:
@@ -201,10 +208,11 @@ def read_waypoints(path: Path, issues: list[Issue]) -> list[Waypoint]:
             continue
         if arrive and depart and depart < arrive:
             issues.append(Issue("waypoints", rid, "depart is before arrive"))
-        airport = row.get("airport", "").strip().upper()
-        if airport and not (len(airport) == 3 and airport.isalpha()):
-            issues.append(Issue("waypoints", rid, f"airport {airport!r} is not a 3-letter IATA code; ignored"))
-            airport = ""
+        codes = [c for c in re.split(r"[\s,;/]+", row.get("airport", "").upper()) if c]
+        bad = [c for c in codes if not (len(c) == 3 and c.isalpha())]
+        if bad:
+            issues.append(Issue("waypoints", rid, f"airport {', '.join(bad)} is not a 3-letter IATA code; ignored"))
+        airport = " ".join(dict.fromkeys(c for c in codes if c not in bad))
         seen.add(rid)
         out.append(Waypoint(rid, name, wtype, row.get("country", ""), arrive, depart, row.get("note", ""), airport))
     return out
@@ -236,7 +244,7 @@ def read_travel(path: Path, issues: list[Issue]) -> list[Travel]:
         except ValueError as e:
             issues.append(Issue("travel", rid, f"{e}; row skipped", "error"))
             continue
-        fuel_based = bool(fuel_l) or bool(engine_h)   # litres or engine hours make km optional
+        fuel_based = mode in FUEL_MODES and (bool(fuel_l) or bool(engine_h))   # litres or engine hours make km optional
         if (km is None and mode != "plane" and not fuel_based) or (km is not None and km <= 0):
             issues.append(Issue("travel", rid, "needs a distance in km (or the fuel used or engine hours); row skipped",
                                 "error"))

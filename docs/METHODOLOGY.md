@@ -97,6 +97,10 @@ Distances are entered by hand:
 - **Flights:** great-circle km. The model adds 8 % for routing (range 4–12 %).
   - Leave `km` empty and the build computes the great-circle distance between the airports at both
     ends: the waypoint's `airport`, or a code in a via point (`BCN`, `Barcelona (BCN)`).
+  - A waypoint may list several airports, e.g. El Médano `TFS TFN`. Flights from the waypoint use
+    the first. An alternative can start or end at any of them by writing the code, e.g.
+    `TFN → BCN → CDG → FDF`: the build ties `TFN` to El Médano and `FDF` to Martinique, and the
+    distance uses the code written.
   - Airports come from `data/reference/airports.csv`: 4,008 airports with scheduled service, from
     OurAirports (public domain). Refresh it with `python -m travel_dashboard airports`.
 

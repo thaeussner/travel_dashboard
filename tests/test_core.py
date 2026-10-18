@@ -195,6 +195,32 @@ class TestTrip(unittest.TestCase):
         self.assertIn("one chain", msgs)
         self.assertIn("skips a destination", msgs)
 
+    def test_alternative_may_start_at_a_waypoints_airport(self):
+        wps = [Waypoint("tf", "El Medano", "destination", arrive=dt.date(2026, 10, 17), airport="TFS TFN"),
+               Waypoint("mq", "Martinique", "destination", arrive=dt.date(2026, 11, 20), airport="FDF")]
+        legs = [leg("S", "tf", "mq", "sail", 5000, "2026-10-25", engine_h=20)]
+        alts = [alt("F1", "fly", "TFN", "BCN", km=None, main=True), alt("F2", "fly", "BCN", "CDG", km=None),
+                alt("F3", "fly", "CDG", "FDF", km=None)]
+        issues: list[Issue] = []
+        travel = geo.fill_flight_km(legs + alts, wps, AIRPORTS, issues)
+        t = trip_mod.build(wps, travel, issues)
+        self.assertEqual(issues, [])
+        (o,) = t.options
+        self.assertEqual((o.start, o.end), ("tf", "mq"))
+        self.assertEqual(t.journeys["destination"][0].option.id, "fly")
+        f1 = next(r for r in o.rows if r.id == "F1")
+        self.assertEqual((f1.from_, f1.from_code, f1.km_note), ("tf", "TFN", "great circle TFN–BCN"))   # TFN, not TFS
+
+    def test_ambiguous_endpoints_take_the_shortest_span(self):
+        wps = [Waypoint("z1", "Zurich", "destination", arrive=dt.date(2026, 10, 1), airport="ZRH"),
+               Waypoint("lp", "La Palma", "destination", arrive=dt.date(2026, 10, 8), airport="SPC"),
+               Waypoint("z2", "Zurich", "destination", arrive=dt.date(2027, 3, 1), airport="ZRH")]
+        legs = [leg("L1", "z1", "lp", "ferry", 3000, "2026-10-07"), leg("L2", "lp", "z2", "ferry", 3000, "2027-02-28")]
+        issues: list[Issue] = []
+        t = trip_mod.build(wps, legs + [alt("A", "home", "SPC", "ZRH")], issues)
+        self.assertEqual((t.options[0].start, t.options[0].end), ("lp", "z2"))   # the later Zurich, after La Palma
+        self.assertEqual(issues, [])
+
 
 class TestGeoAndCars(unittest.TestCase):
     def test_airport_codes(self):
@@ -212,6 +238,24 @@ class TestGeoAndCars(unittest.TestCase):
         self.assertAlmostEqual(out[0].km, 850, delta=15)
         self.assertEqual(out[0].km_note, "great circle ZRH–BCN")
         self.assertEqual([i.id for i in issues], ["A2"])
+
+    def test_several_airports_and_fuel_based_rows(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            w = write(tmp, "waypoints.csv", """
+                id,name,type,country,arrive,depart,note,airport
+                tf,El Medano,destination,Spain,2026-10-17,,,"tfs, TFN XX1"
+            """)
+            t = write(tmp, "travel.csv", """
+                id,type,option,main,date,from,to,mode,vehicle,km,occ_max,occ_obs,fuel_l,engine_h,note
+                S1,leg,,,2026-10-25,tf,mq,sail,,,,5,,20,
+                T1,leg,,,2026-10-25,tf,mq,train,,,,,40,,
+            """)
+            issues: list[Issue] = []
+            wps, travel = read_waypoints(w, issues), read_travel(t, issues)
+        self.assertEqual((wps[0].airport, wps[0].airports), ("TFS TFN", ["TFS", "TFN"]))
+        self.assertEqual([x.id for x in travel], ["S1"])          # litres don't replace km on a train
+        self.assertEqual(geo.fill_flight_km(travel, wps, AIRPORTS, issues)[0].km, None)   # a yacht keeps no km
+        self.assertEqual(sorted(i.id for i in issues), ["T1", "tf"])
 
     def test_car_class_from_vehicle_text(self):
         self.assertEqual(PROFILES.car_class("Citroën C1 (95)"), ("small", "petrol"))

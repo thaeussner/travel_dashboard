@@ -128,7 +128,7 @@ def kg(t: Travel, p: Profile, s: Sampler, alloc: str = "iso", occ: str = "typica
         return per_pax
     if k == "vehicle":
         logged = bool(t.fuel_l) and p.has("fuel_factor")   # litres beat any factor (not for electric cars)
-        e = t.fuel_l * g("fuel_factor") if logged else g("g_vkm") / 1000 * t.km
+        e = t.fuel_l * g("fuel_factor") if logged else g("g_vkm") / 1000 * (t.km or 0)
         return e / (t.occ_obs if observed else g("occupancy"))
     if k == "fuel":
         return boat_litres(t, p, s) * g("fuel_factor") / (t.occ_obs if observed else g("occupancy"))
@@ -170,7 +170,7 @@ def trace(t: Travel, p: Profile, alloc: str, occ: str, nonco2: str) -> str:
         if t.fuel_l and p.has("fuel_factor"):
             e_txt = f"{_n(t.fuel_l, 1)} L × {g('fuel_factor'):.2f} kg CO₂e/L"
         else:
-            e_txt = f"{_n(t.km)} km × {g('g_vkm'):.0f} g CO₂e per vehicle-km"
+            e_txt = f"{_n(t.km or 0)} km × {g('g_vkm'):.0f} g CO₂e per vehicle-km"
         pax = t.occ_obs if observed else g("occupancy")
         return f"{e_txt}\n÷ {pax:.1f} {'people aboard (observed)' if observed else 'people (typical)'}\n= {v:.1f} kg"
     if k == "fuel":

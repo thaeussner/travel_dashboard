@@ -48,6 +48,10 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
   - `type = leg | alt`.
   - Alternative rows sharing an `option` name form one chain, e.g. via Paris Orly. Intermediate
     points are plain text.
+  - A chain starts and ends at waypoints: an id, a name, or an airport code that a waypoint lists
+    (`airport` may hold several, e.g. `TFS TFN`). `trip.Resolver` does this; `pointTargets` in
+    `emissions.js` mirrors it for the editor only. `geo.fill_flight_km` keeps the code written
+    (`from_code`/`to_code`), because the build then replaces the chain's ends with waypoint ids.
   - An option replaces every leg between its first and last waypoint. `main = 1` picks it when
     several options share a span.
   - A leg with `from == to` is a local trip at that waypoint (e.g. driving around an island). It
