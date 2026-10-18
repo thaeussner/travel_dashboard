@@ -57,6 +57,13 @@ class TestBuild(unittest.TestCase):
         self.assertLess(per_pax, 0)
         self.assertGreater(mass, 0)
 
+    def test_local_travel_counts_in_both_worlds(self):
+        self.assertGreater(self.data["local_total"]["iso|observed|full|all"][1], 0)
+        self.assertEqual([t["id"] for t in self.data["travels"] if t["local"]], ["L10"])
+        for level in self.data["journeys"].values():
+            for j in level:
+                self.assertNotIn("L10", j["legs"])
+
     def test_deterministic(self):
         a, b = build(100), build(100)
         self.assertEqual(a["totals"], b["totals"])

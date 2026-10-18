@@ -305,6 +305,19 @@ grade = "B"
 source = "EU MRV 2024-2025: Volcán de Tinamar 245-257 kg/nm, ~10 % average load"
 
 [[vehicles]]
+name = "Marie Curie"
+mode = "ferry"
+match = ['marie curie']
+fuel = "hfo"
+kg_fuel_nm = [160, 170, 185]    # EU MRV 2024-25: ~170 kg fuel per nautical mile (CO2/fuel ratio ~3.1: mostly fuel oil)
+seats = 880                     # Fred. Olsen fleet page: 880 passengers, 186 m, 24 kn
+lf = [0.15, 0.25, 0.45]         # MRV passenger data inconsistent (2024: 61, 2025: 381 aboard on average)
+trailers = [70, 110, 160]       # freight-heavy Huelva–Canarias line
+cars = [20, 50, 90]
+grade = "B"
+source = "Fred. Olsen fleet page (880 passengers); EU MRV 2024-2025 (~170 kg fuel per nm)"
+
+[[vehicles]]
 name = "Huelva–Canarias ro-pax"
 mode = "ferry"
 match = ['marie curie', 'buenavista\w*', 'sicilia']

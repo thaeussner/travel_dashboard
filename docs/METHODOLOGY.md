@@ -61,6 +61,9 @@ question has no defensible answer.
   its first and last waypoint. Connection points such as "Paris Orly" are plain text, not waypoints.
 - **Several options** may cover the same span, e.g. direct vs. via Madrid, or flight vs. car. The one
   marked **main** counts; the others are shown next to it for comparison.
+- **Local trips** start and end at the same waypoint, e.g. driving around La Palma. They belong to no
+  journey and have no alternative, so they count the same in both worlds. They appear in the totals,
+  in the "Local travel" row and under their waypoint on the route.
 
 ### 3.3 Two levels (lens)
 

@@ -45,6 +45,14 @@ function optionSummary(o) {
   return via.length ? `${modes} via ${via.join(', ')}` : modes;
 }
 const optionKm = o => o.rows.reduce((s, id) => s + (TR.get(id)?.km || 0), 0);
+const placeName = p => shortName(WP.has(p) ? wpName(p) : p);
+const routeLabel = t => (t.local ? `around ${placeName(t.from)}` : `${placeName(t.from)} → ${placeName(t.to)}`);
+/** Local travel at one waypoint (counted the same in both worlds), for the current lens and scope. */
+function localOf(wid) {
+  const e = (DATA?.local || []).find(l => l.waypoint === wid);
+  const q = e?.q[`${kFull()}|${S.scope}`];
+  return q && q[2] > 0 ? { q, n: e.legs.length } : null;
+}
 
 // ---------------------------------------------------------------- lens bar
 function buildLensBar() {
@@ -166,7 +174,7 @@ function renderRoute() {
   const host = $('#route-chart');
   const wps = DATA.waypoints.filter(w => S.scope === 'all' || !w.planned);
   const ids = new Set(wps.map(w => w.id));
-  const legs = DATA.travels.filter(t => t.type === 'leg' && inScope(t) && ids.has(t.from) && ids.has(t.to));
+  const legs = DATA.travels.filter(t => t.type === 'leg' && !t.local && inScope(t) && ids.has(t.from) && ids.has(t.to));
   const segs = [...d3.group(legs, t => `${t.from}|${t.to}`).values()].map(list => ({
     from: list[0].from, to: list[0].to, legs: list, km: d3.sum(list, t => t.km), planned: list.every(t => t.planned),
     label: [...new Set(list.map(legLabel))].join(' · '),
@@ -174,7 +182,7 @@ function renderRoute() {
   const js = journeys().filter(j => j.option && ids.has(j.start) && ids.has(j.end));
   const avail = host.parentElement.clientWidth;
   const step = Math.max(84, Math.min(130, (avail - 120) / Math.max(1, wps.length - 1)));
-  const W = Math.max(avail, (wps.length - 1) * step + 120), H = 372, y0 = 252;
+  const W = Math.max(avail, (wps.length - 1) * step + 120), H = 392, y0 = 252;
   const fit = (text, px, size = 6.6) => { const n = Math.max(4, Math.floor(px / size)); return text.length > n ? `${text.slice(0, n - 1)}…` : text; };
   const x = d3.scalePoint().domain(wps.map(w => w.id)).range([60, W - 60]);
   const svg = svgIn(host, W, H, 'Route with the alternatives used for the selected comparison');
@@ -217,6 +225,13 @@ function renderRoute() {
     const yy = y0 + 58 + lines.length * 15;
     svg.append('text').attr('class', 'lbl-muted').attr('x', x(w.id)).attr('y', yy + 2).attr('text-anchor', 'middle').text(cap);
     svg.append('text').attr('class', 'lbl-muted').attr('x', x(w.id)).attr('y', yy + 16).attr('text-anchor', 'middle').text(w.planned ? `${w.type} · planned` : w.type);
+    const loc = localOf(w.id);
+    if (loc) {
+      const t = svg.append('text').attr('class', 'lbl').attr('x', x(w.id)).attr('y', yy + 32).attr('text-anchor', 'middle').text(`+ local ${mass(loc.q[1])}`).datum(loc);
+      bindTip(t, d => ({ head: `Local travel around ${shortName(w.name)}`, rows: [
+        { value: mass(d.q[1]), label: `${d.n} trip${d.n === 1 ? '' : 's'}, ${range(d.q)}`, color: css('--actual') },
+        { value: 'same', label: 'in both worlds: no alternative replaces it' }] }));
+    }
   }
   $('#level-explain').textContent = opt('level', S.level).explain;
 }
@@ -302,10 +317,14 @@ function renderJourneys() {
   const W = Math.max(host.clientWidth, 280), narrow = W < 640;
   const labelW = narrow ? 0 : Math.min(290, W * 0.34), rightW = narrow ? 12 : 128;
   const rowH = narrow ? 84 : 60, top = 8, axisH = 26;
-  const H = top + js.length * rowH + axisH;
   const k = kFull();
+  const localQ = DATA.local_total?.[`${k}|${S.scope}`];
+  const hasLocal = !!localQ && localQ[2] > 0;
+  const nLocal = (DATA.local || []).reduce((n, l) => n + l.legs.filter(id => inScope(TR.get(id))).length, 0);
+  const H = top + (js.length + (hasLocal ? 1 : 0)) * rowH + axisH;
   const vals = js.flatMap(j => [j.q[k].actual[0], j.q[k].actual[2],
-    ...(j.option ? [j.q[k].flying[0], j.q[k].flying[2]] : []), ...j.extras.map(id => OPT.get(id).q[k][1])]).filter(v => v > 0);
+    ...(j.option ? [j.q[k].flying[0], j.q[k].flying[2]] : []), ...j.extras.map(id => OPT.get(id).q[k][1])])
+    .concat(hasLocal ? [localQ[0], localQ[2]] : []).filter(v => v > 0);
   const x = d3.scaleLog().domain([Math.max(0.5, d3.min(vals) * 0.6), (d3.max(vals) || 10) * 1.5]).range([labelW + 10, W - rightW]);
   const svg = svgIn(host, W, H, 'Actual vs alternative emissions for each journey');
   const ax = svg.append('g').attr('class', 'ax');
@@ -347,9 +366,23 @@ function renderJourneys() {
       return { head: d.title, rows };
     });
   });
+  if (hasLocal) {
+    // local travel (start = end) has no alternative: it counts the same in both worlds
+    const yT = top + js.length * rowH, yMid = narrow ? yT + 52 : yT + rowH / 2;
+    const g = svg.append('g');
+    const ty = narrow ? yT + 16 : yMid - 3;
+    g.append('text').attr('class', 'lbl-strong').attr('x', 0).attr('y', ty).text('Local travel');
+    g.append('text').attr('class', 'lbl-muted').attr('x', 0).attr('y', ty + 16).text(`${nLocal} trip${nLocal === 1 ? '' : 's'} · same in both worlds`);
+    intervalMark(g, x, yMid + 6, localQ.map(v => Math.max(v, 0.5)), css('--actual'));
+    g.append('text').attr('class', 'lbl-muted').attr('x', W).attr('y', narrow ? yT + 16 : yMid + 4).attr('text-anchor', 'end').text('no alternative');
+    const hit = g.append('rect').attr('x', 0).attr('y', yT).attr('width', W).attr('height', rowH).attr('fill', 'transparent').datum(localQ);
+    bindTip(hit, q => ({ head: 'Local travel around destinations', rows: [
+      { value: mass(q[1]), label: `${range(q)}, counted in both worlds`, color: css('--actual') }] }));
+  }
   makeTable($('#jr-table'),
     [{ label: 'Journey' }, { label: 'Travelled, 90 %', num: true }, { label: 'Main alternative, 90 %', num: true }, { label: 'Avoided (median)', num: true }],
-    js.map(j => [`${j.title}${j.planned ? ' (planned)' : ''}`, range(j.q[k].actual), j.option ? range(j.q[k].flying) : '–', j.option ? mass(j.q[k].diff[1]) : '–']));
+    js.map(j => [`${j.title}${j.planned ? ' (planned)' : ''}`, range(j.q[k].actual), j.option ? range(j.q[k].flying) : '–', j.option ? mass(j.q[k].diff[1]) : '–'])
+      .concat(hasLocal ? [['Local travel (no alternative)', range(localQ), '–', '0 kg']] : []));
 }
 
 // ---------------------------------------------------------------- method check
@@ -446,7 +479,7 @@ function renderIntensity() {
   }
   items.forEach((it, i) => {
     const t = it.t, yT = top + i * rowH, yMid = narrow ? yT + 32 : yT + rowH / 2;
-    const name = `${shortName(WP.has(t.from) ? wpName(t.from) : t.from)} → ${shortName(WP.has(t.to) ? wpName(t.to) : t.to)}`;
+    const name = routeLabel(t);
     const mode = `${it.alt ? 'alternative · ' : ''}${legLabel(t)}${t.planned ? ' · planned' : ''}`;
     if (narrow) svg.append('text').attr('class', 'lbl').attr('x', 0).attr('y', yT + 13).text(`${name} · ${mode}`);
     else {
@@ -491,7 +524,7 @@ function travelTable(table, list, { showOption = false } = {}) {
     };
     cell(t.date ? fmtDate(t.date) : '–');
     if (showOption) { const c = cell(t.option); if (OPT.get(t.option)?.main) { const p = document.createElement('span'); p.className = 'pill solid'; p.textContent = 'main'; c.appendChild(p); } }
-    const route = cell(`${shortName(WP.has(t.from) ? wpName(t.from) : t.from)} → ${shortName(WP.has(t.to) ? wpName(t.to) : t.to)}`);
+    const route = cell(routeLabel(t));
     if (t.planned) { const p = document.createElement('span'); p.className = 'pill'; p.textContent = 'planned'; route.appendChild(p); }
     const occ = t.occ_obs ? `${nf.format(t.occ_obs)}${t.occ_max ? ` of ${nf.format(t.occ_max)}` : ''} aboard` : '';
     cell(MODE_LABEL[t.mode] || t.mode, null, [t.profile, occ].filter(Boolean).join(' · '));
@@ -598,9 +631,12 @@ function travelForm(existing, preset = {}, ed = editorData()) {
   const values = existing ? { ...existing } : { type: 'leg', ...preset };
   values.from_leg = values.from_alt = values.from || '';
   values.to_leg = values.to_alt = values.to || '';
+  if (existing && existing.type === 'leg' && existing.from && existing.from === existing.to) values.local = '1';
   const isAlt = v => v.type === 'alt';
+  const kind = existing ? (existing.type === 'alt' ? 'alternative' : values.local ? 'local trip' : 'leg')
+    : (values.type === 'alt' ? 'alternative' : values.local ? 'local trip' : 'leg');
   openForm({
-    title: existing ? `Edit ${existing.type === 'alt' ? 'alternative' : 'leg'}` : (values.type === 'alt' ? 'Add alternative' : 'Add leg'),
+    title: `${existing ? 'Edit' : 'Add'} ${kind}`,
     fields: [
       { name: 'type', label: 'Kind', type: 'chips', required: true, options: [{ value: 'leg', label: 'Leg (happened)' }, { value: 'alt', label: 'Alternative' }] },
       { name: 'option', label: 'Alternative name', type: 'datalist', datalist: optionNames, show: isAlt, required: true,
@@ -608,8 +644,10 @@ function travelForm(existing, preset = {}, ed = editorData()) {
       { name: 'main', label: 'Main alternative for this journey', type: 'checkbox', show: isAlt },
       { type: 'row', fields: [
         { name: 'from_leg', label: 'From', type: 'select', options: wpOpts, show: v => !isAlt(v), required: true },
-        { name: 'to_leg', label: 'To', type: 'select', options: wpOpts, show: v => !isAlt(v), required: true },
+        { name: 'to_leg', label: 'To', type: 'select', options: wpOpts, show: v => !isAlt(v) && !v.local, required: true },
       ] },
+      { name: 'local', label: 'Local trip: starts and ends here (e.g. driving around the island)', type: 'checkbox', show: v => !isAlt(v),
+        hint: 'Local travel has no alternative: it counts the same in both worlds.' },
       { type: 'row', fields: [
         { name: 'from_alt', label: 'From', type: 'datalist', datalist: pointList, show: isAlt, required: true },
         { name: 'to_alt', label: 'To', type: 'datalist', datalist: pointList, show: isAlt, required: true },
@@ -630,8 +668,8 @@ function travelForm(existing, preset = {}, ed = editorData()) {
     ],
     values,
     validate: v => {
-      const from = isAlt(v) ? v.from_alt : v.from_leg, to = isAlt(v) ? v.to_alt : v.to_leg;
-      if (from === to) return 'From and to are the same';
+      if (isAlt(v)) return v.from_alt === v.to_alt ? 'An alternative needs a different start and end' : '';
+      if (!v.local && v.from_leg === v.to_leg) return 'From and to are the same. For travel around one place, tick "Local trip".';
       return '';
     },
     onSave: v => {
@@ -639,7 +677,7 @@ function travelForm(existing, preset = {}, ed = editorData()) {
       const row = {
         id: existing?.id || `${alt ? 'A' : 'L'}${store.rand(4)}`, type: v.type, option: alt ? v.option : '',
         main: alt && v.main ? '1' : '', date: alt ? (existing?.date || '') : v.date,
-        from: alt ? v.from_alt : v.from_leg, to: alt ? v.to_alt : v.to_leg, mode: v.mode, vehicle: v.vehicle,
+        from: alt ? v.from_alt : v.from_leg, to: alt ? v.to_alt : (v.local ? v.from_leg : v.to_leg), mode: v.mode, vehicle: v.vehicle,
         km: v.km, occ_max: v.occ_max, occ_obs: v.occ_obs, fuel_l: v.fuel_l, note: v.note,
       };
       store.upsert('travel', row);
@@ -721,7 +759,35 @@ function renderEditor() {
     host.appendChild(box);
     return box;
   };
-  const between = (t, a, b) => ed.pos.has(t.from) && ed.pos.has(t.to) && ed.pos.get(a) <= ed.pos.get(t.from) && ed.pos.get(t.to) <= ed.pos.get(b);
+  const between = (t, a, b) => t.from !== t.to && ed.pos.has(t.from) && ed.pos.has(t.to)
+    && ed.pos.get(a) <= ed.pos.get(t.from) && ed.pos.get(t.to) <= ed.pos.get(b);
+  // local travel (start = end) gets its own group after the journey that arrives there
+  const locals = d3.group(ed.legs.filter(t => t.from === t.to && ed.pos.has(t.from)), t => t.from);
+  const localGroups = (lo, hi) => {
+    for (const w of ed.wps) {
+      const p = ed.pos.get(w.id);
+      if (p <= lo || p > hi || !locals.has(w.id)) continue;
+      const list = locals.get(w.id).slice().sort((x, y) => String(x.date).localeCompare(String(y.date)));
+      const box = document.createElement('div'); box.className = 'ed-group';
+      const head = document.createElement('header');
+      const left = document.createElement('div');
+      const h = document.createElement('h3'); h.textContent = `Around ${shortName(w.name)}`;
+      const s = document.createElement('div'); s.className = 'muted';
+      s.textContent = `${list.length} local trip${list.length === 1 ? '' : 's'} · counted the same in both worlds`;
+      left.append(h, s);
+      const add = document.createElement('button'); add.type = 'button'; add.className = 'btn small'; add.textContent = '+ Local trip';
+      add.addEventListener('click', () => travelForm(null, { type: 'leg', local: '1', from: w.id, to: w.id, mode: list.at(-1)?.mode || 'car' }, ed));
+      head.append(left, add);
+      box.appendChild(head);
+      for (const t of list) {
+        placed.add(t.id);
+        edRow(box, { title: [t.date && fmtDate(t.date), MODE_LABEL[t.mode] || t.mode].filter(Boolean).join(' · '),
+          value: `${kmFmt(Number(t.km) || 0)} km`, pending: t._pending, detail: travelDetail(t), onClick: () => travelForm(t, {}, ed) });
+      }
+      host.appendChild(box);
+    }
+  };
+  localGroups(-Infinity, dests.length ? ed.pos.get(dests[0].id) : Infinity);
   for (let i = 0; i + 1 < dests.length; i++) {
     const a = dests[i].id, b = dests[i + 1].id;
     const legs = ed.legs.filter(t => between(t, a, b)).sort((p, q) => (ed.pos.get(p.from) - ed.pos.get(q.from)) || String(p.date).localeCompare(String(q.date)));
@@ -743,7 +809,9 @@ function renderEditor() {
           detail: travelDetail(t), onClick: () => travelForm(t, {}, ed) });
       }
     }
+    localGroups(ed.pos.get(a), ed.pos.get(b));
   }
+  if (dests.length) localGroups(ed.pos.get(dests[dests.length - 1].id), Infinity);
   // chain rows continue from via points: place them with their option
   const leftover = ed.travel.filter(t => !placed.has(t.id) && !(t.type === 'alt' && ed.alts.some(a => placed.has(a.id) && a.option === t.option)));
   const followers = ed.travel.filter(t => !placed.has(t.id) && !leftover.includes(t));
@@ -802,6 +870,7 @@ document.querySelectorAll('input[name="ed-tab"]').forEach(r => r.addEventListene
 $('#add-wp').addEventListener('click', () => waypointForm());
 $('#add-leg').addEventListener('click', () => travelForm(null, { type: 'leg' }));
 $('#add-alt').addEventListener('click', () => travelForm(null, { type: 'alt', mode: 'plane', main: '1' }));
+$('#add-local').addEventListener('click', () => travelForm(null, { type: 'leg', local: '1', mode: 'car' }));
 store.onChange(renderEditor);
 renderEditor();
 renderIssues();

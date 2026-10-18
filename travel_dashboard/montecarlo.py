@@ -59,6 +59,10 @@ def run(trip: Trip, profiles: Profiles, today: dt.date, draws: int, seed: int) -
                    | {today})
     di = {d: i for i, d in enumerate(dates)}
     nd = len(dates)
+    local: dict[str, list[Travel]] = {}      # local travel per waypoint: in both worlds, never replaced
+    for t in trip.legs:
+        if t.from_ == t.to:
+            local.setdefault(t.from_, []).append(t)
 
     store: dict[tuple, array] = defaultdict(lambda: array("d"))
 
@@ -81,6 +85,14 @@ def run(trip: Trip, profiles: Profiles, today: dt.date, draws: int, seed: int) -
                 act["all"] += v[t.id]
                 if t.date <= today:
                     act["todate"] += v[t.id]
+            for s in SCOPES:
+                lsum = 0.0
+                for wid, lts in local.items():
+                    w_sum = sum(v[t.id] for t in lts if s == "all" or t.date <= today)
+                    store[("local", wid, ck, s)].append(w_sum)
+                    lsum += w_sum
+                if local:
+                    store[("local_total", ck, s)].append(lsum)
             opt_total = {o.id: sum(v[r.id] for r in o.rows) for o in trip.options}
             for oid, tot in opt_total.items():
                 store[("option", oid, ck)].append(tot)
@@ -123,6 +135,10 @@ def run(trip: Trip, profiles: Profiles, today: dt.date, draws: int, seed: int) -
                             for c in COMBOS} for ji in range(len(trip.journeys[lvl]))] for lvl in LEVELS},
         "totals": {f"{lvl}|{ckey(c)}|{s}": {k: q[("total", lvl, ckey(c), s, k)] for k in ("actual", "flying", "avoided")}
                    for lvl in LEVELS for c in COMBOS for s in SCOPES},
+        "local": [{"waypoint": wid, "legs": [t.id for t in lts],
+                   "q": {f"{ckey(c)}|{s}": q[("local", wid, ckey(c), s)] for c in COMBOS for s in SCOPES}}
+                  for wid, lts in local.items()],
+        "local_total": {f"{ckey(c)}|{s}": q[("local_total", ckey(c), s)] for c in COMBOS for s in SCOPES} if local else {},
         "cumulative": {f"{lvl}|{ckey(c)}": [
             {"date": d.isoformat(), **{k: q[("cum", lvl, ckey(c), i, k)] for k in ("actual", "flying", "avoided")}}
             for i, d in enumerate(dates)] for lvl in LEVELS for c in COMBOS},

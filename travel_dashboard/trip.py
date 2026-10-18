@@ -91,6 +91,8 @@ def order_waypoints(waypoints: list[Waypoint], legs: list[Travel], resolve, issu
     edges: set[tuple[str, str]] = set()
     for t in legs:
         a, b = resolve(t.from_), resolve(t.to)
+        if a and a == b:
+            continue        # local travel around one place says nothing about the order
         if a and t.date:
             outgoing[a].append(t.date)
         if b and t.date:
@@ -175,13 +177,15 @@ def build(waypoints: list[Waypoint], travel: list[Travel], issues: list[Issue]) 
             issues.append(Issue("travel", t.id, f"leg endpoint {missing!r} is not a waypoint id; leg skipped", "error"))
             continue
         t.from_, t.to = a, b
-        if pos[b] <= pos[a]:
+        if a == b:
+            pass            # local travel: counted in both worlds, never replaced by an alternative
+        elif pos[b] <= pos[a]:
             issues.append(Issue("travel", t.id, "leg goes backwards in the waypoint order; check the dates"))
         elif pos[b] - pos[a] > 1:
             issues.append(Issue("travel", t.id, "leg skips a waypoint in between"))
         legs.append(t)
     legs.sort(key=lambda t: (pos[t.from_], t.date or dt.date.max))
-    linked = {(pos[t.from_], pos[t.to]) for t in legs}
+    linked = {(pos[t.from_], pos[t.to]) for t in legs if t.from_ != t.to}
     for i in range(len(ordered) - 1):
         if not any(a <= i and b >= i + 1 for a, b in linked):
             issues.append(Issue("waypoints", ordered[i + 1].id,
@@ -224,7 +228,8 @@ def _pick(opts: list[Option], issues: list[Issue]) -> tuple[Option | None, list[
 
 
 def _legs_between(legs: list[Travel], pos: dict[str, int], a: str, b: str) -> list[Travel]:
-    return [t for t in legs if pos[a] <= pos[t.from_] and pos[t.to] <= pos[b]]
+    """Legs of the journey from a to b. Local travel (from == to) belongs to no journey."""
+    return [t for t in legs if t.from_ != t.to and pos[a] <= pos[t.from_] and pos[t.to] <= pos[b]]
 
 
 def _date(legs: list[Travel], option: Option | None) -> dt.date | None:

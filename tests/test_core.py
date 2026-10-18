@@ -156,6 +156,18 @@ class TestTrip(unittest.TestCase):
         t2 = trip_mod.build(self.wps, self.legs + alts[:2], [])
         self.assertEqual(t2.journeys["stop"][0].option.id, "direct")
 
+    def test_local_travel_stays_out_of_journeys(self):
+        local = leg("C1", "d1", "d1", "car", 300, "2026-10-03", occ_obs=2)
+        alts = [alt("A1", "direct", "home", "d1"), alt("A2", "hop", "d1", "d2")]
+        issues: list[Issue] = []
+        t = trip_mod.build(self.wps, self.legs + [local] + alts, issues)
+        self.assertEqual([w.id for w in t.waypoints], ["home", "s1", "s2", "d1", "d2"])
+        self.assertIn("C1", [x.id for x in t.legs])
+        for level in t.journeys.values():
+            for j in level:
+                self.assertNotIn("C1", [x.id for x in j.legs])
+        self.assertFalse(any(i.id == "C1" for i in issues))
+
     def test_broken_options_are_reported(self):
         issues: list[Issue] = []
         alts = [alt("A1", "gap", "home", "X"), alt("A2", "gap", "Y", "d1"),

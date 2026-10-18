@@ -46,6 +46,8 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
     points are plain text.
   - An option replaces every leg between its first and last waypoint. `main = 1` picks it when
     several options share a span.
+  - A leg with `from == to` is a local trip at that waypoint (e.g. driving around an island). It
+    belongs to no journey, is counted in both worlds, and is kept out of waypoint ordering.
 - **Levels:**
   - "destination": one journey per pair of consecutive destinations.
   - "stop": stop-level options are used where they tile a whole destination span; otherwise the

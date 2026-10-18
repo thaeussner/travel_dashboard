@@ -8,6 +8,7 @@ L06,leg,,,2026-09-28,huelva,tenerife,ferry,Buenavista Express,1370,1250,,,via La
 L07,leg,,,2026-10-12,tenerife,la-palma,fast_ferry,Fred. Olsen,126,859,,,vessel not noted
 L08,leg,,,2026-10-17,la-palma,tenerife-2,fast_ferry,Bencomo Express,126,859,150,,
 L09,leg,,,2026-11-22,tenerife-2,martinique,sail,45 ft yacht,5300,6,5,,planned
+L10,leg,,,2026-10-14,la-palma,la-palma,car,rental car (petrol),320,5,2,,local trips around the island
 A01,alt,fly-zrh-tfs,1,,zurich,tenerife,plane,A320 (Edelweiss),3063,180,,,daily direct
 A02,alt,fly-via-mad,,,zurich,Madrid Barajas,plane,A320,1245,180,,,
 A03,alt,fly-via-mad,,,Madrid Barajas,tenerife,plane,A321,1771,200,,,

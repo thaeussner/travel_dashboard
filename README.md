@@ -55,6 +55,8 @@ later.
 - Alternative rows with the same `option` name form one alternative, e.g. a flight connecting in
   Paris. The alternative replaces every leg between its first and last waypoint.
 - `main = 1` marks the alternative that counts for that span.
+- A leg with the same `from` and `to` is a local trip, e.g. driving around La Palma. It has no
+  alternative and counts the same in both worlds. In the form, tick "Local trip".
 - `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text.
 - `km` is entered by hand. For flights, use the great-circle distance; the model adds routing.
 - `occ_max` and `occ_obs` are capacity and observed head count.
