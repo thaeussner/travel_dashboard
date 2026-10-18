@@ -49,9 +49,13 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
   - Alternative rows sharing an `option` name form one chain, e.g. via Paris Orly. Intermediate
     points are plain text.
   - A chain starts and ends at waypoints: an id, a name, or an airport code that a waypoint lists
-    (`airport` may hold several, e.g. `TFS TFN`). `trip.Resolver` does this; `pointTargets` in
-    `emissions.js` mirrors it for the editor only. `geo.fill_flight_km` keeps the code written
-    (`from_code`/`to_code`), because the build then replaces the chain's ends with waypoint ids.
+    (`airport` may hold several, e.g. `TFS TFN`). When several waypoints fit, destinations win,
+    then the shortest span. `trip.Resolver` and `trip.build` do this; `pointTargets` and
+    `chainEnds` in `emissions.js` mirror it for the editor only. `geo.fill_flight_km` keeps the
+    code written (`from_code`/`to_code`), because the build then replaces the ends with waypoint ids.
+  - Every waypoint lists its airports. The waypoint form fills them in from the place name
+    (`airportsFor` over `site/data/airports.json`, written by the build from
+    `data/reference/airports.csv`); this is input help only, the CSV holds the codes.
   - An option replaces every leg between its first and last waypoint. `main = 1` picks it when
     several options share a span.
   - A leg with `from == to` is a local trip at that waypoint (e.g. driving around an island). It is
@@ -62,9 +66,10 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
   - "destination": one journey per pair of consecutive destinations.
   - "stop": stop-level options are used where they tile a whole destination span; otherwise the
     destination-level option is the fallback (`travel_dashboard/trip.py`).
-  - "direct": options that skip destinations (one flight Zurich → Martinique) replace everything
-    between their ends, with as few journeys as possible; elsewhere the destination-level fallback.
-    It answers "the trip against flying straight there", by the owner's request.
+  - "direct": options that skip destinations (CDG → FDF from Paris) replace everything between
+    their ends, which may be stops; elsewhere the destination-level journeys, and a cut-off piece
+    (Zurich → Paris) has no alternative. It answers "the trip against flying straight there", by
+    the owner's request.
 - **Ferries:** use the vessel's typical freight from config. There is no freight input, by the
   owner's choice.
 - **Sailing:** litres (`fuel_l`, grade A), else engine hours (`engine_h` × L/h, grade B), else a

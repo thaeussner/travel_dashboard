@@ -211,6 +211,25 @@ class TestTrip(unittest.TestCase):
         self.assertGreater(mc["local_total"]["destination|iso|typical|full|all"][1], 0)
         self.assertEqual(mc["local_total"]["direct|iso|typical|full|all"][1], 0)   # only in your travel there
 
+    def test_direct_alternative_may_start_at_a_stop(self):
+        alts = [alt("D1", "from-s1", "s1", "d2", main=True)]           # e.g. fly from Paris, TGV before it
+        issues: list[Issue] = []
+        t = trip_mod.build(self.wps, self.legs + alts, issues)
+        self.assertEqual(issues, [])
+        self.assertEqual([(j.start, j.end, j.option.id if j.option else None) for j in t.journeys["direct"]],
+                         [("home", "s1", None), ("s1", "d2", "from-s1")])
+        self.assertEqual([x.id for x in t.journeys["direct"][0].legs], ["L1"])    # the same in both worlds
+
+    def test_shared_airports_prefer_destinations(self):
+        wps = [Waypoint("lp", "La Palma", "destination", arrive=dt.date(2026, 10, 8), airport="SPC"),
+               Waypoint("lc", "Los Cristianos", "stop", arrive=dt.date(2026, 10, 17), airport="TFS TFN"),
+               Waypoint("em", "El Medano", "destination", arrive=dt.date(2026, 10, 17), airport="TFS TFN")]
+        legs = [leg("F", "lp", "lc", "fast_ferry", 140, "2026-10-17"), leg("B", "lc", "em", "bus", 20, "2026-10-17")]
+        issues: list[Issue] = []
+        t = trip_mod.build(wps, legs + [alt("A", "fly", "SPC", "TFS")], issues)
+        self.assertEqual((t.options[0].start, t.options[0].end), ("lp", "em"))    # not the ferry port
+        self.assertEqual(issues, [])
+
     def test_alternative_may_start_at_a_waypoints_airport(self):
         wps = [Waypoint("tf", "El Medano", "destination", arrive=dt.date(2026, 10, 17), airport="TFS TFN"),
                Waypoint("mq", "Martinique", "destination", arrive=dt.date(2026, 11, 20), airport="FDF")]
@@ -272,6 +291,13 @@ class TestGeoAndCars(unittest.TestCase):
         self.assertEqual([x.id for x in travel], ["S1"])          # litres don't replace km on a train
         self.assertEqual(geo.fill_flight_km(travel, wps, AIRPORTS, issues)[0].km, None)   # a yacht keeps no km
         self.assertEqual(sorted(i.id for i in issues), ["T1", "tf"])
+
+    def test_airport_list_for_the_waypoint_form(self):
+        data = geo.airports_json(ROOT / "data" / "reference" / "airports.csv")
+        self.assertEqual(data["countries"]["MQ"], "Martinique")
+        rows = {r[0]: r for r in data["airports"]}
+        self.assertEqual(rows["CDG"][3:], ["FR", 0])          # country code, size (0 = large)
+        self.assertEqual(len(rows), len(AIRPORTS))
 
     def test_car_class_from_vehicle_text(self):
         self.assertEqual(PROFILES.car_class("Citroën C1 (95)"), ("small", "petrol"))

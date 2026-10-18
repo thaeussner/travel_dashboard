@@ -1,7 +1,9 @@
 """Airports and great-circle distances, so flights can be entered by airport code instead of km.
 
 data/reference/airports.csv is a filtered copy of OurAirports (public domain): every airport with
-scheduled passenger service and an IATA code. Refresh it with `python -m travel_dashboard airports`.
+scheduled passenger service and an IATA code, with its country's name. Refresh it with
+`python -m travel_dashboard airports`. The build also writes it to site/data/airports.json, so the
+waypoint form can fill in the airports of a place as you type its name.
 
 A flight row (leg or alternative) may leave `km` empty. The build then takes the great-circle
 distance between the airports at both ends:
@@ -24,7 +26,9 @@ from pathlib import Path
 from .tables import Issue, Travel, Waypoint
 
 OURAIRPORTS_URL = "https://davidmegginson.github.io/ourairports-data/airports.csv"
-COLUMNS = ["iata", "name", "city", "country", "lat", "lon", "type"]
+COUNTRIES_URL = "https://davidmegginson.github.io/ourairports-data/countries.csv"
+COLUMNS = ["iata", "name", "city", "country", "country_name", "lat", "lon", "type"]
+TYPE_RANK = {"large": 0, "medium": 1, "small": 2}
 EARTH_KM = 6371.0088
 _CODE = re.compile(r"(?<![A-Za-z])([A-Z]{3})(?![A-Za-z])")
 
@@ -35,13 +39,17 @@ def great_circle_km(a: tuple[float, float], b: tuple[float, float]) -> float:
     return 2 * EARTH_KM * math.asin(math.sqrt(h))
 
 
+def _fetch(url: str) -> str:
+    req = urllib.request.Request(url, headers={"User-Agent": "travel-dashboard (personal project)"})
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        return resp.read().decode("utf-8")
+
+
 def download_airports(dest: Path) -> int:
     """Rewrite dest from OurAirports. Returns the number of airports kept."""
-    req = urllib.request.Request(OURAIRPORTS_URL, headers={"User-Agent": "travel-dashboard (personal project)"})
-    with urllib.request.urlopen(req, timeout=120) as resp:
-        text = resp.read().decode("utf-8")
+    countries = {c["code"]: c["name"] for c in csv.DictReader(io.StringIO(_fetch(COUNTRIES_URL)))}
     kept = []
-    for a in csv.DictReader(io.StringIO(text)):
+    for a in csv.DictReader(io.StringIO(_fetch(OURAIRPORTS_URL))):
         code = (a.get("iata_code") or "").strip().upper()
         if a.get("scheduled_service") != "yes" or len(code) != 3 or not code.isalpha():
             continue
@@ -49,13 +57,13 @@ def download_airports(dest: Path) -> int:
             continue
         kept.append({
             "iata": code, "name": a.get("name", ""), "city": a.get("municipality", ""),
-            "country": a.get("iso_country", ""), "lat": f"{float(a['latitude_deg']):.4f}",
+            "country": a.get("iso_country", ""), "country_name": countries.get(a.get("iso_country", ""), ""),
+            "lat": f"{float(a['latitude_deg']):.4f}",
             "lon": f"{float(a['longitude_deg']):.4f}", "type": a.get("type", "").replace("_airport", ""),
         })
-    rank = {"large": 0, "medium": 1, "small": 2}
     best: dict[str, dict] = {}
     for a in kept:   # a few codes appear twice: keep the larger airport
-        if a["iata"] not in best or rank[a["type"]] < rank[best[a["iata"]]["type"]]:
+        if a["iata"] not in best or TYPE_RANK[a["type"]] < TYPE_RANK[best[a["iata"]]["type"]]:
             best[a["iata"]] = a
     dest.parent.mkdir(parents=True, exist_ok=True)
     with dest.open("w", encoding="utf-8", newline="") as f:
@@ -70,6 +78,18 @@ def load_airports(path: Path) -> dict[str, tuple[float, float]]:
         return {}
     with path.open(encoding="utf-8", newline="") as f:
         return {r["iata"]: (float(r["lat"]), float(r["lon"])) for r in csv.DictReader(f)}
+
+
+def airports_json(path: Path) -> dict:
+    """The airport list for the waypoint form: code, name, city, country and size (0 = large)."""
+    if not path.exists():
+        return {"countries": {}, "airports": []}
+    with path.open(encoding="utf-8", newline="") as f:
+        rows = list(csv.DictReader(f))
+    return {
+        "countries": {r["country"]: r.get("country_name", "") for r in rows},
+        "airports": [[r["iata"], r["name"], r["city"], r["country"], TYPE_RANK.get(r["type"], 2)] for r in rows],
+    }
 
 
 def written_codes(text: str) -> list[str]:

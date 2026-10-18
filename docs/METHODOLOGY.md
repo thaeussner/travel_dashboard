@@ -73,11 +73,14 @@ question has no defensible answer.
 |---|---|---|
 | **Destinations** (default) | each pair of consecutive destinations | the main option spanning exactly that pair |
 | **Every stop** | inside each destination span, the finest chain of stop-level options covering it | falls back to the destination-level option where stop-level options don't cover the whole span |
-| **Direct** | as few journeys as possible, using options that skip destinations | falls back to the destination-level option where no such option covers a span |
+| **Direct** | each option that skips destinations replaces everything between its ends | the destination-level journeys elsewhere; a piece a direct option cuts off has no alternative |
 
-- An option is **direct** when a destination lies between its ends, e.g. one flight Zurich →
-  Martinique. It must start and end at destinations. Otherwise an option is **stop-level** when at
-  least one of its ends is a stop, and **destination-level** when both are destinations.
+- An option is **direct** when a destination lies between its ends, e.g. one flight Paris →
+  Martinique. Its ends may be stops: flying CDG → FDF from Paris means the TGV Zurich → Paris
+  happens in both worlds, so that piece counts the same in both. Overlapping direct options give
+  way to the one marked main, then to the longer one.
+- Otherwise an option is **stop-level** when at least one of its ends is a stop, and
+  **destination-level** when both are destinations.
 - Stop-level options outside every destination span are reported and not used.
 - A journey without any alternative counts the same in both worlds, so no saving is claimed for it.
 
@@ -108,6 +111,13 @@ Distances are entered by hand:
     the first. An alternative can start or end at any of them by writing the code, e.g.
     `TFN → BCN → CDG → FDF`: the build ties `TFN` to El Médano and `FDF` to Martinique, and the
     distance uses the code written.
+  - When a code is listed by several waypoints (TFN by every stop on Tenerife), the build prefers
+    destinations, then the shortest span: `SPC → TFS` replaces La Palma → El Médano, not the ferry
+    to Los Cristianos. Write waypoint ids to choose otherwise.
+  - The waypoint form fills in a place's airports from its name, from the airport list's names,
+    cities and countries ("Paris" → CDG ORY, "Martinique" → FDF). A place without its own airport
+    gets its country's when that has three at most ("Le Marin", Martinique → FDF); otherwise the
+    nearest airport is entered by hand.
   - Airports come from `data/reference/airports.csv`: 4,008 airports with scheduled service, from
     OurAirports (public domain). Refresh it with `python -m travel_dashboard airports`.
 

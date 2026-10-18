@@ -47,6 +47,7 @@ def cmd_build(args) -> int:
         "emissions.json": export.write(out / "emissions.json", em_json),
         "costs.json": export.write(out / "costs.json", export.costs_json(tables, today)),
         "meta.json": export.write(out / "meta.json", export.meta_json(settings, profiles)),
+        "airports.json": export.write(out / "airports.json", geo.airports_json(AIRPORTS)),
     }
     print(f"built {', '.join(f'{k} ({v // 1024} KB)' for k, v in sizes.items())} from {data_dir} "
           f"in {time.perf_counter() - t0:.1f} s")

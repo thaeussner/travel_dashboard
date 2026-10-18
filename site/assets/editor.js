@@ -6,7 +6,8 @@ const fid = name => `f-${name}-${++uid}`;
 
 /**
  * Open a modal form. fields: [{name, label, type, options, required, hint, show(values), ...}]
- * types: text | number | big-number | date | select | chips | checkbox | password | datalist | row
+ * types: text | number | big-number | date | select | chips | checkbox | password | datalist | row | info
+ * suggest(values): a text field follows this suggestion until the user types in it (empty fields only)
  */
 export function openForm({ title, intro, fields, values = {}, submitLabel = 'Save', onSave, onDelete, deleteLabel = 'Delete', validate, extra }) {
   const dlg = document.createElement('dialog');
@@ -78,6 +79,10 @@ export function openForm({ title, intro, fields, values = {}, submitLabel = 'Sav
           wrap.appendChild(dl);
         }
         inp.value = v;
+        if (f.suggest && !v) {
+          inp.dataset.auto = '1';
+          inp.addEventListener('input', () => { delete inp.dataset.auto; });
+        }
       }
       inp.id = id;
       wrap.appendChild(inp);
@@ -123,6 +128,10 @@ export function openForm({ title, intro, fields, values = {}, submitLabel = 'Sav
   };
   const refreshVisibility = () => {
     const vals = read();
+    for (const f of flat) {
+      const el = f.suggest && document.getElementById(f._id);
+      if (el && el.dataset.auto) vals[f.name] = el.value = f.suggest(vals) || '';
+    }
     for (const f of flat) if (f.show) f._wrap.hidden = !f.show(vals);
     for (const f of flat) if (f.type === 'info') f._info.textContent = f.text(vals) || '';
     for (const row of form.querySelectorAll('.row2')) row.hidden = [...row.children].every(c => c.hidden);

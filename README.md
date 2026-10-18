@@ -49,7 +49,8 @@ later.
 
 - `type` is `destination` (a place you'd have gone anyway) or `stop`.
 - `airport` lists the IATA codes of the airports a flight from here would use, e.g. `SPC` or
-  `TFS TFN`. The first is the default.
+  `TFS TFN`. The first is the default. The form fills it in from the place name ("Paris" →
+  `CDG ORY`); places without their own airport get the nearest one by hand.
 
 **Travel:**
 
@@ -60,8 +61,9 @@ later.
 - A leg with the same `from` and `to` is a local trip, e.g. driving around La Palma. It has no
   alternative of its own and counts the same in both worlds, unless an alternative skips that place.
   In the form, tick "Local trip".
-- An alternative that skips destinations, e.g. `ZRH → CDG → FDF` from Zurich to Martinique, is used
-  under "Compare against: Direct": the whole trip against flying straight there.
+- An alternative that skips destinations, e.g. `CDG → FDF` from Paris to Martinique, is used under
+  "Compare against: Direct": the trip against flying straight there. Travel before its start (the
+  TGV to Paris) counts the same in both worlds.
 - `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text. A
   flight alternative may also start or end at an airport its waypoint lists, e.g. `TFN` for
   El Médano (`TFS TFN`), so you can write the whole connection in codes: `TFN → BCN → CDG → FDF`.

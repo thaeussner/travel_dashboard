@@ -8,9 +8,9 @@
   main option spanning exactly that pair.
 - Level "stop": inside each destination span, stop-level options (at least one end is a stop) are
   used when they tile the whole span; otherwise the destination-level option is the fallback.
-- Level "direct": options that skip destinations (e.g. one flight Zurich → Martinique) replace
-  everything between their ends, using as few journeys as possible; elsewhere the
-  destination-level option is the fallback.
+- Level "direct": options that skip destinations (e.g. one flight Paris → Martinique) replace
+  everything between their ends; elsewhere the destination-level option is the fallback. A piece
+  cut off by a direct option (Zurich → Paris before a flight from Paris) has no alternative.
 - Local travel (from == to) counts in both worlds where the alternative also goes. At a place an
   alternative skips, it belongs to that journey and only counts as your travel.
 """
@@ -225,16 +225,18 @@ def build(waypoints: list[Waypoint], travel: list[Travel], issues: list[Issue]) 
             issues.append(Issue("travel", name, f"{where!r} is not a waypoint, nor an airport listed on one: an alternative "
                                                 "must start and end at waypoints; option skipped", "error"))
             continue
-        # a name or airport may fit several waypoints (e.g. a second visit): take the shortest span
-        pairs = sorted(((a, b) for a in starts for b in ends if pos[a] < pos[b]),
-                       key=lambda ab: (pos[ab[1]] - pos[ab[0]], pos[ab[0]]))
+        # a name or airport may fit several waypoints (TFN for every stop on Tenerife, a second visit):
+        # destinations first, then the shortest span
+        def rank(ab: tuple[str, str]) -> tuple:
+            return (-sum(wtype[x] == "destination" for x in ab), pos[ab[1]] - pos[ab[0]], pos[ab[0]])
+        pairs = sorted(((a, b) for a in starts for b in ends if pos[a] < pos[b]), key=rank)
         if not pairs:
             issues.append(Issue("travel", name, "alternative ends before it starts; option skipped", "error"))
             continue
         a, b = pairs[0]
-        if len(pairs) > 1:
-            issues.append(Issue("travel", name, f"{chain[0].from_!r} → {chain[-1].to!r} fits several waypoints; "
-                                                f"using {a} → {b}"))
+        if len(pairs) > 1 and rank(pairs[1])[:2] == rank(pairs[0])[:2]:
+            issues.append(Issue("travel", name, f"{chain[0].from_!r} → {chain[-1].to!r} fits several waypoints "
+                                                f"equally well; using {a} → {b}. Write waypoint ids to choose."))
         chain[0].from_, chain[-1].to = a, b
         skips_dest = any(wtype[w.id] == "destination" for w in ordered[pos[a] + 1:pos[b]])
         level = ("direct" if skips_dest else
@@ -287,10 +289,6 @@ def _journeys(ordered, pos, wtype, legs, options, issues) -> dict[str, list[Jour
     by_direct: dict[tuple[str, str], list[Option]] = defaultdict(list)
     for o in options:
         if o.level == "direct":
-            if wtype[o.start] != "destination" or wtype[o.end] != "destination":
-                issues.append(Issue("travel", o.id, "an alternative that skips destinations must start and end at "
-                                                    "destinations; not used"))
-                continue
             by_direct[(o.start, o.end)].append(o)
         elif o.level == "destination":
             by_span[(o.start, o.end)].append(o)
@@ -326,21 +324,49 @@ def _journeys(ordered, pos, wtype, legs, options, issues) -> dict[str, list[Jour
         else:
             out["stop"].append(Journey("stop", a, b, jlegs, main, extras, dest_j.date, dest_j.skipped))
 
-    # direct: as few journeys as possible, using alternatives that skip destinations
-    di = {d: i for i, d in enumerate(dests)}
-    direct = {(s, e): _pick(opts, issues) for (s, e), opts in by_direct.items()}
-    route: dict[int, list[tuple[int, int, tuple[str, str] | None]]] = {0: []}
-    for i in range(len(dests)):
-        if i not in route:
-            continue
-        steps = [(i + 1, None)] + [(di[e], (s, e)) for (s, e) in direct if s == dests[i]]
-        for j, key in steps:
-            if j < len(dests) and (j not in route or len(route[i]) + 1 < len(route[j])):
-                route[j] = route[i] + [(i, j, key)]
-    for i, j, key in route.get(len(dests) - 1, []):
-        if key is None:
-            d = out["destination"][i]
-            out["direct"].append(Journey("direct", d.start, d.end, d.legs, d.option, d.extras, d.date, d.skipped))
-        else:
-            out["direct"].append(_journey("direct", key[0], key[1], legs, pos, ordered, direct[key]))
+    out["direct"] = _direct(ordered, pos, dests, legs, out["destination"],
+                            {span: _pick(opts, issues) for span, opts in by_direct.items()}, issues)
     return out
+
+
+def _direct(ordered, pos, dests, legs, dest_journeys, direct, issues) -> list[Journey]:
+    """Journeys of the direct level: each direct option replaces everything between its ends.
+
+    Overlapping direct options give way to the one marked main, then to the longer one. Between
+    them the destination-level journeys stay; a piece a direct option cuts off (Zurich → Paris
+    before a flight from Paris) is a journey without alternative, the same in both worlds."""
+    chosen: list[tuple[str, str, tuple]] = []
+    for (s, e), picked in sorted(direct.items(), key=lambda kv: (not kv[1][0].main, pos[kv[0][0]] - pos[kv[0][1]],
+                                                                 pos[kv[0][0]])):
+        if all(pos[e] <= pos[cs] or pos[s] >= pos[ce] for cs, ce, _ in chosen):
+            chosen.append((s, e, picked))
+        else:
+            issues.append(Issue("travel", picked[0].id, "overlaps another alternative that skips destinations; "
+                                                        "not used under Direct"))
+    chosen.sort(key=lambda c: pos[c[0]])
+    by_span = {(j.start, j.end): j for j in dest_journeys}
+
+    def plain(x: int, y: int) -> list[Journey]:
+        """Positions x..y without direct options: destination journeys, plus the cut-off pieces."""
+        inside = [d for d in dests if x <= pos[d] <= y]
+        marks = [x] + [pos[d] for d in inside] + [y]
+        out = []
+        for p, q in zip(marks, marks[1:]):
+            if p >= q:
+                continue
+            a, b = ordered[p].id, ordered[q].id
+            j = by_span.get((a, b))
+            out.append(Journey("direct", a, b, j.legs, j.option, j.extras, j.date, j.skipped) if j
+                       else _journey("direct", a, b, legs, pos, ordered, (None, [])))
+        return out
+
+    if not dests:
+        return []
+    lo = min([pos[dests[0]]] + [pos[s] for s, _, _ in chosen])
+    hi = max([pos[dests[-1]]] + [pos[e] for _, e, _ in chosen])
+    out, cursor = [], lo
+    for s, e, picked in chosen:
+        out += plain(cursor, pos[s])
+        out.append(_journey("direct", s, e, legs, pos, ordered, picked))
+        cursor = pos[e]
+    return out + plain(cursor, hi)

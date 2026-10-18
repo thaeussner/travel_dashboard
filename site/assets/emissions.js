@@ -645,8 +645,39 @@ const wpOption = w => ({ value: w.id, label: `${w.name}${w.arrive ? ` · ${fmtDa
 const airportsOf = w => String(w?.airport || '').split(/\s+/).filter(Boolean);
 const airportList = text => [...new Set(String(text || '').toUpperCase().split(/[\s,;/]+/).filter(Boolean))].join(' ');
 const norm = text => String(text || '').toLowerCase().split(/\s+/).filter(Boolean).join(' ');
-/** Waypoints a from/to text lands on: id, else name, else a waypoint listing the airport code written
- *  in it ("TFN" for El Medano with "TFS TFN"). Mirrors trip.Resolver, for display only. */
+const fold = text => String(text || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+
+// Airports for the waypoint form (owner only): a place's codes are filled in as its name is typed.
+let AIRPORTS = null;
+async function loadAirports() {
+  const data = AIRPORTS ? null : await loadJSON('../data/airports.json');
+  if (data?.airports) {
+    AIRPORTS = data.airports.map(([code, name, city, cc, size]) => ({
+      code, name, cc, size, country: fold(data.countries[cc]), text: ` ${fold(`${name} ${city} ${data.countries[cc] || ''}`)} `,
+    }));
+  }
+  return AIRPORTS;
+}
+/** Airports named after a place, in their name, city or country ("Paris" → CDG ORY, "Martinique" →
+ *  FDF). Airports in the place's own country win, then larger ones; three at most. A place without
+ *  its own airport gets its country's, if that has three at most ("Le Marin", Martinique → FDF). */
+function airportsFor(place, country) {
+  const key = fold(place), home = fold(country);
+  if (!AIRPORTS || key.length < 3) return [];
+  const inHome = a => home && (a.country === home || a.cc.toLowerCase() === home);
+  const hits = AIRPORTS.filter(a => a.text.includes(` ${key} `));
+  const local = hits.filter(inHome);
+  const country_ = hits.length ? [] : AIRPORTS.filter(inHome);
+  const found = local.length ? local : hits.length ? hits : country_.length <= 3 ? country_ : [];
+  return found.sort((a, b) => a.size - b.size).slice(0, 3);
+}
+function airportNames(codes) {
+  return airportList(codes).split(' ').filter(Boolean)
+    .map(c => { const a = AIRPORTS?.find(x => x.code === c); return a ? `${c} ${a.name}` : `${c}: unknown code`; }).join(' · ');
+}
+
+/** Waypoints a from/to text lands on: id, else name, else the waypoints listing the airport code
+ *  written in it ("TFN" for El Medano with "TFS TFN"). Mirrors trip.Resolver, for display only. */
 function pointTargets(text, wps) {
   const key = norm(text), t = String(text || '').trim();
   const byId = wps.filter(w => w.id.toLowerCase() === key);
@@ -656,12 +687,11 @@ function pointTargets(text, wps) {
   const codes = /^[A-Za-z]{3}$/.test(t) ? [t.toUpperCase()] : [...t.matchAll(/(?<![A-Za-z])([A-Z]{3})(?![A-Za-z])/g)].map(m => m[1]);
   return wps.flatMap(w => codes.filter(c => airportsOf(w).includes(c)).map(code => ({ w, code })));
 }
-const wpOf = (p, wps) => pointTargets(p, wps)[0]?.w.id;
 function pointText(p, wps) {
-  const hit = pointTargets(p, wps)[0];
-  return hit ? `${shortName(hit.w.name)}${hit.code ? ` (${hit.code})` : ''}` : p;
+  const hits = pointTargets(p, wps);
+  return hits.length === 1 ? `${shortName(hits[0].w.name)}${hits[0].code ? ` (${hits[0].code})` : ''}` : p;
 }
-/** An alternative's rows in travel order, and the waypoints it starts and ends at (display only). */
+/** An alternative's rows in travel order. */
 function chainOrder(rows) {
   const out = [], left = rows.slice(), tos = new Set(rows.map(r => norm(r.to)));
   let cur = left.find(r => !tos.has(norm(r.from))) || left[0];
@@ -671,25 +701,32 @@ function chainOrder(rows) {
   }
   return out.concat(left);
 }
-function chainEnds(rows, wps) {
-  const c = chainOrder(rows);
-  return { start: wpOf(c[0].from, wps), end: wpOf(c[c.length - 1].to, wps) };
+/** Where an alternative starts and ends, as trip.build decides: of the waypoints its first and last
+ *  points fit, destinations first, then the shortest span (display only). */
+function chainEnds(rows, ed) {
+  const c = chainOrder(rows), first = c[0].from, last = c[c.length - 1].to;
+  const starts = pointTargets(first, ed.wps), ends = pointTargets(last, ed.wps);
+  const p = h => ed.pos.get(h.w.id), dest = h => (h.w.type === 'destination' ? 1 : 0);
+  const pairs = starts.flatMap(st => ends.filter(en => p(st) < p(en)).map(en => [st, en]))
+    .sort(([s1, e1], [s2, e2]) => (dest(s2) + dest(e2) - dest(s1) - dest(e1)) || (p(e1) - p(s1) - p(e2) + p(s2)) || (p(s1) - p(s2)));
+  const lone = hs => hs.slice().sort((x, y) => (dest(y) - dest(x)) || (p(y) - p(x)))[0];   // other end not known yet
+  const [st, en] = pairs[0] || [lone(starts), lone(ends)];
+  return { start: st?.w.id, end: en?.w.id, startCode: st?.code, endCode: en?.code, first, last };
 }
-/** Live line under an alternative's From/To: where it starts and ends, or what is missing. */
+/** Live line under an alternative's From/To: where the alternative starts and ends, or what is missing. */
 function altEnds(v, ed, existing) {
   const from = String(v.from_alt || '').trim(), to = String(v.to_alt || '').trim();
   if (!from || !to) return '';
-  const others = ed.alts.filter(a => a.option === v.option && a.id !== existing?.id);
-  const first = !others.some(a => norm(a.to) === norm(from));
-  const last = !others.some(a => norm(a.from) === norm(to));
-  const f = pointTargets(from, ed.wps)[0], t = pointTargets(to, ed.wps)[0];
-  const out = [];
-  if (first) out.push(f ? `Starts at ${pointText(from, ed.wps)}.` : `${from} is not a waypoint or one of their airports: an alternative must start at one.`);
-  if (last) out.push(t ? `Ends at ${pointText(to, ed.wps)}.` : `Continues from ${to}: add the next segment, up to a waypoint or one of its airports.`);
-  return out.join(' ');
+  const e = chainEnds([...ed.alts.filter(a => a.option === v.option && a.id !== existing?.id), { from, to }], ed);
+  const at = (id, code) => `${shortName(ed.wps.find(w => w.id === id)?.name || id)}${code ? ` (${code})` : ''}`;
+  return [
+    e.start ? `Starts at ${at(e.start, e.startCode)}.` : `${e.first} is not a waypoint or one of their airports: an alternative must start at one.`,
+    e.end ? `Ends at ${at(e.end, e.endCode)}.` : `Continues from ${e.last}: add the next segment, up to a waypoint or one of its airports.`,
+  ].join(' ');
 }
 
 function waypointForm(existing, ed = editorData()) {
+  loadAirports();
   const countries = [...new Set(ed.wps.map(w => w.country).filter(Boolean))];
   openForm({
     title: existing ? 'Edit waypoint' : 'Add waypoint',
@@ -703,7 +740,10 @@ function waypointForm(existing, ed = editorData()) {
         { name: 'depart', label: 'Depart', type: 'date' },
       ] },
       { name: 'airport', label: 'Airports (IATA codes, optional)', type: 'text', placeholder: 'e.g. SPC, or TFS TFN',
-        hint: 'Flights to or from here use the first, and their distance is computed for you. An alternative can also start or end at another one you list, e.g. TFN.' },
+        suggest: v => airportsFor(v.name, v.country).map(a => a.code).join(' '),
+        hint: 'Filled in from the place name. Flights from here use the first; an alternative can also start or end at another one, e.g. TFN.' },
+      { name: 'airport_info', type: 'info', text: v => (v.airport ? airportNames(v.airport)
+        : AIRPORTS && fold(v.name).length >= 3 ? 'No airport is named after this place: add the nearest one\'s code if a flight could start here.' : '') },
       { name: 'note', label: 'Note', type: 'text' },
     ],
     values: existing || { type: 'destination' },
@@ -854,6 +894,12 @@ function renderEditor() {
   }
   const dests = ed.wps.filter(w => w.type === 'destination');
   const placed = new Set();
+  // where each alternative starts and ends; those that skip destinations only count under "Direct"
+  const ends = new Map([...d3.group(ed.alts, t => t.option)].map(([n, rows]) => [n, chainEnds(rows, ed)]));
+  const skipsDest = n => {
+    const e = ends.get(n), s = ed.pos.get(e?.start), f = ed.pos.get(e?.end);
+    return s != null && f != null && dests.some(w => ed.pos.get(w.id) > s && ed.pos.get(w.id) < f);
+  };
   const group = (title, sub, a, b, withLeg = true) => {
     const box = document.createElement('div'); box.className = 'ed-group';
     const head = document.createElement('header');
@@ -871,7 +917,8 @@ function renderEditor() {
         const base = `${store.slug(shortName(name(a)))}-${store.slug(shortName(name(b)))}`;
         const taken = new Set(ed.alts.map(x => x.option));
         let opt = base; for (let n = 2; taken.has(opt); n++) opt = `${base}-${n}`;
-        travelForm(null, { type: 'alt', option: opt, main: ed.alts.some(x => wpOf(x.from, ed.wps) === a && x.main) ? '' : '1', from: a, to: b, mode: 'plane' }, ed);
+        const hasMain = [...ends].some(([n, e]) => e.start === a && ed.alts.some(x => x.option === n && x.main));
+        travelForm(null, { type: 'alt', option: opt, main: hasMain ? '' : '1', from: a, to: b, mode: 'plane' }, ed);
       });
       btns.appendChild(addAlt);
     }
@@ -908,18 +955,13 @@ function renderEditor() {
       host.appendChild(box);
     }
   };
-  // alternatives that skip destinations are listed apart: they only count under "Compare against: Direct"
-  const ends = new Map([...d3.group(ed.alts, t => t.option)].map(([n, rows]) => [n, chainEnds(rows, ed.wps)]));
-  const skipsDest = n => {
-    const e = ends.get(n), s = ed.pos.get(e?.start), f = ed.pos.get(e?.end);
-    return s != null && f != null && dests.some(w => ed.pos.get(w.id) > s && ed.pos.get(w.id) < f);
-  };
   localGroups(-Infinity, dests.length ? ed.pos.get(dests[0].id) : Infinity);
   for (let i = 0; i + 1 < dests.length; i++) {
     const a = dests[i].id, b = dests[i + 1].id;
     const legs = ed.legs.filter(t => between(t, a, b)).sort((p, q) => (ed.pos.get(p.from) - ed.pos.get(q.from)) || String(p.date).localeCompare(String(q.date)));
-    const startsIn = t => { const p = ed.pos.get(wpOf(t.from, ed.wps)); return p >= ed.pos.get(a) && p < ed.pos.get(b); };
-    const opts = d3.group(ed.alts.filter(t => startsIn(t) && !skipsDest(t.option)), t => t.option);
+    const startsIn = n => { const p = ed.pos.get(ends.get(n).start); return p >= ed.pos.get(a) && p < ed.pos.get(b); };
+    const opts = new Map([...ends.keys()].filter(n => !skipsDest(n) && startsIn(n))
+      .map(n => [n, chainOrder(ed.alts.filter(t => t.option === n))]));
     const box = group(`${shortName(name(a))} → ${shortName(name(b))}`, `${legs.length} leg${legs.length === 1 ? '' : 's'} · ${opts.size} alternative${opts.size === 1 ? '' : 's'}`, a, b);
     if (legs.length) { const s = document.createElement('div'); s.className = 'ed-sub'; s.textContent = 'Legs'; box.appendChild(s); }
     for (const t of legs) {

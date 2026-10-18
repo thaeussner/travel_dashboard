@@ -32,7 +32,7 @@ LENS_DEFS = {
                     "used instead, usually more and shorter flights. Elsewhere the destination-level alternative "
                     "stays."},
         {"id": "direct", "label": "Direct",
-         "hint": "Use alternatives that skip destinations, e.g. one flight Zurich → Martinique",
+         "hint": "Use alternatives that skip destinations, e.g. a flight Paris → Martinique",
          "explain": "Direct: where you entered an alternative that skips destinations, it replaces everything in "
                     "between, local trips at the places it skips included. This asks what the trip cost against "
                     "flying straight there. Elsewhere the destination-level alternative stays."},
