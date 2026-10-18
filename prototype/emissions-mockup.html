@@ -1,0 +1,889 @@
+<title>Flight-Free Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one ledger column. Summary first, then how the comparison is built, then the evidence
+   down to each leg's arithmetic. The method lenses stay pinned above everything they scope. */
+:root {
+  --page: #edf1f2;
+  --surface: #f9fbfb;
+  --surface-2: #f0f4f5;
+  --ink: #0f1c28;
+  --ink-2: #45525f;
+  --muted: #5d6975;
+  --grid: #e0e6e9;
+  --rule: #c7d0d6;
+  --ring: rgba(15, 28, 40, 0.10);
+  --actual: #2a78d6;
+  --flying: #eb6834;
+  --actual-wash: rgba(42, 120, 214, 0.13);
+  --flying-wash: rgba(235, 104, 52, 0.15);
+  --seg-track: #e1e7ea;
+  --seg-on: #0f1c28;
+  --seg-on-ink: #f9fbfb;
+  --good-ink: #006300;
+  --bad-ink: #d03b3b;
+  --tip-shadow: 0 6px 24px rgba(15, 28, 40, 0.16);
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-ui: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0a1016; --surface: #111a22; --surface-2: #16212b; --ink: #e7edf1; --ink-2: #b4c0c9;
+    --muted: #8794a0; --grid: #1f2a34; --rule: #34424d; --ring: rgba(255, 255, 255, 0.10);
+    --actual: #3987e5; --flying: #d95926; --actual-wash: rgba(57, 135, 229, 0.20);
+    --flying-wash: rgba(217, 89, 38, 0.22); --seg-track: #1a2530; --seg-on: #e7edf1;
+    --seg-on-ink: #0a1016; --good-ink: #0ca30c; --bad-ink: #e66767;
+    --tip-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0a1016; --surface: #111a22; --surface-2: #16212b; --ink: #e7edf1; --ink-2: #b4c0c9;
+  --muted: #8794a0; --grid: #1f2a34; --rule: #34424d; --ring: rgba(255, 255, 255, 0.10);
+  --actual: #3987e5; --flying: #d95926; --actual-wash: rgba(57, 135, 229, 0.20);
+  --flying-wash: rgba(217, 89, 38, 0.22); --seg-track: #1a2530; --seg-on: #e7edf1;
+  --seg-on-ink: #0a1016; --good-ink: #0ca30c; --bad-ink: #e66767;
+  --tip-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+body { background: var(--page); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 0 72px; }
+h1, h2, h3 { text-wrap: balance; }
+p { margin: 0; }
+a { color: var(--actual); }
+button { font: inherit; }
+.kicker, legend, .eyebrow { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; font-size: 13px; color: var(--muted); font-weight: 500; }
+
+/* header */
+.top { padding-block: 32px 18px; display: grid; gap: 10px; }
+.top h1 { font-family: var(--font-display); font-weight: 600; font-size: clamp(38px, 6.4vw, 58px); line-height: 0.98; margin: 0; letter-spacing: 0.005em; }
+.top .sub { color: var(--ink-2); max-width: 64ch; font-size: 16px; }
+.draft { display: inline-flex; align-items: center; gap: 8px; justify-self: start; padding: 5px 12px; border: 1px dashed var(--rule); border-radius: 999px; font-size: 13px; color: var(--ink-2); }
+.draft b { font-weight: 600; color: var(--ink); }
+
+/* lens bar */
+.lensbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: color-mix(in srgb, var(--page) 93%, transparent); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); border-block: 1px solid var(--rule); }
+.lensbar-in { max-width: 1120px; margin: 0 auto; padding-inline: clamp(16px, 4vw, 40px); padding-block: 10px; }
+.lens-row { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: flex-end; }
+fieldset.lens { border: 0; margin: 0; padding: 0; min-width: 0; }
+legend { padding: 0; margin-bottom: 4px; font-size: 12px; }
+.seg { display: inline-flex; flex-wrap: wrap; background: var(--seg-track); border-radius: 9px; padding: 3px; gap: 2px; }
+.seg input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.seg label { padding: 5px 11px; border-radius: 7px; font-size: 14px; font-weight: 500; color: var(--ink-2); cursor: pointer; white-space: nowrap; user-select: none; }
+.seg label:hover { color: var(--ink); }
+.seg input:checked + label { background: var(--seg-on); color: var(--seg-on-ink); }
+.seg input:focus-visible + label { outline: 2px solid var(--actual); outline-offset: 2px; }
+.lens-extra { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 14px; color: var(--ink-2); padding-bottom: 4px; }
+.lens-extra label { display: inline-flex; gap: 7px; align-items: center; cursor: pointer; }
+.lens-extra input { width: 16px; height: 16px; accent-color: var(--ink); }
+.linkbtn { background: none; border: 0; padding: 0; color: var(--actual); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; font-size: 14px; }
+.linkbtn:focus-visible { outline: 2px solid var(--actual); outline-offset: 2px; border-radius: 3px; }
+.lens-toggle { display: none; width: 100%; text-align: left; background: var(--surface); border: 1px solid var(--ring); border-radius: 10px; padding: 8px 12px; color: var(--ink); cursor: pointer; }
+.lens-toggle span { color: var(--ink-2); }
+.lens-toggle:focus-visible { outline: 2px solid var(--actual); outline-offset: 2px; }
+@media (max-width: 760px) {
+  .lens-toggle { display: block; }
+  .lens-row, .lens-extra { display: none; }
+  body.lens-open .lens-row { display: flex; margin-top: 10px; }
+  body.lens-open .lens-extra { display: flex; margin-top: 10px; }
+}
+
+/* hero */
+.hero { display: grid; grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr); gap: 20px 40px; align-items: end; padding-block: 30px 30px; }
+.hero-num { font-weight: 600; font-size: clamp(56px, 10vw, 92px); line-height: 0.92; letter-spacing: -0.015em; margin-top: 6px; }
+.hero-num .unit { font-size: 0.34em; font-weight: 500; color: var(--ink-2); letter-spacing: 0; }
+.hero-range { color: var(--ink-2); margin-top: 8px; }
+.hero-range b { color: var(--ink); font-weight: 600; }
+.pair { display: flex; flex-wrap: wrap; gap: 14px 34px; margin-top: 18px; }
+.pair > div { min-width: 0; }
+.pair dt { font-size: 13px; color: var(--ink-2); display: flex; align-items: center; gap: 7px; }
+.pair dd { margin: 2px 0 0; font-size: 26px; font-weight: 600; line-height: 1.1; }
+.pair dd.r { font-size: 13px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+.lkey { display: inline-block; width: 16px; height: 0; border-top: 2.5px solid currentColor; border-radius: 2px; }
+.lkey.actual { color: var(--actual); } .lkey.flying { color: var(--flying); }
+.lkey.planned { border-top-style: dashed; color: var(--muted); }
+.dotkey { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--ink); }
+.dotkey.hollow { background: var(--surface); border: 2px solid var(--ink-2); width: 8px; height: 8px; }
+.strip-card { background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 14px 16px 10px; min-width: 0; }
+.strip-card .sum { font-size: 14px; color: var(--ink-2); margin-top: 2px; }
+.strip-card .sum b { color: var(--ink); font-weight: 600; }
+@media (max-width: 760px) { .hero { grid-template-columns: 1fr; padding-block: 22px; } }
+
+/* sections */
+.block { padding-block: 34px 8px; }
+.block > h2 { font-family: var(--font-display); font-weight: 600; font-size: 28px; line-height: 1.1; margin: 0 0 6px; letter-spacing: 0.005em; }
+.lede { max-width: 70ch; color: var(--ink-2); margin-bottom: 14px; }
+.lede b { color: var(--ink); font-weight: 600; }
+figure.card { margin: 0; background: var(--surface); border: 1px solid var(--ring); border-radius: 12px; padding: 14px 16px 12px; min-width: 0; }
+.fig-head { display: flex; justify-content: space-between; align-items: center; gap: 8px 16px; flex-wrap: wrap; margin-bottom: 6px; }
+.legend { display: flex; gap: 6px 18px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); align-items: center; }
+.legend > span { display: inline-flex; gap: 7px; align-items: center; }
+.tbtn { background: none; border: 1px solid var(--rule); border-radius: 7px; padding: 3px 9px; color: var(--ink-2); cursor: pointer; font-size: 13px; }
+.tbtn[aria-pressed="true"] { background: var(--seg-track); color: var(--ink); }
+.tbtn:focus-visible { outline: 2px solid var(--actual); outline-offset: 2px; }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; overflow: visible; }
+.scroll-x { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.explain { margin-top: 10px; font-size: 14px; color: var(--ink-2); max-width: 78ch; }
+.explain b { color: var(--ink); font-weight: 600; }
+.two { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .two { grid-template-columns: 1fr; } }
+.facts { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 4px 14px; font-size: 14px; margin: 0; }
+.facts dt { color: var(--muted); }
+.facts dd { margin: 0; color: var(--ink); min-width: 0; }
+.callout { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font-size: 14px; color: var(--ink-2); }
+.callout b { color: var(--ink); }
+.ftable { margin-top: 10px; }
+
+/* svg text and marks */
+.ax text { fill: var(--muted); font-size: 11.5px; font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
+.ax line, .ax path { stroke: var(--grid); }
+.ax .base { stroke: var(--rule); }
+.lbl { fill: var(--ink-2); font-size: 12.5px; }
+.lbl-strong { fill: var(--ink); font-size: 13.5px; font-weight: 600; }
+.lbl-muted { fill: var(--muted); font-size: 11.5px; }
+.good { color: var(--good-ink); fill: var(--good-ink); }
+.bad { color: var(--bad-ink); fill: var(--bad-ink); }
+
+/* tooltip */
+#tip { position: fixed; z-index: 60; pointer-events: none; background: var(--surface); color: var(--ink); border: 1px solid var(--ring); box-shadow: var(--tip-shadow); border-radius: 9px; padding: 8px 11px; font-size: 13px; max-width: 290px; line-height: 1.4; }
+#tip .t-h { color: var(--ink-2); font-size: 12.5px; margin-bottom: 4px; }
+#tip .t-r { display: flex; gap: 8px; align-items: baseline; }
+#tip .t-v { font-weight: 600; white-space: nowrap; }
+#tip .t-l { color: var(--ink-2); }
+#tip .t-k { display: inline-block; width: 12px; height: 0; border-top: 2.5px solid; align-self: center; flex: none; }
+
+/* tables */
+.tblwrap { overflow-x: auto; }
+table.data { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+table.data th { text-align: left; font-weight: 600; color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--rule); padding: 8px 10px; white-space: nowrap; }
+table.data td { padding: 9px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+table.data .num { text-align: right; white-space: nowrap; }
+table.data .sm { display: block; color: var(--muted); font-size: 12.5px; }
+table.data tr.planned td { color: var(--ink-2); }
+.badge { display: inline-block; min-width: 22px; padding: 0 5px; text-align: center; border: 1px solid var(--rule); border-radius: 6px; font-weight: 600; font-size: 12px; line-height: 20px; color: var(--ink); }
+.pill { display: inline-block; padding: 0 7px; border-radius: 999px; font-size: 11.5px; line-height: 19px; border: 1px dashed var(--rule); color: var(--ink-2); margin-left: 6px; white-space: nowrap; }
+.how { background: none; border: 1px solid var(--rule); border-radius: 7px; padding: 2px 8px; color: var(--ink-2); cursor: pointer; font-size: 13px; white-space: nowrap; }
+.how[aria-expanded="true"] { background: var(--seg-track); color: var(--ink); }
+.how:focus-visible { outline: 2px solid var(--actual); outline-offset: 2px; }
+tr.trace-row td { background: var(--surface-2); border-bottom: 1px solid var(--grid); }
+.trace { font-family: var(--font-mono); font-size: 12.5px; white-space: pre-wrap; color: var(--ink); margin: 0; line-height: 1.55; }
+.trace .src { color: var(--muted); }
+
+/* notes */
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 18px 28px; margin-top: 8px; }
+.notes h3 { font-family: var(--font-display); font-size: 19px; font-weight: 600; margin: 0 0 4px; letter-spacing: 0.01em; }
+.notes p { color: var(--ink-2); font-size: 14px; }
+.notes p + p { margin-top: 6px; }
+.grades { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 5px 10px; font-size: 14px; color: var(--ink-2); margin: 6px 0 0; }
+.grades dd { margin: 0; }
+footer.end { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: no-preference) { .fade { transition: opacity 0.18s ease; } }
+</style>
+
+<header class="wrap top">
+  <p class="kicker">Travel dashboard · emissions view</p>
+  <h1>Flight-Free Ledger</h1>
+  <p class="sub">What the overland and sea route has emitted so far, against what realistic flights to the same places would have emitted. Every method choice is a switch, every number has a range, and every leg shows its arithmetic.</p>
+  <p class="draft"><b>Design mockup.</b> Route, dates and numbers are illustrative, built from published factors and a plausible version of the trip. Not logged data.</p>
+</header>
+
+<div class="lensbar" id="lensbar">
+  <div class="lensbar-in">
+    <button class="lens-toggle" id="lens-toggle" type="button" aria-expanded="false" aria-controls="lens-row">Method: <span id="lens-summary"></span> ▾</button>
+    <div class="lens-row" id="lens-row"></div>
+    <div class="lens-extra" id="lens-extra">
+      <label for="scope-planned"><input type="checkbox" id="scope-planned"> Include the planned Atlantic crossing</label>
+      <button class="linkbtn" id="lens-reset" type="button">Reset to recommended</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <section class="hero" aria-labelledby="hero-label">
+    <div>
+      <p class="eyebrow" id="hero-label">Avoided by not flying</p>
+      <p class="hero-num"><span id="hero-avoided">–</span> <span class="unit">t CO₂e</span></p>
+      <p class="hero-range">90 % interval <b id="hero-range">–</b> · <span id="hero-scope"></span></p>
+      <p class="hero-range" id="hero-alt"></p>
+      <dl class="pair">
+        <div><dt><i class="lkey actual"></i>Actual travel</dt><dd id="hero-actual">–</dd><dd class="r" id="hero-actual-r"></dd></div>
+        <div><dt><i class="lkey flying"></i>Flying instead</dt><dd id="hero-flying">–</dd><dd class="r" id="hero-flying-r"></dd></div>
+      </dl>
+    </div>
+    <figure class="strip-card" id="strip-fig" style="margin:0">
+      <div class="fig-head">
+        <p class="eyebrow" style="margin:0">Every way of counting</p>
+        <button class="tbtn" type="button" data-table="strip" aria-pressed="false">Table</button>
+      </div>
+      <p class="sum" id="strip-sum"></p>
+      <div class="chart" id="strip-chart"></div>
+      <div class="ftable" id="strip-table" hidden></div>
+    </figure>
+  </section>
+
+  <section class="block" aria-labelledby="h-arcs">
+    <h2 id="h-arcs">How the comparison is built</h2>
+    <p class="lede">Flights only replace travel <b>between the stops a flying traveller would also make</b>. Overnight stops that exist only because of the overland route don't get their own flight unless you choose <b>Every stop</b>. Travel within a stop is the same in both worlds and cancels out.</p>
+    <figure class="card">
+      <div class="fig-head">
+        <div class="legend">
+          <span><i class="lkey actual"></i>Actual route</span>
+          <span><i class="lkey flying"></i>Flights in this comparison</span>
+          <span><i class="dotkey"></i>Counts as a stop</span>
+          <span><i class="dotkey hollow"></i>Passed through</span>
+          <span><i class="lkey planned"></i>Planned</span>
+        </div>
+      </div>
+      <div class="scroll-x"><div class="chart" id="arc-chart"></div></div>
+      <p class="explain" id="grain-explain"></p>
+    </figure>
+  </section>
+
+  <section class="block" aria-labelledby="h-cum">
+    <h2 id="h-cum">Over time</h2>
+    <p class="lede">Cumulative emissions of the route as travelled and of the flights that would have replaced it. The shaded bands are the 90 % intervals under the selected lens.</p>
+    <figure class="card">
+      <div class="fig-head">
+        <div class="legend">
+          <span><i class="lkey actual"></i>Actual travel</span>
+          <span><i class="lkey flying"></i>Flying instead</span>
+          <span><i class="lkey planned"></i>Planned</span>
+        </div>
+        <button class="tbtn" type="button" data-table="cum" aria-pressed="false">Table</button>
+      </div>
+      <div class="chart" id="cum-chart"></div>
+      <div class="ftable" id="cum-table" hidden></div>
+    </figure>
+  </section>
+
+  <section class="block" aria-labelledby="h-jr">
+    <h2 id="h-jr">Journey by journey</h2>
+    <p class="lede">Each row is one journey between stops in the current comparison: what it took on the ground and at sea, against the flight chain that would have replaced it. Log scale, so equal gaps mean equal ratios.</p>
+    <figure class="card">
+      <div class="fig-head">
+        <div class="legend">
+          <span><i class="lkey actual"></i>Actual travel</span>
+          <span><i class="lkey flying"></i>Flying instead</span>
+          <span>dot = median · line = 90 % interval</span>
+        </div>
+        <button class="tbtn" type="button" data-table="jr" aria-pressed="false">Table</button>
+      </div>
+      <div class="chart" id="jr-chart"></div>
+      <div class="ftable" id="jr-table" hidden></div>
+    </figure>
+  </section>
+
+  <section class="block" aria-labelledby="h-spot">
+    <h2 id="h-spot">The fast-ferry question</h2>
+    <p class="lede" id="spot-lede"></p>
+    <div class="two">
+      <figure class="card">
+        <div class="fig-head">
+          <div class="legend">
+            <span><i class="lkey actual"></i>This crossing, by method</span>
+            <span><i class="lkey flying"></i>The flight alternative</span>
+          </div>
+          <button class="tbtn" type="button" data-table="spot" aria-pressed="false">Table</button>
+        </div>
+        <div class="chart" id="spot-chart"></div>
+        <div class="ftable" id="spot-table" hidden></div>
+      </figure>
+      <figure class="card">
+        <p class="eyebrow" style="margin:0 0 8px">The vessel</p>
+        <dl class="facts" id="spot-facts"></dl>
+        <p class="callout" id="spot-callout"></p>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block" aria-labelledby="h-int">
+    <h2 id="h-int">Per kilometre</h2>
+    <p class="lede">Grams of CO₂e per passenger-kilometre for every leg, on a log scale. Trains sit near the left edge. The ferries move a long way to the right depending on how they're counted, and the shaded band shows the flights they replace.</p>
+    <figure class="card">
+      <div class="fig-head">
+        <div class="legend">
+          <span><i class="lkey actual"></i>Leg as travelled</span>
+          <span><i class="lkey flying"></i>Range of the flights in this comparison</span>
+          <span><i class="lkey" style="color:var(--muted)"></i>Car references</span>
+        </div>
+      </div>
+      <div class="chart" id="int-chart"></div>
+    </figure>
+  </section>
+
+  <section class="block" aria-labelledby="h-legs">
+    <h2 id="h-legs">Every leg</h2>
+    <p class="lede">Each leg's median and 90 % interval under the selected lens, with a data-quality grade. Open <b>How</b> to see the calculation and its sources.</p>
+    <div class="tblwrap"><table class="data" id="legs-table"></table></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-read">
+    <h2 id="h-read">Reading this page</h2>
+    <div class="notes">
+      <div>
+        <h3>Switches vs. ranges</h3>
+        <p>The switches are <b>choices</b>: equally defensible ways of counting that give different answers. They are never blended into an error bar. The ranges are <b>uncertainty</b> within one way of counting: factors, distances, engine loads and the size of aviation's non-CO₂ effect, sampled together 4,000 times.</p>
+        <p>The strip at the top shows the headline under all 36 combinations of switches, so you can see whether the conclusion depends on the method.</p>
+      </div>
+      <div>
+        <h3>Fair comparison</h3>
+        <p>Every switch applies to the actual trip and to the flights alike. Occupancy "as observed" can only be observed on vehicles you actually took. The flights you didn't take always use typical load factors.</p>
+        <p>The comparison holds the destinations fixed. It doesn't model a different trip you might have taken if you flew.</p>
+      </div>
+      <div>
+        <h3>Data quality</h3>
+        <dl class="grades">
+          <dt><span class="badge">A</span></dt><dd>Measured fuel or operator data for that trip</dd>
+          <dt><span class="badge">B</span></dt><dd>Vessel- or service-specific model</dd>
+          <dt><span class="badge">C</span></dt><dd>Operator or country-specific factor</dd>
+          <dt><span class="badge">D</span></dt><dd>Generic factor or estimated distance</dd>
+        </dl>
+      </div>
+    </div>
+    <footer class="end" id="foot"></footer>
+  </section>
+</main>
+<div id="tip" role="tooltip" hidden></div>
+
+<script type="application/json" id="mock-data">{"meta":{"today":"2026-10-18","draws":4000,"seed":20261018,"max_flight_km":10439,"footer":"Illustrative model: 4,000 Monte Carlo draws with parameters shared across legs within each draw. All numbers are computed in Python (prototype/mock_model.py); the page only selects among them."},"lenses":{"grain":{"title":"Compare against","options":[{"id":"regions","label":"Regions","hint":"One flight chain per region visited","explain":"Regions: a flying traveller flies into each region once and travels inside it like you did. Island hops stay ferries in both worlds, so they cancel out. This is the lower bound."},{"id":"destinations","label":"Destinations","hint":"Flights between stops of two nights or more","explain":"Destinations (recommended): every stop of two nights or more is a place you'd have gone anyway, so each gets its own flight. Hendaye and Madrid were only overnight stops on the way and are skipped. The island hops become Binter flights."},{"id":"stops","label":"Every stop","hint":"Flights between all overnight stops","explain":"Every stop: even one-night transit stops get a flight. This inflates the counterfactual with stops that only exist because you travelled overland, so it is the upper bound."}]},"alloc":{"title":"Ferry share","options":[{"id":"passenger","label":"Per passenger","hint":"All of the ship's emissions divided by its passengers; cargo ignored (upper bound)"},{"id":"iso","label":"ISO 14083","hint":"Passenger equivalents (ISO 14083 Annex G): car 1.3, trailer 14, truck 18 (recommended)"},{"id":"mass","label":"By mass","hint":"Split by mass: 100 kg per passenger vs 1.25 t per car, ~22 t per truck (as DESNZ)"}]},"occ":{"title":"Occupancy","options":[{"id":"typical","label":"Typical","hint":"Average load factors for every vehicle"},{"id":"observed","label":"As observed","hint":"Your own count where you logged one; typical elsewhere"}]},"nonco2":{"title":"Flights count","options":[{"id":"co2","label":"CO₂ only","hint":"Fuel combustion and upstream fuel production"},{"id":"full","label":"+ non-CO₂","hint":"Adds contrails and NOx effects (multiplier, uncertain)"}]}},"defaults":{"grain":"destinations","alloc":"iso","occ":"observed","nonco2":"full","scope":"planned"},"stops":[{"id":"zrh","short":"Zürich","caption":"start","kind":"home","kind_label":"home","planned":false},{"id":"hen","short":"Hendaye","caption":"1 night","kind":"transit","kind_label":"transit","planned":false},{"id":"mad","short":"Madrid","caption":"1 night","kind":"transit","kind_label":"transit","planned":false},{"id":"tf1","short":"Tenerife","caption":"12 nights","kind":"destination","kind_label":"destination","planned":false},{"id":"lp","short":"La Palma","caption":"5 nights","kind":"destination","kind_label":"destination","planned":false},{"id":"tf2","short":"Tenerife","caption":"since 17 Oct","kind":"destination","kind_label":"destination","planned":false},{"id":"mq","short":"Martinique","caption":"Dec","kind":"destination","kind_label":"planned","planned":true}],"segments":[{"id":"zrh-hen","from_stop":"zrh","to_stop":"hen","label":"TGV ×2","title":"Zürich → Hendaye","km":1400,"planned":false,"q":{"passenger|typical":[2.87,4.16,5.75],"passenger|observed":[2.87,4.16,5.75],"iso|typical":[2.87,4.16,5.75],"iso|observed":[2.87,4.16,5.75],"mass|typical":[2.87,4.16,5.75],"mass|observed":[2.87,4.16,5.75]}},{"id":"hen-mad","from_stop":"hen","to_stop":"mad","label":"Alvia","title":"Hendaye → Madrid","km":640,"planned":false,"q":{"passenger|typical":[4.06,8.14,13.58],"passenger|observed":[4.06,8.14,13.58],"iso|typical":[4.06,8.14,13.58],"iso|observed":[4.06,8.14,13.58],"mass|typical":[4.06,8.14,13.58],"mass|observed":[4.06,8.14,13.58]}},{"id":"mad-tf1","from_stop":"mad","to_stop":"tf1","label":"AVE · coach · ferry","title":"Madrid → Tenerife","km":1936,"planned":false,"q":{"passenger|typical":[1903.06,2919.72,4658.04],"passenger|observed":[1903.06,2919.72,4658.04],"iso|typical":[209.0,287.92,410.65],"iso|observed":[209.0,287.92,410.65],"mass|typical":[21.78,28.8,39.03],"mass|observed":[21.78,28.8,39.03]}},{"id":"tf1-lp","from_stop":"tf1","to_stop":"lp","label":"fast ferry","title":"Tenerife → La Palma","km":126,"planned":false,"q":{"passenger|typical":[130.09,148.48,170.01],"passenger|observed":[130.09,148.48,170.01],"iso|typical":[75.18,90.13,108.68],"iso|observed":[75.18,90.13,108.68],"mass|typical":[12.09,16.99,25.19],"mass|observed":[12.09,16.99,25.19]}},{"id":"lp-tf2","from_stop":"lp","to_stop":"tf2","label":"fast ferry","title":"La Palma → Tenerife","km":126,"planned":false,"q":{"passenger|typical":[130.09,148.48,170.01],"passenger|observed":[213.16,254.38,306.74],"iso|typical":[75.18,90.13,108.68],"iso|observed":[96.3,120.61,153.59],"mass|typical":[12.09,16.99,25.19],"mass|observed":[12.55,17.85,27.18]}},{"id":"tf2-mq","from_stop":"tf2","to_stop":"mq","label":"sailing","title":"Tenerife → Martinique","km":5300,"planned":true,"q":{"passenger|typical":[55.23,117.29,208.81],"passenger|observed":[55.23,117.29,208.81],"iso|typical":[55.23,117.29,208.81],"iso|observed":[55.23,117.29,208.81],"mass|typical":[55.23,117.29,208.81],"mass|observed":[55.23,117.29,208.81]}}],"legs":[{"id":"L1","date":"2026-09-26","title":"Zürich → Paris","short":"Zürich → Paris","mode":"train","mode_label":"TGV Lyria","service":"SBB/SNCF TGV Lyria","km":610,"km_note":"rail distance, est.","grade":"C","grade_note":"Operator or country-specific factor","planned":false,"q":{"passenger|typical":[0.99,1.84,3.09],"passenger|observed":[0.99,1.84,3.09],"iso|typical":[0.99,1.84,3.09],"iso|observed":[0.99,1.84,3.09],"mass|typical":[0.99,1.84,3.09],"mass|observed":[0.99,1.84,3.09]},"trace":{"passenger|typical":"610 km × 2.5 g CO₂e/pkm = 1.5 kg\n(range of the factor: 1.0–6.0 g/pkm)","passenger|observed":"610 km × 2.5 g CO₂e/pkm = 1.5 kg\n(range of the factor: 1.0–6.0 g/pkm)","iso|typical":"610 km × 2.5 g CO₂e/pkm = 1.5 kg\n(range of the factor: 1.0–6.0 g/pkm)","iso|observed":"610 km × 2.5 g CO₂e/pkm = 1.5 kg\n(range of the factor: 1.0–6.0 g/pkm)","mass|typical":"610 km × 2.5 g CO₂e/pkm = 1.5 kg\n(range of the factor: 1.0–6.0 g/pkm)","mass|observed":"610 km × 2.5 g CO₂e/pkm = 1.5 kg\n(range of the factor: 1.0–6.0 g/pkm)"},"sources":["SBB and SNCF published factors","location-based grid mix as upper bound"]},{"id":"L2","date":"2026-09-26","title":"Paris → Hendaye","short":"Paris → Hendaye","mode":"train","mode_label":"TGV","service":"SNCF TGV inOui","km":790,"km_note":"rail distance, est.","grade":"C","grade_note":"Operator or country-specific factor","planned":false,"q":{"passenger|typical":[1.42,2.22,3.42],"passenger|observed":[1.42,2.22,3.42],"iso|typical":[1.42,2.22,3.42],"iso|observed":[1.42,2.22,3.42],"mass|typical":[1.42,2.22,3.42],"mass|observed":[1.42,2.22,3.42]},"trace":{"passenger|typical":"790 km × 2.3 g CO₂e/pkm = 1.8 kg\n(range of the factor: 1.4–5.0 g/pkm)","passenger|observed":"790 km × 2.3 g CO₂e/pkm = 1.8 kg\n(range of the factor: 1.4–5.0 g/pkm)","iso|typical":"790 km × 2.3 g CO₂e/pkm = 1.8 kg\n(range of the factor: 1.4–5.0 g/pkm)","iso|observed":"790 km × 2.3 g CO₂e/pkm = 1.8 kg\n(range of the factor: 1.4–5.0 g/pkm)","mass|typical":"790 km × 2.3 g CO₂e/pkm = 1.8 kg\n(range of the factor: 1.4–5.0 g/pkm)","mass|observed":"790 km × 2.3 g CO₂e/pkm = 1.8 kg\n(range of the factor: 1.4–5.0 g/pkm)"},"sources":["ADEME Base Carbone (TGV)","SNCF published factors"]},{"id":"L3","date":"2026-09-27","title":"Irun → Madrid","short":"Irun → Madrid","mode":"train","mode_label":"Alvia","service":"Renfe Alvia","km":640,"km_note":"rail distance, est.","grade":"C","grade_note":"Operator or country-specific factor","planned":false,"q":{"passenger|typical":[4.06,8.14,13.58],"passenger|observed":[4.06,8.14,13.58],"iso|typical":[4.06,8.14,13.58],"iso|observed":[4.06,8.14,13.58],"mass|typical":[4.06,8.14,13.58],"mass|observed":[4.06,8.14,13.58]},"trace":{"passenger|typical":"640 km × 11.0 g CO₂e/pkm = 7.0 kg\n(range of the factor: 3.6–25.0 g/pkm)","passenger|observed":"640 km × 11.0 g CO₂e/pkm = 7.0 kg\n(range of the factor: 3.6–25.0 g/pkm)","iso|typical":"640 km × 11.0 g CO₂e/pkm = 7.0 kg\n(range of the factor: 3.6–25.0 g/pkm)","iso|observed":"640 km × 11.0 g CO₂e/pkm = 7.0 kg\n(range of the factor: 3.6–25.0 g/pkm)","mass|typical":"640 km × 11.0 g CO₂e/pkm = 7.0 kg\n(range of the factor: 3.6–25.0 g/pkm)","mass|observed":"640 km × 11.0 g CO₂e/pkm = 7.0 kg\n(range of the factor: 3.6–25.0 g/pkm)"},"sources":["Renfe published factors","Spanish grid mix 2025"]},{"id":"L4","date":"2026-09-28","title":"Madrid → Sevilla","short":"Madrid → Sevilla","mode":"train","mode_label":"AVE","service":"Renfe AVE","km":471,"km_note":"timetable km","grade":"C","grade_note":"Operator or country-specific factor","planned":false,"q":{"passenger|typical":[2.55,4.43,7.21],"passenger|observed":[2.55,4.43,7.21],"iso|typical":[2.55,4.43,7.21],"iso|observed":[2.55,4.43,7.21],"mass|typical":[2.55,4.43,7.21],"mass|observed":[2.55,4.43,7.21]},"trace":{"passenger|typical":"471 km × 8.0 g CO₂e/pkm = 3.8 kg\n(range of the factor: 3.6–18.0 g/pkm)","passenger|observed":"471 km × 8.0 g CO₂e/pkm = 3.8 kg\n(range of the factor: 3.6–18.0 g/pkm)","iso|typical":"471 km × 8.0 g CO₂e/pkm = 3.8 kg\n(range of the factor: 3.6–18.0 g/pkm)","iso|observed":"471 km × 8.0 g CO₂e/pkm = 3.8 kg\n(range of the factor: 3.6–18.0 g/pkm)","mass|typical":"471 km × 8.0 g CO₂e/pkm = 3.8 kg\n(range of the factor: 3.6–18.0 g/pkm)","mass|observed":"471 km × 8.0 g CO₂e/pkm = 3.8 kg\n(range of the factor: 3.6–18.0 g/pkm)"},"sources":["Renfe published factors","Spanish grid mix 2025"]},{"id":"L5","date":"2026-09-28","title":"Sevilla → Huelva","short":"Sevilla → Huelva","mode":"coach","mode_label":"coach","service":"intercity coach","km":95,"km_note":"road distance","grade":"D","grade_note":"Generic factor or estimated distance","planned":false,"q":{"passenger|typical":[2.64,3.29,4.13],"passenger|observed":[2.64,3.29,4.13],"iso|typical":[2.64,3.29,4.13],"iso|observed":[2.64,3.29,4.13],"mass|typical":[2.64,3.29,4.13],"mass|observed":[2.64,3.29,4.13]},"trace":{"passenger|typical":"95 km × 32.0 g CO₂e/pkm = 3.0 kg\n(range of the factor: 25.0–48.0 g/pkm)","passenger|observed":"95 km × 32.0 g CO₂e/pkm = 3.0 kg\n(range of the factor: 25.0–48.0 g/pkm)","iso|typical":"95 km × 32.0 g CO₂e/pkm = 3.0 kg\n(range of the factor: 25.0–48.0 g/pkm)","iso|observed":"95 km × 32.0 g CO₂e/pkm = 3.0 kg\n(range of the factor: 25.0–48.0 g/pkm)","mass|typical":"95 km × 32.0 g CO₂e/pkm = 3.0 kg\n(range of the factor: 25.0–48.0 g/pkm)","mass|observed":"95 km × 32.0 g CO₂e/pkm = 3.0 kg\n(range of the factor: 25.0–48.0 g/pkm)"},"sources":["DESNZ 2025 coach factor","ADEME autocar"]},{"id":"L6","date":"2026-09-28","title":"Huelva → Santa Cruz de Tenerife","short":"Huelva → Tenerife","mode":"ferry","mode_label":"ro-pax ferry","service":"conventional ro-pax (illustrative)","km":1370,"km_note":"739 nm via Las Palmas","grade":"D","grade_note":"Generic factor or estimated distance","planned":false,"q":{"passenger|typical":[1896.38,2913.03,4650.84],"passenger|observed":[1896.38,2913.03,4650.84],"iso|typical":[201.5,280.02,402.68],"iso|observed":[201.5,280.02,402.68],"mass|typical":[14.44,20.74,30.95],"mass|observed":[14.44,20.74,30.95]},"trace":{"passenger|typical":"Ship: 170 kg fuel per nm × 739 nm = 126 t\n× 3.68 t CO₂e/t (well-to-wake) = 462 t CO₂e for the voyage\nPer passenger: all of it ÷ 160 passengers, typical (not observed) = 2,889 kg (cargo ignored: upper bound)","passenger|observed":"Ship: 170 kg fuel per nm × 739 nm = 126 t\n× 3.68 t CO₂e/t (well-to-wake) = 462 t CO₂e for the voyage\nPer passenger: all of it ÷ 160 passengers, typical (not observed) = 2,889 kg (cargo ignored: upper bound)","iso|typical":"Ship: 170 kg fuel per nm × 739 nm = 126 t\n× 3.68 t CO₂e/t (well-to-wake) = 462 t CO₂e for the voyage\nISO 14083: 160 passengers + 1,565 passenger-equivalents for 100 trailers + 50 cars\n→ 462.3 t ÷ 1,725 = 268 kg per passenger (160 passengers, typical (not observed))","iso|observed":"Ship: 170 kg fuel per nm × 739 nm = 126 t\n× 3.68 t CO₂e/t (well-to-wake) = 462 t CO₂e for the voyage\nISO 14083: 160 passengers + 1,565 passenger-equivalents for 100 trailers + 50 cars\n→ 462.3 t ÷ 1,725 = 268 kg per passenger (160 passengers, typical (not observed))","mass|typical":"Ship: 170 kg fuel per nm × 739 nm = 126 t\n× 3.68 t CO₂e/t (well-to-wake) = 462 t CO₂e for the voyage\nBy mass: 100 kg per passenger vs 2,282 t of vehicles and cargo\n→ 20.1 kg per passenger (160 passengers, typical (not observed))","mass|observed":"Ship: 170 kg fuel per nm × 739 nm = 126 t\n× 3.68 t CO₂e/t (well-to-wake) = 462 t CO₂e for the voyage\nBy mass: 100 kg per passenger vs 2,282 t of vehicles and cargo\n→ 20.1 kg per passenger (160 passengers, typical (not observed))"},"sources":["EU MRV 2024-25 fuel per nm (Huelva-Canarias ro-pax)","ISO 14083 Annex G","DESNZ 2026 masses"]},{"id":"L7","date":"2026-10-12","title":"Los Cristianos → Santa Cruz de La Palma","short":"Tenerife → La Palma","mode":"ferry_fast","mode_label":"fast ferry","service":"Fred. Olsen line (vessel not logged)","km":126,"km_note":"68 nm","grade":"C","grade_note":"Operator or country-specific factor","planned":false,"q":{"passenger|typical":[130.09,148.48,170.01],"passenger|observed":[130.09,148.48,170.01],"iso|typical":[75.18,90.13,108.68],"iso|observed":[75.18,90.13,108.68],"mass|typical":[12.09,16.99,25.19],"mass|observed":[12.09,16.99,25.19]},"trace":{"passenger|typical":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nPer passenger: all of it ÷ 260 passengers, line average = 147 kg (cargo ignored: upper bound)","passenger|observed":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nPer passenger: all of it ÷ 260 passengers, line average = 147 kg (cargo ignored: upper bound)","iso|typical":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nISO 14083: 260 passengers + 164 passenger-equivalents for 75 vehicles\n→ 38.3 t ÷ 424 = 90 kg per passenger (260 passengers, line average)","iso|observed":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nISO 14083: 260 passengers + 164 passenger-equivalents for 75 vehicles\n→ 38.3 t ÷ 424 = 90 kg per passenger (260 passengers, line average)","mass|typical":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nBy mass: 100 kg per passenger vs 182 t of vehicles and cargo\n→ 18.4 kg per passenger (260 passengers, line average)","mass|observed":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nBy mass: 100 kg per passenger vs 182 t of vehicles and cargo\n→ 18.4 kg per passenger (260 passengers, line average)"},"sources":["EU MRV 2025 (Bencomo Express)","line average load","ISO 14083 Annex G"]},{"id":"L8","date":"2026-10-17","title":"Santa Cruz de La Palma → Los Cristianos","short":"La Palma → Tenerife","mode":"ferry_fast","mode_label":"fast ferry","service":"Fred. Olsen · Bencomo Express","km":126,"km_note":"68 nm","grade":"B","grade_note":"Vessel- or service-specific model","planned":false,"q":{"passenger|typical":[130.09,148.48,170.01],"passenger|observed":[213.16,254.38,306.74],"iso|typical":[75.18,90.13,108.68],"iso|observed":[96.3,120.61,153.59],"mass|typical":[12.09,16.99,25.19],"mass|observed":[12.55,17.85,27.18]},"trace":{"passenger|typical":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nPer passenger: all of it ÷ 260 passengers, line average = 147 kg (cargo ignored: upper bound)","passenger|observed":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nPer passenger: all of it ÷ 150 passengers, as observed = 255 kg (cargo ignored: upper bound)","iso|typical":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nISO 14083: 260 passengers + 164 passenger-equivalents for 75 vehicles\n→ 38.3 t ÷ 424 = 90 kg per passenger (260 passengers, line average)","iso|observed":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nISO 14083: 150 passengers + 164 passenger-equivalents for 75 vehicles\n→ 38.3 t ÷ 314 = 122 kg per passenger (150 passengers, as observed)","mass|typical":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nBy mass: 100 kg per passenger vs 182 t of vehicles and cargo\n→ 18.4 kg per passenger (260 passengers, line average)","mass|observed":"Ship: 145 kg MGO per nm (EU MRV 2025) × 68 nm = 9.9 t fuel\n× 3.88 t CO₂e/t (well-to-wake) = 38.3 t CO₂e for the sailing\nBy mass: 100 kg per passenger vs 182 t of vehicles and cargo\n→ 19.4 kg per passenger (150 passengers, as observed)"},"sources":["EU MRV 2025 (Bencomo Express)","Fred. Olsen fleet data","ISO 14083 Annex G","FuelEU MGO factors"]},{"id":"L9","date":"2026-11-22","title":"Tenerife → Martinique","short":"Tenerife → Martinique","mode":"sail","mode_label":"sailing yacht","service":"crew on a 45 ft yacht","km":5300,"km_note":"trade-wind route, est.","grade":"C","grade_note":"Operator or country-specific factor","planned":true,"q":{"passenger|typical":[55.23,117.29,208.81],"passenger|observed":[55.23,117.29,208.81],"iso|typical":[55.23,117.29,208.81],"iso|observed":[55.23,117.29,208.81],"mass|typical":[55.23,117.29,208.81],"mass|observed":[55.23,117.29,208.81]},"trace":{"passenger|typical":"150 L diesel for motoring and charging × 3.29 kg CO₂e/L ÷ 6 crew = 82 kg\n(fuel range 50–400 L; log the real figure on arrival)","passenger|observed":"150 L diesel for motoring and charging × 3.29 kg CO₂e/L ÷ 6 crew = 82 kg\n(fuel range 50–400 L; log the real figure on arrival)","iso|typical":"150 L diesel for motoring and charging × 3.29 kg CO₂e/L ÷ 6 crew = 82 kg\n(fuel range 50–400 L; log the real figure on arrival)","iso|observed":"150 L diesel for motoring and charging × 3.29 kg CO₂e/L ÷ 6 crew = 82 kg\n(fuel range 50–400 L; log the real figure on arrival)","mass|typical":"150 L diesel for motoring and charging × 3.29 kg CO₂e/L ÷ 6 crew = 82 kg\n(fuel range 50–400 L; log the real figure on arrival)","mass|observed":"150 L diesel for motoring and charging × 3.29 kg CO₂e/L ÷ 6 crew = 82 kg\n(fuel range 50–400 L; log the real figure on arrival)"},"sources":["Diesel factor: DESNZ 2025 (combustion + upstream)"]}],"journeys":{"regions":[{"from_stop":"zrh","to_stop":"tf1","title":"Zürich → Tenerife","planned":false,"actual_label":"4 trains, coach, ferry","flight_label":"ZRH–TFS","flight_note":"Edelweiss, daily A320","flight_km":3308,"actual":{"passenger|typical":[1916.52,2932.51,4668.89],"passenger|observed":[1916.52,2932.51,4668.89],"iso|typical":[222.46,300.54,423.62],"iso|observed":[222.46,300.54,423.62],"mass|typical":[33.03,41.47,52.9],"mass|observed":[33.03,41.47,52.9]},"flying":{"co2":[213.14,233.84,256.1],"full":[312.64,415.23,569.9]},"diff":{"passenger|typical|co2":[-4436.59,-2703.62,-1687.46],"passenger|typical|full":[-4275.14,-2518.12,-1474.58],"passenger|observed|co2":[-4436.59,-2703.62,-1687.46],"passenger|observed|full":[-4275.14,-2518.12,-1474.58],"iso|typical|co2":[-192.48,-67.4,15.62],"iso|typical|full":[-44.22,113.83,285.06],"iso|observed|co2":[-192.48,-67.4,15.62],"iso|observed|full":[-44.22,113.83,285.06],"mass|typical|co2":[168.11,191.9,216.09],"mass|typical|full":[268.89,372.79,527.86],"mass|observed|co2":[168.11,191.9,216.09],"mass|observed|full":[268.89,372.79,527.86]}},{"from_stop":"tf2","to_stop":"mq","title":"Tenerife → Martinique","planned":true,"actual_label":"sailing","flight_label":"TFS–ORY–FDF","flight_note":"no nonstop from the Canaries; via Orly","flight_km":10439,"actual":{"passenger|typical":[55.23,117.29,208.81],"passenger|observed":[55.23,117.29,208.81],"iso|typical":[55.23,117.29,208.81],"iso|observed":[55.23,117.29,208.81],"mass|typical":[55.23,117.29,208.81],"mass|observed":[55.23,117.29,208.81]},"flying":{"co2":[697.89,788.37,884.73],"full":[1037.29,1402.16,1954.31]},"diff":{"passenger|typical|co2":[542.06,668.7,789.37],"passenger|typical|full":[914.35,1281.4,1842.73],"passenger|observed|co2":[542.06,668.7,789.37],"passenger|observed|full":[914.35,1281.4,1842.73],"iso|typical|co2":[542.06,668.7,789.37],"iso|typical|full":[914.35,1281.4,1842.73],"iso|observed|co2":[542.06,668.7,789.37],"iso|observed|full":[914.35,1281.4,1842.73],"mass|typical|co2":[542.06,668.7,789.37],"mass|typical|full":[914.35,1281.4,1842.73],"mass|observed|co2":[542.06,668.7,789.37],"mass|observed|full":[914.35,1281.4,1842.73]}}],"destinations":[{"from_stop":"zrh","to_stop":"tf1","title":"Zürich → Tenerife","planned":false,"actual_label":"4 trains, coach, ferry","flight_label":"ZRH–TFS","flight_note":"Edelweiss, daily A320","flight_km":3308,"actual":{"passenger|typical":[1916.52,2932.51,4668.89],"passenger|observed":[1916.52,2932.51,4668.89],"iso|typical":[222.46,300.54,423.62],"iso|observed":[222.46,300.54,423.62],"mass|typical":[33.03,41.47,52.9],"mass|observed":[33.03,41.47,52.9]},"flying":{"co2":[213.14,233.84,256.1],"full":[312.64,415.23,569.9]},"diff":{"passenger|typical|co2":[-4436.59,-2703.62,-1687.46],"passenger|typical|full":[-4275.14,-2518.12,-1474.58],"passenger|observed|co2":[-4436.59,-2703.62,-1687.46],"passenger|observed|full":[-4275.14,-2518.12,-1474.58],"iso|typical|co2":[-192.48,-67.4,15.62],"iso|typical|full":[-44.22,113.83,285.06],"iso|observed|co2":[-192.48,-67.4,15.62],"iso|observed|full":[-44.22,113.83,285.06],"mass|typical|co2":[168.11,191.9,216.09],"mass|typical|full":[268.89,372.79,527.86],"mass|observed|co2":[168.11,191.9,216.09],"mass|observed|full":[268.89,372.79,527.86]}},{"from_stop":"tf1","to_stop":"lp","title":"Tenerife → La Palma","planned":false,"actual_label":"fast ferry","flight_label":"TFN–SPC","flight_note":"Binter ATR 72-600, ~30 min","flight_km":150,"actual":{"passenger|typical":[130.09,148.48,170.01],"passenger|observed":[130.09,148.48,170.01],"iso|typical":[75.18,90.13,108.68],"iso|observed":[75.18,90.13,108.68],"mass|typical":[12.09,16.99,25.19],"mass|observed":[12.09,16.99,25.19]},"flying":{"co2":[25.51,29.78,34.94],"full":[28.27,33.89,41.24]},"diff":{"passenger|typical|co2":[-140.28,-118.53,-99.59],"passenger|typical|full":[-135.99,-114.34,-95.19],"passenger|observed|co2":[-140.28,-118.53,-99.59],"passenger|observed|full":[-135.99,-114.34,-95.19],"iso|typical|co2":[-79.08,-60.2,-44.25],"iso|typical|full":[-75.08,-56.04,-39.09],"iso|observed|co2":[-79.08,-60.2,-44.25],"iso|observed|full":[-75.08,-56.04,-39.09],"mass|typical|co2":[3.55,12.72,20.06],"mass|typical|full":[7.14,16.7,26.04],"mass|observed|co2":[3.55,12.72,20.06],"mass|observed|full":[7.14,16.7,26.04]}},{"from_stop":"lp","to_stop":"tf2","title":"La Palma → Tenerife","planned":false,"actual_label":"fast ferry","flight_label":"SPC–TFN","flight_note":"Binter ATR 72-600, ~30 min","flight_km":150,"actual":{"passenger|typical":[130.09,148.48,170.01],"passenger|observed":[213.16,254.38,306.74],"iso|typical":[75.18,90.13,108.68],"iso|observed":[96.3,120.61,153.59],"mass|typical":[12.09,16.99,25.19],"mass|observed":[12.55,17.85,27.18]},"flying":{"co2":[25.51,29.78,34.94],"full":[28.27,33.89,41.24]},"diff":{"passenger|typical|co2":[-140.28,-118.53,-99.59],"passenger|typical|full":[-135.99,-114.34,-95.19],"passenger|observed|co2":[-276.6,-224.42,-182.79],"passenger|observed|full":[-273.12,-220.41,-178.37],"iso|typical|co2":[-79.08,-60.2,-44.25],"iso|typical|full":[-75.08,-56.04,-39.09],"iso|observed|co2":[-123.47,-90.34,-65.92],"iso|observed|full":[-120.05,-86.55,-61.1],"mass|typical|co2":[3.55,12.72,20.06],"mass|typical|full":[7.14,16.7,26.04],"mass|observed|co2":[1.64,11.88,19.53],"mass|observed|full":[5.44,15.82,25.4]}},{"from_stop":"tf2","to_stop":"mq","title":"Tenerife → Martinique","planned":true,"actual_label":"sailing","flight_label":"TFS–ORY–FDF","flight_note":"no nonstop from the Canaries; via Orly","flight_km":10439,"actual":{"passenger|typical":[55.23,117.29,208.81],"passenger|observed":[55.23,117.29,208.81],"iso|typical":[55.23,117.29,208.81],"iso|observed":[55.23,117.29,208.81],"mass|typical":[55.23,117.29,208.81],"mass|observed":[55.23,117.29,208.81]},"flying":{"co2":[697.89,788.37,884.73],"full":[1037.29,1402.16,1954.31]},"diff":{"passenger|typical|co2":[542.06,668.7,789.37],"passenger|typical|full":[914.35,1281.4,1842.73],"passenger|observed|co2":[542.06,668.7,789.37],"passenger|observed|full":[914.35,1281.4,1842.73],"iso|typical|co2":[542.06,668.7,789.37],"iso|typical|full":[914.35,1281.4,1842.73],"iso|observed|co2":[542.06,668.7,789.37],"iso|observed|full":[914.35,1281.4,1842.73],"mass|typical|co2":[542.06,668.7,789.37],"mass|typical|full":[914.35,1281.4,1842.73],"mass|observed|co2":[542.06,668.7,789.37],"mass|observed|full":[914.35,1281.4,1842.73]}}],"stops":[{"from_stop":"zrh","to_stop":"hen","title":"Zürich → Hendaye","planned":false,"actual_label":"2 trains","flight_label":"ZRH–BIQ","flight_note":"Edelweiss, seasonal direct","flight_km":973,"actual":{"passenger|typical":[2.87,4.16,5.75],"passenger|observed":[2.87,4.16,5.75],"iso|typical":[2.87,4.16,5.75],"iso|observed":[2.87,4.16,5.75],"mass|typical":[2.87,4.16,5.75],"mass|observed":[2.87,4.16,5.75]},"flying":{"co2":[74.54,81.51,89.37],"full":[108.84,144.66,198.75]},"diff":{"passenger|typical|co2":[70.21,77.27,85.23],"passenger|typical|full":[104.37,140.45,194.64],"passenger|observed|co2":[70.21,77.27,85.23],"passenger|observed|full":[104.37,140.45,194.64],"iso|typical|co2":[70.21,77.27,85.23],"iso|typical|full":[104.37,140.45,194.64],"iso|observed|co2":[70.21,77.27,85.23],"iso|observed|full":[104.37,140.45,194.64],"mass|typical|co2":[70.21,77.27,85.23],"mass|typical|full":[104.37,140.45,194.64],"mass|observed|co2":[70.21,77.27,85.23],"mass|observed|full":[104.37,140.45,194.64]}},{"from_stop":"hen","to_stop":"mad","title":"Hendaye → Madrid","planned":false,"actual_label":"train","flight_label":"BIQ–MAD","flight_note":"assumed direct","flight_km":403,"actual":{"passenger|typical":[4.06,8.14,13.58],"passenger|observed":[4.06,8.14,13.58],"iso|typical":[4.06,8.14,13.58],"iso|observed":[4.06,8.14,13.58],"mass|typical":[4.06,8.14,13.58],"mass|observed":[4.06,8.14,13.58]},"flying":{"co2":[40.02,44.38,49.08],"full":[47.47,59.97,76.23]},"diff":{"passenger|typical|co2":[29.47,35.93,42.52],"passenger|typical|full":[38.17,51.54,68.57],"passenger|observed|co2":[29.47,35.93,42.52],"passenger|observed|full":[38.17,51.54,68.57],"iso|typical|co2":[29.47,35.93,42.52],"iso|typical|full":[38.17,51.54,68.57],"iso|observed|co2":[29.47,35.93,42.52],"iso|observed|full":[38.17,51.54,68.57],"mass|typical|co2":[29.47,35.93,42.52],"mass|typical|full":[38.17,51.54,68.57],"mass|observed|co2":[29.47,35.93,42.52],"mass|observed|full":[38.17,51.54,68.57]}},{"from_stop":"mad","to_stop":"tf1","title":"Madrid → Tenerife","planned":false,"actual_label":"train, coach, ferry","flight_label":"MAD–TFN","flight_note":"direct","flight_km":1913,"actual":{"passenger|typical":[1903.06,2919.72,4658.04],"passenger|observed":[1903.06,2919.72,4658.04],"iso|typical":[209.0,287.92,410.65],"iso|observed":[209.0,287.92,410.65],"mass|typical":[21.78,28.8,39.03],"mass|observed":[21.78,28.8,39.03]},"flying":{"co2":[130.44,142.82,156.35],"full":[190.84,253.51,348.11]},"diff":{"passenger|typical|co2":[-4516.6,-2778.86,-1762.85],"passenger|typical|full":[-4415.17,-2668.51,-1635.66],"passenger|observed|co2":[-4516.6,-2778.86,-1762.85],"passenger|observed|full":[-4415.17,-2668.51,-1635.66],"iso|typical|co2":[-269.33,-145.17,-65.07],"iso|typical|full":[-170.09,-31.63,85.77],"iso|observed|co2":[-269.33,-145.17,-65.07],"iso|observed|full":[-170.09,-31.63,85.77],"mass|typical|co2":[97.47,113.72,129.12],"mass|typical|full":[160.29,224.18,319.11],"mass|observed|co2":[97.47,113.72,129.12],"mass|observed|full":[160.29,224.18,319.11]}},{"from_stop":"tf1","to_stop":"lp","title":"Tenerife → La Palma","planned":false,"actual_label":"fast ferry","flight_label":"TFN–SPC","flight_note":"Binter ATR 72-600, ~30 min","flight_km":150,"actual":{"passenger|typical":[130.09,148.48,170.01],"passenger|observed":[130.09,148.48,170.01],"iso|typical":[75.18,90.13,108.68],"iso|observed":[75.18,90.13,108.68],"mass|typical":[12.09,16.99,25.19],"mass|observed":[12.09,16.99,25.19]},"flying":{"co2":[25.51,29.78,34.94],"full":[28.27,33.89,41.24]},"diff":{"passenger|typical|co2":[-140.28,-118.53,-99.59],"passenger|typical|full":[-135.99,-114.34,-95.19],"passenger|observed|co2":[-140.28,-118.53,-99.59],"passenger|observed|full":[-135.99,-114.34,-95.19],"iso|typical|co2":[-79.08,-60.2,-44.25],"iso|typical|full":[-75.08,-56.04,-39.09],"iso|observed|co2":[-79.08,-60.2,-44.25],"iso|observed|full":[-75.08,-56.04,-39.09],"mass|typical|co2":[3.55,12.72,20.06],"mass|typical|full":[7.14,16.7,26.04],"mass|observed|co2":[3.55,12.72,20.06],"mass|observed|full":[7.14,16.7,26.04]}},{"from_stop":"lp","to_stop":"tf2","title":"La Palma → Tenerife","planned":false,"actual_label":"fast ferry","flight_label":"SPC–TFN","flight_note":"Binter ATR 72-600, ~30 min","flight_km":150,"actual":{"passenger|typical":[130.09,148.48,170.01],"passenger|observed":[213.16,254.38,306.74],"iso|typical":[75.18,90.13,108.68],"iso|observed":[96.3,120.61,153.59],"mass|typical":[12.09,16.99,25.19],"mass|observed":[12.55,17.85,27.18]},"flying":{"co2":[25.51,29.78,34.94],"full":[28.27,33.89,41.24]},"diff":{"passenger|typical|co2":[-140.28,-118.53,-99.59],"passenger|typical|full":[-135.99,-114.34,-95.19],"passenger|observed|co2":[-276.6,-224.42,-182.79],"passenger|observed|full":[-273.12,-220.41,-178.37],"iso|typical|co2":[-79.08,-60.2,-44.25],"iso|typical|full":[-75.08,-56.04,-39.09],"iso|observed|co2":[-123.47,-90.34,-65.92],"iso|observed|full":[-120.05,-86.55,-61.1],"mass|typical|co2":[3.55,12.72,20.06],"mass|typical|full":[7.14,16.7,26.04],"mass|observed|co2":[1.64,11.88,19.53],"mass|observed|full":[5.44,15.82,25.4]}},{"from_stop":"tf2","to_stop":"mq","title":"Tenerife → Martinique","planned":true,"actual_label":"sailing","flight_label":"TFS–ORY–FDF","flight_note":"no nonstop from the Canaries; via Orly","flight_km":10439,"actual":{"passenger|typical":[55.23,117.29,208.81],"passenger|observed":[55.23,117.29,208.81],"iso|typical":[55.23,117.29,208.81],"iso|observed":[55.23,117.29,208.81],"mass|typical":[55.23,117.29,208.81],"mass|observed":[55.23,117.29,208.81]},"flying":{"co2":[697.89,788.37,884.73],"full":[1037.29,1402.16,1954.31]},"diff":{"passenger|typical|co2":[542.06,668.7,789.37],"passenger|typical|full":[914.35,1281.4,1842.73],"passenger|observed|co2":[542.06,668.7,789.37],"passenger|observed|full":[914.35,1281.4,1842.73],"iso|typical|co2":[542.06,668.7,789.37],"iso|typical|full":[914.35,1281.4,1842.73],"iso|observed|co2":[542.06,668.7,789.37],"iso|observed|full":[914.35,1281.4,1842.73],"mass|typical|co2":[542.06,668.7,789.37],"mass|typical|full":[914.35,1281.4,1842.73],"mass|observed|co2":[542.06,668.7,789.37],"mass|observed|full":[914.35,1281.4,1842.73]}}]},"totals":{"regions|passenger|typical|co2|todate":{"actual":[2215.32,3234.15,4971.38],"flying":[487.82,531.53,578.26],"avoided":[-4436.59,-2703.62,-1687.46]},"regions|passenger|typical|co2|planned":{"actual":[2328.28,3355.39,5105.39],"flying":[1215.27,1320.33,1431.02],"avoided":[-3767.61,-2033.01,-999.46]},"regions|passenger|typical|full|todate":{"actual":[2215.32,3234.15,4971.38],"flying":[603.66,713.14,872.32],"avoided":[-4275.14,-2518.12,-1474.58]},"regions|passenger|typical|full|planned":{"actual":[2328.28,3355.39,5105.39],"flying":[1657.1,2112.13,2809.95],"avoided":[-3056.22,-1215.73,2.04]},"regions|passenger|observed|co2|todate":{"actual":[2321.0,3339.43,5078.52],"flying":[581.56,636.99,703.8],"avoided":[-4436.59,-2703.62,-1687.46]},"regions|passenger|observed|co2|planned":{"actual":[2439.79,3461.64,5203.86],"flying":[1316.17,1427.3,1551.25],"avoided":[-3767.61,-2033.01,-999.46]},"regions|passenger|observed|full|todate":{"actual":[2321.0,3339.43,5078.52],"flying":[703.8,821.2,984.98],"avoided":[-4275.14,-2518.12,-1474.58]},"regions|passenger|observed|full|planned":{"actual":[2439.79,3461.64,5203.86],"flying":[1762.64,2223.32,2919.33],"avoided":[-3056.22,-1215.73,2.04]},"regions|iso|typical|co2|todate":{"actual":[398.69,483.19,606.01],"flying":[377.11,414.76,456.73],"avoided":[-192.48,-67.4,15.62]},"regions|iso|typical|co2|planned":{"actual":[491.87,607.16,750.99],"flying":[1100.15,1204.15,1313.3],"avoided":[423.88,595.48,749.65]},"regions|iso|typical|full|todate":{"actual":[398.69,483.19,606.01],"flying":[486.38,597.44,756.53],"avoided":[-44.22,113.83,285.06]},"regions|iso|typical|full|planned":{"actual":[491.87,607.16,750.99],"flying":[1536.77,1996.52,2699.48],"avoided":[914.44,1385.35,2087.11]},"regions|iso|observed|co2|todate":{"actual":[424.54,515.1,640.57],"flying":[400.11,445.05,500.01],"avoided":[-192.48,-67.4,15.62]},"regions|iso|observed|co2|planned":{"actual":[519.28,638.66,783.29],"flying":[1128.02,1234.94,1350.71],"avoided":[423.88,595.48,749.65]},"regions|iso|observed|full|todate":{"actual":[424.54,515.1,640.57],"flying":[514.85,629.97,789.28],"avoided":[-44.22,113.83,285.06]},"regions|iso|observed|full|planned":{"actual":[519.28,638.66,783.29],"flying":[1568.49,2028.12,2725.98],"avoided":[914.44,1385.35,2087.11]},"regions|mass|typical|co2|todate":{"actual":[62.22,76.29,95.63],"flying":[244.93,268.62,295.57],"avoided":[168.11,191.9,216.09]},"regions|mass|typical|co2|planned":{"actual":[130.18,193.45,286.99],"flying":[957.57,1057.62,1162.1],"avoided":[727.14,861.46,985.81]},"regions|mass|typical|full|todate":{"actual":[62.22,76.29,95.63],"flying":[345.26,450.94,606.29],"avoided":[268.89,372.79,527.86]},"regions|mass|typical|full|planned":{"actual":[130.18,193.45,286.99],"flying":[1390.91,1849.8,2551.79],"avoided":[1193.44,1652.38,2354.58]},"regions|mass|observed|co2|todate":{"actual":[62.74,77.08,97.42],"flying":[245.48,269.46,297.26],"avoided":[168.11,191.9,216.09]},"regions|mass|observed|co2|planned":{"actual":[130.87,194.52,288.34],"flying":[958.27,1058.61,1163.72],"avoided":[727.14,861.46,985.81]},"regions|mass|observed|full|todate":{"actual":[62.74,77.08,97.42],"flying":[346.27,451.97,607.51],"avoided":[268.89,372.79,527.86]},"regions|mass|observed|full|planned":{"actual":[130.87,194.52,288.34],"flying":[1391.6,1850.79,2552.86],"avoided":[1193.44,1652.38,2354.58]},"destinations|passenger|typical|co2|todate":{"actual":[2215.32,3234.15,4971.38],"flying":[270.74,293.71,317.94],"avoided":[-4675.82,-2941.78,-1918.71]},"destinations|passenger|typical|co2|planned":{"actual":[2328.28,3355.39,5105.39],"flying":[980.11,1082.58,1186.73],"avoided":[-4015.72,-2268.34,-1243.43]},"destinations|passenger|typical|full|todate":{"actual":[2215.32,3234.15,4971.38],"flying":[380.08,483.03,640.83],"avoided":[-4509.48,-2749.89,-1707.12]},"destinations|passenger|typical|full|planned":{"actual":[2328.28,3355.39,5105.39],"flying":[1428.6,1881.12,2582.14],"avoided":[-3280.6,-1448.94,-219.56]},"destinations|passenger|observed|co2|todate":{"actual":[2321.0,3339.43,5078.52],"flying":[270.74,293.71,317.94],"avoided":[-4785.43,-3048.97,-2027.98]},"destinations|passenger|observed|co2|planned":{"actual":[2439.79,3461.64,5203.86],"flying":[980.11,1082.58,1186.73],"avoided":[-4113.12,-2376.78,-1348.1]},"destinations|passenger|observed|full|todate":{"actual":[2321.0,3339.43,5078.52],"flying":[380.08,483.03,640.83],"avoided":[-4616.52,-2859.81,-1823.77]},"destinations|passenger|observed|full|planned":{"actual":[2439.79,3461.64,5203.86],"flying":[1428.6,1881.12,2582.14],"avoided":[-3376.76,-1548.86,-334.05]},"destinations|iso|typical|co2|todate":{"actual":[398.69,483.19,606.01],"flying":[270.74,293.71,317.94],"avoided":[-318.95,-190.49,-98.51]},"destinations|iso|typical|co2|planned":{"actual":[491.87,607.16,750.99],"flying":[980.11,1082.58,1186.73],"avoided":[299.2,472.54,634.94]},"destinations|iso|typical|full|todate":{"actual":[398.69,483.19,606.01],"flying":[380.08,483.03,640.83],"avoided":[-161.3,1.2,171.95]},"destinations|iso|typical|full|planned":{"actual":[491.87,607.16,750.99],"flying":[1428.6,1881.12,2582.14],"avoided":[799.53,1273.89,1969.27]},"destinations|iso|observed|co2|todate":{"actual":[424.54,515.1,640.57],"flying":[270.74,293.71,317.94],"avoided":[-350.75,-221.81,-125.6]},"destinations|iso|observed|co2|planned":{"actual":[519.28,638.66,783.29],"flying":[980.11,1082.58,1186.73],"avoided":[265.64,441.46,606.15]},"destinations|iso|observed|full|todate":{"actual":[424.54,515.1,640.57],"flying":[380.08,483.03,640.83],"avoided":[-196.27,-30.5,145.75]},"destinations|iso|observed|full|planned":{"actual":[519.28,638.66,783.29],"flying":[1428.6,1881.12,2582.14],"avoided":[768.03,1243.39,1937.75]},"destinations|mass|typical|co2|todate":{"actual":[62.22,76.29,95.63],"flying":[270.74,293.71,317.94],"avoided":[187.13,216.8,245.36]},"destinations|mass|typical|co2|planned":{"actual":[130.18,193.45,286.99],"flying":[980.11,1082.58,1186.73],"avoided":[749.85,886.15,1013.43]},"destinations|mass|typical|full|todate":{"actual":[62.22,76.29,95.63],"flying":[380.08,483.03,640.83],"avoided":[300.94,406.82,561.88]},"destinations|mass|typical|full|planned":{"actual":[130.18,193.45,286.99],"flying":[1428.6,1881.12,2582.14],"avoided":[1223.9,1685.7,2384.17]},"destinations|mass|observed|co2|todate":{"actual":[62.74,77.08,97.42],"flying":[270.74,293.71,317.94],"avoided":[185.68,215.87,244.82]},"destinations|mass|observed|co2|planned":{"actual":[130.87,194.52,288.34],"flying":[980.11,1082.58,1186.73],"avoided":[748.79,885.35,1012.87]},"destinations|mass|observed|full|todate":{"actual":[62.74,77.08,97.42],"flying":[380.08,483.03,640.83],"avoided":[300.15,405.97,561.04]},"destinations|mass|observed|full|planned":{"actual":[130.87,194.52,288.34],"flying":[1428.6,1881.12,2582.14],"avoided":[1223.4,1684.49,2383.47]},"stops|passenger|typical|co2|todate":{"actual":[2215.32,3234.15,4971.38],"flying":[303.19,328.68,356.22],"avoided":[-4642.02,-2907.77,-1883.66]},"stops|passenger|typical|co2|planned":{"actual":[2328.28,3355.39,5105.39],"flying":[1014.44,1117.9,1223.95],"avoided":[-3981.06,-2233.24,-1207.82]},"stops|passenger|typical|full|todate":{"actual":[2215.32,3234.15,4971.38],"flying":[426.02,527.36,681.25],"avoided":[-4469.69,-2710.94,-1667.08]},"stops|passenger|typical|full|planned":{"actual":[2328.28,3355.39,5105.39],"flying":[1471.98,1926.75,2617.04],"avoided":[-3230.07,-1402.96,-173.55]},"stops|passenger|observed|co2|todate":{"actual":[2321.0,3339.43,5078.52],"flying":[303.19,328.68,356.22],"avoided":[-4752.1,-3015.3,-1995.64]},"stops|passenger|observed|co2|planned":{"actual":[2439.79,3461.64,5203.86],"flying":[1014.44,1117.9,1223.95],"avoided":[-4077.78,-2343.04,-1313.82]},"stops|passenger|observed|full|todate":{"actual":[2321.0,3339.43,5078.52],"flying":[426.02,527.36,681.25],"avoided":[-4580.02,-2819.09,-1777.88]},"stops|passenger|observed|full|planned":{"actual":[2439.79,3461.64,5203.86],"flying":[1471.98,1926.75,2617.04],"avoided":[-3331.86,-1507.7,-291.43]},"stops|iso|typical|co2|todate":{"actual":[398.69,483.19,606.01],"flying":[303.19,328.68,356.22],"avoided":[-283.57,-155.35,-62.86]},"stops|iso|typical|co2|planned":{"actual":[491.87,607.16,750.99],"flying":[1014.44,1117.9,1223.95],"avoided":[333.8,507.7,670.1]},"stops|iso|typical|full|todate":{"actual":[398.69,483.19,606.01],"flying":[426.02,527.36,681.25],"avoided":[-114.19,44.86,217.53]},"stops|iso|typical|full|planned":{"actual":[491.87,607.16,750.99],"flying":[1471.98,1926.75,2617.04],"avoided":[845.2,1315.85,2006.41]},"stops|iso|observed|co2|todate":{"actual":[424.54,515.1,640.57],"flying":[303.19,328.68,356.22],"avoided":[-316.85,-187.35,-88.76]},"stops|iso|observed|co2|planned":{"actual":[519.28,638.66,783.29],"flying":[1014.44,1117.9,1223.95],"avoided":[299.59,476.25,642.07]},"stops|iso|observed|full|todate":{"actual":[424.54,515.1,640.57],"flying":[426.02,527.36,681.25],"avoided":[-151.53,14.26,186.2]},"stops|iso|observed|full|planned":{"actual":[519.28,638.66,783.29],"flying":[1471.98,1926.75,2617.04],"avoided":[815.07,1284.59,1973.5]},"stops|mass|typical|co2|todate":{"actual":[62.22,76.29,95.63],"flying":[303.19,328.68,356.22],"avoided":[220.2,251.83,282.23]},"stops|mass|typical|co2|planned":{"actual":[130.18,193.45,286.99],"flying":[1014.44,1117.9,1223.95],"avoided":[784.41,920.54,1048.32]},"stops|mass|typical|full|todate":{"actual":[62.22,76.29,95.63],"flying":[426.02,527.36,681.25],"avoided":[347.93,451.74,602.49]},"stops|mass|typical|full|planned":{"actual":[130.18,193.45,286.99],"flying":[1471.98,1926.75,2617.04],"avoided":[1273.92,1728.56,2422.93]},"stops|mass|observed|co2|todate":{"actual":[62.74,77.08,97.42],"flying":[303.19,328.68,356.22],"avoided":[218.72,250.9,281.48]},"stops|mass|observed|co2|planned":{"actual":[130.87,194.52,288.34],"flying":[1014.44,1117.9,1223.95],"avoided":[783.58,919.68,1047.4]},"stops|mass|observed|full|todate":{"actual":[62.74,77.08,97.42],"flying":[426.02,527.36,681.25],"avoided":[346.97,450.84,601.83]},"stops|mass|observed|full|planned":{"actual":[130.87,194.52,288.34],"flying":[1471.98,1926.75,2617.04],"avoided":[1272.92,1727.59,2421.7]}},"cumulative":{"regions|passenger|typical|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[213.14,233.84,256.1],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[353.99,382.79,412.42],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-10-17","actual":[2215.32,3234.15,4971.38],"flying":[487.82,531.53,578.26],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-10-18","actual":[2215.32,3234.15,4971.38],"flying":[487.82,531.53,578.26],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-11-22","actual":[2328.28,3355.39,5105.39],"flying":[1215.27,1320.33,1431.02],"avoided":[-3767.61,-2033.01,-999.46]},{"date":"2026-12-12","actual":[2328.28,3355.39,5105.39],"flying":[1215.27,1320.33,1431.02],"avoided":[-3767.61,-2033.01,-999.46]}]},"regions|passenger|typical|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[312.64,415.23,569.9],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[460.02,563.64,720.86],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-10-17","actual":[2215.32,3234.15,4971.38],"flying":[603.66,713.14,872.32],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-10-18","actual":[2215.32,3234.15,4971.38],"flying":[603.66,713.14,872.32],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-11-22","actual":[2328.28,3355.39,5105.39],"flying":[1657.1,2112.13,2809.95],"avoided":[-3056.22,-1215.73,2.04]},{"date":"2026-12-12","actual":[2328.28,3355.39,5105.39],"flying":[1657.1,2112.13,2809.95],"avoided":[-3056.22,-1215.73,2.04]}]},"regions|passenger|observed|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[213.14,233.84,256.1],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[353.99,382.79,412.42],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-10-17","actual":[2321.0,3339.43,5078.52],"flying":[581.56,636.99,703.8],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-10-18","actual":[2321.0,3339.43,5078.52],"flying":[581.56,636.99,703.8],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-11-22","actual":[2439.79,3461.64,5203.86],"flying":[1316.17,1427.3,1551.25],"avoided":[-3767.61,-2033.01,-999.46]},{"date":"2026-12-12","actual":[2439.79,3461.64,5203.86],"flying":[1316.17,1427.3,1551.25],"avoided":[-3767.61,-2033.01,-999.46]}]},"regions|passenger|observed|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[312.64,415.23,569.9],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[460.02,563.64,720.86],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-10-17","actual":[2321.0,3339.43,5078.52],"flying":[703.8,821.2,984.98],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-10-18","actual":[2321.0,3339.43,5078.52],"flying":[703.8,821.2,984.98],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-11-22","actual":[2439.79,3461.64,5203.86],"flying":[1762.64,2223.32,2919.33],"avoided":[-3056.22,-1215.73,2.04]},{"date":"2026-12-12","actual":[2439.79,3461.64,5203.86],"flying":[1762.64,2223.32,2919.33],"avoided":[-3056.22,-1215.73,2.04]}]},"regions|iso|typical|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[213.14,233.84,256.1],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[298.17,324.53,352.18],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-10-17","actual":[398.69,483.19,606.01],"flying":[377.11,414.76,456.73],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-10-18","actual":[398.69,483.19,606.01],"flying":[377.11,414.76,456.73],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-11-22","actual":[491.87,607.16,750.99],"flying":[1100.15,1204.15,1313.3],"avoided":[423.88,595.48,749.65]},{"date":"2026-12-12","actual":[491.87,607.16,750.99],"flying":[1100.15,1204.15,1313.3],"avoided":[423.88,595.48,749.65]}]},"regions|iso|typical|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[312.64,415.23,569.9],"avoided":[-44.22,113.83,285.06]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[400.55,506.03,662.84],"avoided":[-44.22,113.83,285.06]},{"date":"2026-10-17","actual":[398.69,483.19,606.01],"flying":[486.38,597.44,756.53],"avoided":[-44.22,113.83,285.06]},{"date":"2026-10-18","actual":[398.69,483.19,606.01],"flying":[486.38,597.44,756.53],"avoided":[-44.22,113.83,285.06]},{"date":"2026-11-22","actual":[491.87,607.16,750.99],"flying":[1536.77,1996.52,2699.48],"avoided":[914.44,1385.35,2087.11]},{"date":"2026-12-12","actual":[491.87,607.16,750.99],"flying":[1536.77,1996.52,2699.48],"avoided":[914.44,1385.35,2087.11]}]},"regions|iso|observed|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[213.14,233.84,256.1],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[298.17,324.53,352.18],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-10-17","actual":[424.54,515.1,640.57],"flying":[400.11,445.05,500.01],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-10-18","actual":[424.54,515.1,640.57],"flying":[400.11,445.05,500.01],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-11-22","actual":[519.28,638.66,783.29],"flying":[1128.02,1234.94,1350.71],"avoided":[423.88,595.48,749.65]},{"date":"2026-12-12","actual":[519.28,638.66,783.29],"flying":[1128.02,1234.94,1350.71],"avoided":[423.88,595.48,749.65]}]},"regions|iso|observed|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[312.64,415.23,569.9],"avoided":[-44.22,113.83,285.06]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[400.55,506.03,662.84],"avoided":[-44.22,113.83,285.06]},{"date":"2026-10-17","actual":[424.54,515.1,640.57],"flying":[514.85,629.97,789.28],"avoided":[-44.22,113.83,285.06]},{"date":"2026-10-18","actual":[424.54,515.1,640.57],"flying":[514.85,629.97,789.28],"avoided":[-44.22,113.83,285.06]},{"date":"2026-11-22","actual":[519.28,638.66,783.29],"flying":[1568.49,2028.12,2725.98],"avoided":[914.44,1385.35,2087.11]},{"date":"2026-12-12","actual":[519.28,638.66,783.29],"flying":[1568.49,2028.12,2725.98],"avoided":[914.44,1385.35,2087.11]}]},"regions|mass|typical|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[213.14,233.84,256.1],"avoided":[168.11,191.9,216.09]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[229.79,251.36,274.68],"avoided":[168.11,191.9,216.09]},{"date":"2026-10-17","actual":[62.22,76.29,95.63],"flying":[244.93,268.62,295.57],"avoided":[168.11,191.9,216.09]},{"date":"2026-10-18","actual":[62.22,76.29,95.63],"flying":[244.93,268.62,295.57],"avoided":[168.11,191.9,216.09]},{"date":"2026-11-22","actual":[130.18,193.45,286.99],"flying":[957.57,1057.62,1162.1],"avoided":[727.14,861.46,985.81]},{"date":"2026-12-12","actual":[130.18,193.45,286.99],"flying":[957.57,1057.62,1162.1],"avoided":[727.14,861.46,985.81]}]},"regions|mass|typical|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[312.64,415.23,569.9],"avoided":[268.89,372.79,527.86]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[328.83,432.92,587.61],"avoided":[268.89,372.79,527.86]},{"date":"2026-10-17","actual":[62.22,76.29,95.63],"flying":[345.26,450.94,606.29],"avoided":[268.89,372.79,527.86]},{"date":"2026-10-18","actual":[62.22,76.29,95.63],"flying":[345.26,450.94,606.29],"avoided":[268.89,372.79,527.86]},{"date":"2026-11-22","actual":[130.18,193.45,286.99],"flying":[1390.91,1849.8,2551.79],"avoided":[1193.44,1652.38,2354.58]},{"date":"2026-12-12","actual":[130.18,193.45,286.99],"flying":[1390.91,1849.8,2551.79],"avoided":[1193.44,1652.38,2354.58]}]},"regions|mass|observed|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[213.14,233.84,256.1],"avoided":[168.11,191.9,216.09]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[229.79,251.36,274.68],"avoided":[168.11,191.9,216.09]},{"date":"2026-10-17","actual":[62.74,77.08,97.42],"flying":[245.48,269.46,297.26],"avoided":[168.11,191.9,216.09]},{"date":"2026-10-18","actual":[62.74,77.08,97.42],"flying":[245.48,269.46,297.26],"avoided":[168.11,191.9,216.09]},{"date":"2026-11-22","actual":[130.87,194.52,288.34],"flying":[958.27,1058.61,1163.72],"avoided":[727.14,861.46,985.81]},{"date":"2026-12-12","actual":[130.87,194.52,288.34],"flying":[958.27,1058.61,1163.72],"avoided":[727.14,861.46,985.81]}]},"regions|mass|observed|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[312.64,415.23,569.9],"avoided":[268.89,372.79,527.86]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[328.83,432.92,587.61],"avoided":[268.89,372.79,527.86]},{"date":"2026-10-17","actual":[62.74,77.08,97.42],"flying":[346.27,451.97,607.51],"avoided":[268.89,372.79,527.86]},{"date":"2026-10-18","actual":[62.74,77.08,97.42],"flying":[346.27,451.97,607.51],"avoided":[268.89,372.79,527.86]},{"date":"2026-11-22","actual":[130.87,194.52,288.34],"flying":[1391.6,1850.79,2552.86],"avoided":[1193.44,1652.38,2354.58]},{"date":"2026-12-12","actual":[130.87,194.52,288.34],"flying":[1391.6,1850.79,2552.86],"avoided":[1193.44,1652.38,2354.58]}]},"destinations|passenger|typical|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[213.14,233.84,256.1],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[242.15,263.82,286.45],"avoided":[-4557.05,-2823.0,-1803.54]},{"date":"2026-10-17","actual":[2215.32,3234.15,4971.38],"flying":[270.74,293.71,317.94],"avoided":[-4675.82,-2941.78,-1918.71]},{"date":"2026-10-18","actual":[2215.32,3234.15,4971.38],"flying":[270.74,293.71,317.94],"avoided":[-4675.82,-2941.78,-1918.71]},{"date":"2026-11-22","actual":[2328.28,3355.39,5105.39],"flying":[980.11,1082.58,1186.73],"avoided":[-4015.72,-2268.34,-1243.43]},{"date":"2026-12-12","actual":[2328.28,3355.39,5105.39],"flying":[980.11,1082.58,1186.73],"avoided":[-4015.72,-2268.34,-1243.43]}]},"destinations|passenger|typical|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[312.64,415.23,569.9],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[346.4,449.04,605.0],"avoided":[-4390.55,-2636.95,-1591.19]},{"date":"2026-10-17","actual":[2215.32,3234.15,4971.38],"flying":[380.08,483.03,640.83],"avoided":[-4509.48,-2749.89,-1707.12]},{"date":"2026-10-18","actual":[2215.32,3234.15,4971.38],"flying":[380.08,483.03,640.83],"avoided":[-4509.48,-2749.89,-1707.12]},{"date":"2026-11-22","actual":[2328.28,3355.39,5105.39],"flying":[1428.6,1881.12,2582.14],"avoided":[-3280.6,-1448.94,-219.56]},{"date":"2026-12-12","actual":[2328.28,3355.39,5105.39],"flying":[1428.6,1881.12,2582.14],"avoided":[-3280.6,-1448.94,-219.56]}]},"destinations|passenger|observed|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[213.14,233.84,256.1],"avoided":[-4436.59,-2703.62,-1687.46]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[242.15,263.82,286.45],"avoided":[-4557.05,-2823.0,-1803.54]},{"date":"2026-10-17","actual":[2321.0,3339.43,5078.52],"flying":[270.74,293.71,317.94],"avoided":[-4785.43,-3048.97,-2027.98]},{"date":"2026-10-18","actual":[2321.0,3339.43,5078.52],"flying":[270.74,293.71,317.94],"avoided":[-4785.43,-3048.97,-2027.98]},{"date":"2026-11-22","actual":[2439.79,3461.64,5203.86],"flying":[980.11,1082.58,1186.73],"avoided":[-4113.12,-2376.78,-1348.1]},{"date":"2026-12-12","actual":[2439.79,3461.64,5203.86],"flying":[980.11,1082.58,1186.73],"avoided":[-4113.12,-2376.78,-1348.1]}]},"destinations|passenger|observed|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[312.64,415.23,569.9],"avoided":[-4275.14,-2518.12,-1474.58]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[346.4,449.04,605.0],"avoided":[-4390.55,-2636.95,-1591.19]},{"date":"2026-10-17","actual":[2321.0,3339.43,5078.52],"flying":[380.08,483.03,640.83],"avoided":[-4616.52,-2859.81,-1823.77]},{"date":"2026-10-18","actual":[2321.0,3339.43,5078.52],"flying":[380.08,483.03,640.83],"avoided":[-4616.52,-2859.81,-1823.77]},{"date":"2026-11-22","actual":[2439.79,3461.64,5203.86],"flying":[1428.6,1881.12,2582.14],"avoided":[-3376.76,-1548.86,-334.05]},{"date":"2026-12-12","actual":[2439.79,3461.64,5203.86],"flying":[1428.6,1881.12,2582.14],"avoided":[-3376.76,-1548.86,-334.05]}]},"destinations|iso|typical|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[213.14,233.84,256.1],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[242.15,263.82,286.45],"avoided":[-252.98,-129.17,-43.06]},{"date":"2026-10-17","actual":[398.69,483.19,606.01],"flying":[270.74,293.71,317.94],"avoided":[-318.95,-190.49,-98.51]},{"date":"2026-10-18","actual":[398.69,483.19,606.01],"flying":[270.74,293.71,317.94],"avoided":[-318.95,-190.49,-98.51]},{"date":"2026-11-22","actual":[491.87,607.16,750.99],"flying":[980.11,1082.58,1186.73],"avoided":[299.2,472.54,634.94]},{"date":"2026-12-12","actual":[491.87,607.16,750.99],"flying":[980.11,1082.58,1186.73],"avoided":[299.2,472.54,634.94]}]},"destinations|iso|typical|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[312.64,415.23,569.9],"avoided":[-44.22,113.83,285.06]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[346.4,449.04,605.0],"avoided":[-98.63,57.64,228.61]},{"date":"2026-10-17","actual":[398.69,483.19,606.01],"flying":[380.08,483.03,640.83],"avoided":[-161.3,1.2,171.95]},{"date":"2026-10-18","actual":[398.69,483.19,606.01],"flying":[380.08,483.03,640.83],"avoided":[-161.3,1.2,171.95]},{"date":"2026-11-22","actual":[491.87,607.16,750.99],"flying":[1428.6,1881.12,2582.14],"avoided":[799.53,1273.89,1969.27]},{"date":"2026-12-12","actual":[491.87,607.16,750.99],"flying":[1428.6,1881.12,2582.14],"avoided":[799.53,1273.89,1969.27]}]},"destinations|iso|observed|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[213.14,233.84,256.1],"avoided":[-192.48,-67.4,15.62]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[242.15,263.82,286.45],"avoided":[-252.98,-129.17,-43.06]},{"date":"2026-10-17","actual":[424.54,515.1,640.57],"flying":[270.74,293.71,317.94],"avoided":[-350.75,-221.81,-125.6]},{"date":"2026-10-18","actual":[424.54,515.1,640.57],"flying":[270.74,293.71,317.94],"avoided":[-350.75,-221.81,-125.6]},{"date":"2026-11-22","actual":[519.28,638.66,783.29],"flying":[980.11,1082.58,1186.73],"avoided":[265.64,441.46,606.15]},{"date":"2026-12-12","actual":[519.28,638.66,783.29],"flying":[980.11,1082.58,1186.73],"avoided":[265.64,441.46,606.15]}]},"destinations|iso|observed|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[312.64,415.23,569.9],"avoided":[-44.22,113.83,285.06]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[346.4,449.04,605.0],"avoided":[-98.63,57.64,228.61]},{"date":"2026-10-17","actual":[424.54,515.1,640.57],"flying":[380.08,483.03,640.83],"avoided":[-196.27,-30.5,145.75]},{"date":"2026-10-18","actual":[424.54,515.1,640.57],"flying":[380.08,483.03,640.83],"avoided":[-196.27,-30.5,145.75]},{"date":"2026-11-22","actual":[519.28,638.66,783.29],"flying":[1428.6,1881.12,2582.14],"avoided":[768.03,1243.39,1937.75]},{"date":"2026-12-12","actual":[519.28,638.66,783.29],"flying":[1428.6,1881.12,2582.14],"avoided":[768.03,1243.39,1937.75]}]},"destinations|mass|typical|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[213.14,233.84,256.1],"avoided":[168.11,191.9,216.09]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[242.15,263.82,286.45],"avoided":[179.21,204.4,229.91]},{"date":"2026-10-17","actual":[62.22,76.29,95.63],"flying":[270.74,293.71,317.94],"avoided":[187.13,216.8,245.36]},{"date":"2026-10-18","actual":[62.22,76.29,95.63],"flying":[270.74,293.71,317.94],"avoided":[187.13,216.8,245.36]},{"date":"2026-11-22","actual":[130.18,193.45,286.99],"flying":[980.11,1082.58,1186.73],"avoided":[749.85,886.15,1013.43]},{"date":"2026-12-12","actual":[130.18,193.45,286.99],"flying":[980.11,1082.58,1186.73],"avoided":[749.85,886.15,1013.43]}]},"destinations|mass|typical|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[312.64,415.23,569.9],"avoided":[268.89,372.79,527.86]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[346.4,449.04,605.0],"avoided":[286.72,390.23,545.14]},{"date":"2026-10-17","actual":[62.22,76.29,95.63],"flying":[380.08,483.03,640.83],"avoided":[300.94,406.82,561.88]},{"date":"2026-10-18","actual":[62.22,76.29,95.63],"flying":[380.08,483.03,640.83],"avoided":[300.94,406.82,561.88]},{"date":"2026-11-22","actual":[130.18,193.45,286.99],"flying":[1428.6,1881.12,2582.14],"avoided":[1223.9,1685.7,2384.17]},{"date":"2026-12-12","actual":[130.18,193.45,286.99],"flying":[1428.6,1881.12,2582.14],"avoided":[1223.9,1685.7,2384.17]}]},"destinations|mass|observed|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[213.14,233.84,256.1],"avoided":[209.01,229.61,251.89]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[213.14,233.84,256.1],"avoided":[199.84,221.33,243.94]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[213.14,233.84,256.1],"avoided":[168.11,191.9,216.09]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[242.15,263.82,286.45],"avoided":[179.21,204.4,229.91]},{"date":"2026-10-17","actual":[62.74,77.08,97.42],"flying":[270.74,293.71,317.94],"avoided":[185.68,215.87,244.82]},{"date":"2026-10-18","actual":[62.74,77.08,97.42],"flying":[270.74,293.71,317.94],"avoided":[185.68,215.87,244.82]},{"date":"2026-11-22","actual":[130.87,194.52,288.34],"flying":[980.11,1082.58,1186.73],"avoided":[748.79,885.35,1012.87]},{"date":"2026-12-12","actual":[130.87,194.52,288.34],"flying":[980.11,1082.58,1186.73],"avoided":[748.79,885.35,1012.87]}]},"destinations|mass|observed|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[312.64,415.23,569.9],"avoided":[308.37,411.0,565.73]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[312.64,415.23,569.9],"avoided":[299.02,402.33,556.78]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[312.64,415.23,569.9],"avoided":[268.89,372.79,527.86]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[346.4,449.04,605.0],"avoided":[286.72,390.23,545.14]},{"date":"2026-10-17","actual":[62.74,77.08,97.42],"flying":[380.08,483.03,640.83],"avoided":[300.15,405.97,561.04]},{"date":"2026-10-18","actual":[62.74,77.08,97.42],"flying":[380.08,483.03,640.83],"avoided":[300.15,405.97,561.04]},{"date":"2026-11-22","actual":[130.87,194.52,288.34],"flying":[1428.6,1881.12,2582.14],"avoided":[1223.4,1684.49,2383.47]},{"date":"2026-12-12","actual":[130.87,194.52,288.34],"flying":[1428.6,1881.12,2582.14],"avoided":[1223.4,1684.49,2383.47]}]},"stops|passenger|typical|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[74.54,81.51,89.37],"avoided":[70.21,77.27,85.23]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[114.62,125.9,138.27],"avoided":[100.94,113.34,126.38]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[245.58,268.58,294.44],"avoided":[-4402.56,-2668.47,-1652.06]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[274.97,298.79,324.87],"avoided":[-4521.54,-2789.56,-1767.1]},{"date":"2026-10-17","actual":[2215.32,3234.15,4971.38],"flying":[303.19,328.68,356.22],"avoided":[-4642.02,-2907.77,-1883.66]},{"date":"2026-10-18","actual":[2215.32,3234.15,4971.38],"flying":[303.19,328.68,356.22],"avoided":[-4642.02,-2907.77,-1883.66]},{"date":"2026-11-22","actual":[2328.28,3355.39,5105.39],"flying":[1014.44,1117.9,1223.95],"avoided":[-3981.06,-2233.24,-1207.82]},{"date":"2026-12-12","actual":[2328.28,3355.39,5105.39],"flying":[1014.44,1117.9,1223.95],"avoided":[-3981.06,-2233.24,-1207.82]}]},"stops|passenger|typical|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[108.84,144.66,198.75],"avoided":[104.37,140.45,194.64]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[165.12,206.09,264.62],"avoided":[152.05,193.81,251.43]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[358.36,459.69,611.24],"avoided":[-4238.5,-2477.77,-1431.95]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[392.22,493.14,646.3],"avoided":[-4353.57,-2597.35,-1553.3]},{"date":"2026-10-17","actual":[2215.32,3234.15,4971.38],"flying":[426.02,527.36,681.25],"avoided":[-4469.69,-2710.94,-1667.08]},{"date":"2026-10-18","actual":[2215.32,3234.15,4971.38],"flying":[426.02,527.36,681.25],"avoided":[-4469.69,-2710.94,-1667.08]},{"date":"2026-11-22","actual":[2328.28,3355.39,5105.39],"flying":[1471.98,1926.75,2617.04],"avoided":[-3230.07,-1402.96,-173.55]},{"date":"2026-12-12","actual":[2328.28,3355.39,5105.39],"flying":[1471.98,1926.75,2617.04],"avoided":[-3230.07,-1402.96,-173.55]}]},"stops|passenger|observed|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[74.54,81.51,89.37],"avoided":[70.21,77.27,85.23]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[114.62,125.9,138.27],"avoided":[100.94,113.34,126.38]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[245.58,268.58,294.44],"avoided":[-4402.56,-2668.47,-1652.06]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[274.97,298.79,324.87],"avoided":[-4521.54,-2789.56,-1767.1]},{"date":"2026-10-17","actual":[2321.0,3339.43,5078.52],"flying":[303.19,328.68,356.22],"avoided":[-4752.1,-3015.3,-1995.64]},{"date":"2026-10-18","actual":[2321.0,3339.43,5078.52],"flying":[303.19,328.68,356.22],"avoided":[-4752.1,-3015.3,-1995.64]},{"date":"2026-11-22","actual":[2439.79,3461.64,5203.86],"flying":[1014.44,1117.9,1223.95],"avoided":[-4077.78,-2343.04,-1313.82]},{"date":"2026-12-12","actual":[2439.79,3461.64,5203.86],"flying":[1014.44,1117.9,1223.95],"avoided":[-4077.78,-2343.04,-1313.82]}]},"stops|passenger|observed|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[108.84,144.66,198.75],"avoided":[104.37,140.45,194.64]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[165.12,206.09,264.62],"avoided":[152.05,193.81,251.43]},{"date":"2026-09-28","actual":[1916.52,2932.51,4668.89],"flying":[358.36,459.69,611.24],"avoided":[-4238.5,-2477.77,-1431.95]},{"date":"2026-10-12","actual":[2067.52,3082.43,4820.92],"flying":[392.22,493.14,646.3],"avoided":[-4353.57,-2597.35,-1553.3]},{"date":"2026-10-17","actual":[2321.0,3339.43,5078.52],"flying":[426.02,527.36,681.25],"avoided":[-4580.02,-2819.09,-1777.88]},{"date":"2026-10-18","actual":[2321.0,3339.43,5078.52],"flying":[426.02,527.36,681.25],"avoided":[-4580.02,-2819.09,-1777.88]},{"date":"2026-11-22","actual":[2439.79,3461.64,5203.86],"flying":[1471.98,1926.75,2617.04],"avoided":[-3331.86,-1507.7,-291.43]},{"date":"2026-12-12","actual":[2439.79,3461.64,5203.86],"flying":[1471.98,1926.75,2617.04],"avoided":[-3331.86,-1507.7,-291.43]}]},"stops|iso|typical|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[74.54,81.51,89.37],"avoided":[70.21,77.27,85.23]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[114.62,125.9,138.27],"avoided":[100.94,113.34,126.38]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[245.58,268.58,294.44],"avoided":[-156.99,-32.34,52.09]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[274.97,298.79,324.87],"avoided":[-220.34,-94.09,-7.59]},{"date":"2026-10-17","actual":[398.69,483.19,606.01],"flying":[303.19,328.68,356.22],"avoided":[-283.57,-155.35,-62.86]},{"date":"2026-10-18","actual":[398.69,483.19,606.01],"flying":[303.19,328.68,356.22],"avoided":[-283.57,-155.35,-62.86]},{"date":"2026-11-22","actual":[491.87,607.16,750.99],"flying":[1014.44,1117.9,1223.95],"avoided":[333.8,507.7,670.1]},{"date":"2026-12-12","actual":[491.87,607.16,750.99],"flying":[1014.44,1117.9,1223.95],"avoided":[333.8,507.7,670.1]}]},"stops|iso|typical|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[108.84,144.66,198.75],"avoided":[104.37,140.45,194.64]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[165.12,206.09,264.62],"avoided":[152.05,193.81,251.43]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[358.36,459.69,611.24],"avoided":[0.98,158.64,324.28]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[392.22,493.14,646.3],"avoided":[-52.27,101.78,269.4]},{"date":"2026-10-17","actual":[398.69,483.19,606.01],"flying":[426.02,527.36,681.25],"avoided":[-114.19,44.86,217.53]},{"date":"2026-10-18","actual":[398.69,483.19,606.01],"flying":[426.02,527.36,681.25],"avoided":[-114.19,44.86,217.53]},{"date":"2026-11-22","actual":[491.87,607.16,750.99],"flying":[1471.98,1926.75,2617.04],"avoided":[845.2,1315.85,2006.41]},{"date":"2026-12-12","actual":[491.87,607.16,750.99],"flying":[1471.98,1926.75,2617.04],"avoided":[845.2,1315.85,2006.41]}]},"stops|iso|observed|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[74.54,81.51,89.37],"avoided":[70.21,77.27,85.23]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[114.62,125.9,138.27],"avoided":[100.94,113.34,126.38]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[245.58,268.58,294.44],"avoided":[-156.99,-32.34,52.09]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[274.97,298.79,324.87],"avoided":[-220.34,-94.09,-7.59]},{"date":"2026-10-17","actual":[424.54,515.1,640.57],"flying":[303.19,328.68,356.22],"avoided":[-316.85,-187.35,-88.76]},{"date":"2026-10-18","actual":[424.54,515.1,640.57],"flying":[303.19,328.68,356.22],"avoided":[-316.85,-187.35,-88.76]},{"date":"2026-11-22","actual":[519.28,638.66,783.29],"flying":[1014.44,1117.9,1223.95],"avoided":[299.59,476.25,642.07]},{"date":"2026-12-12","actual":[519.28,638.66,783.29],"flying":[1014.44,1117.9,1223.95],"avoided":[299.59,476.25,642.07]}]},"stops|iso|observed|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[108.84,144.66,198.75],"avoided":[104.37,140.45,194.64]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[165.12,206.09,264.62],"avoided":[152.05,193.81,251.43]},{"date":"2026-09-28","actual":[222.46,300.54,423.62],"flying":[358.36,459.69,611.24],"avoided":[0.98,158.64,324.28]},{"date":"2026-10-12","actual":[312.74,391.84,515.87],"flying":[392.22,493.14,646.3],"avoided":[-52.27,101.78,269.4]},{"date":"2026-10-17","actual":[424.54,515.1,640.57],"flying":[426.02,527.36,681.25],"avoided":[-151.53,14.26,186.2]},{"date":"2026-10-18","actual":[424.54,515.1,640.57],"flying":[426.02,527.36,681.25],"avoided":[-151.53,14.26,186.2]},{"date":"2026-11-22","actual":[519.28,638.66,783.29],"flying":[1471.98,1926.75,2617.04],"avoided":[815.07,1284.59,1973.5]},{"date":"2026-12-12","actual":[519.28,638.66,783.29],"flying":[1471.98,1926.75,2617.04],"avoided":[815.07,1284.59,1973.5]}]},"stops|mass|typical|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[74.54,81.51,89.37],"avoided":[70.21,77.27,85.23]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[114.62,125.9,138.27],"avoided":[100.94,113.34,126.38]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[245.58,268.58,294.44],"avoided":[201.15,226.75,253.89]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[274.97,298.79,324.87],"avoided":[211.56,239.04,267.16]},{"date":"2026-10-17","actual":[62.22,76.29,95.63],"flying":[303.19,328.68,356.22],"avoided":[220.2,251.83,282.23]},{"date":"2026-10-18","actual":[62.22,76.29,95.63],"flying":[303.19,328.68,356.22],"avoided":[220.2,251.83,282.23]},{"date":"2026-11-22","actual":[130.18,193.45,286.99],"flying":[1014.44,1117.9,1223.95],"avoided":[784.41,920.54,1048.32]},{"date":"2026-12-12","actual":[130.18,193.45,286.99],"flying":[1014.44,1117.9,1223.95],"avoided":[784.41,920.54,1048.32]}]},"stops|mass|typical|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[108.84,144.66,198.75],"avoided":[104.37,140.45,194.64]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[165.12,206.09,264.62],"avoided":[152.05,193.81,251.43]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[358.36,459.69,611.24],"avoided":[314.66,417.77,568.33]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[392.22,493.14,646.3],"avoided":[332.06,434.36,586.17]},{"date":"2026-10-17","actual":[62.22,76.29,95.63],"flying":[426.02,527.36,681.25],"avoided":[347.93,451.74,602.49]},{"date":"2026-10-18","actual":[62.22,76.29,95.63],"flying":[426.02,527.36,681.25],"avoided":[347.93,451.74,602.49]},{"date":"2026-11-22","actual":[130.18,193.45,286.99],"flying":[1471.98,1926.75,2617.04],"avoided":[1273.92,1728.56,2422.93]},{"date":"2026-12-12","actual":[130.18,193.45,286.99],"flying":[1471.98,1926.75,2617.04],"avoided":[1273.92,1728.56,2422.93]}]},"stops|mass|observed|co2":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[74.54,81.51,89.37],"avoided":[70.21,77.27,85.23]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[114.62,125.9,138.27],"avoided":[100.94,113.34,126.38]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[245.58,268.58,294.44],"avoided":[201.15,226.75,253.89]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[274.97,298.79,324.87],"avoided":[211.56,239.04,267.16]},{"date":"2026-10-17","actual":[62.74,77.08,97.42],"flying":[303.19,328.68,356.22],"avoided":[218.72,250.9,281.48]},{"date":"2026-10-18","actual":[62.74,77.08,97.42],"flying":[303.19,328.68,356.22],"avoided":[218.72,250.9,281.48]},{"date":"2026-11-22","actual":[130.87,194.52,288.34],"flying":[1014.44,1117.9,1223.95],"avoided":[783.58,919.68,1047.4]},{"date":"2026-12-12","actual":[130.87,194.52,288.34],"flying":[1014.44,1117.9,1223.95],"avoided":[783.58,919.68,1047.4]}]},"stops|mass|observed|full":{"points":[{"date":"2026-09-26","actual":[2.87,4.16,5.75],"flying":[108.84,144.66,198.75],"avoided":[104.37,140.45,194.64]},{"date":"2026-09-27","actual":[8.07,12.42,17.87],"flying":[165.12,206.09,264.62],"avoided":[152.05,193.81,251.43]},{"date":"2026-09-28","actual":[33.03,41.47,52.9],"flying":[358.36,459.69,611.24],"avoided":[314.66,417.77,568.33]},{"date":"2026-10-12","actual":[48.49,59.2,72.7],"flying":[392.22,493.14,646.3],"avoided":[332.06,434.36,586.17]},{"date":"2026-10-17","actual":[62.74,77.08,97.42],"flying":[426.02,527.36,681.25],"avoided":[346.97,450.84,601.83]},{"date":"2026-10-18","actual":[62.74,77.08,97.42],"flying":[426.02,527.36,681.25],"avoided":[346.97,450.84,601.83]},{"date":"2026-11-22","actual":[130.87,194.52,288.34],"flying":[1471.98,1926.75,2617.04],"avoided":[1272.92,1727.59,2421.7]},{"date":"2026-12-12","actual":[130.87,194.52,288.34],"flying":[1471.98,1926.75,2617.04],"avoided":[1272.92,1727.59,2421.7]}]}},"milestones":[{"date":"2026-09-30","label":"Tenerife","planned":false},{"date":"2026-10-12","label":"La Palma","planned":false},{"date":"2026-10-17","label":"Tenerife","planned":false},{"date":"2026-12-12","label":"Martinique","planned":true}],"spotlight":{"lede":"On 17 October the Bencomo Express, a 38-knot catamaran, crossed from La Palma to Los Cristianos with about 150 people aboard, where it averages around 260. A fast craft burns about as much fuel per mile as a large ro-pax ferry but has far less freight to share it with, so each passenger's share is large. How large depends on how you count.","facts":[["Operator","Fred. Olsen Express"],["Vessel","Incat 96 m wave-piercing catamaran, 1999"],["Capacity","859 passengers, 230 vehicles"],["Engines","4 × Caterpillar 3618, 28.8 MW, waterjets, ~38 kn"],["Fuel","marine gas oil; 145 kg per nautical mile (EU MRV 2025)"],["Route","Los Cristianos – Santa Cruz de La Palma, 68 nm, 2 h 30"],["This sailing","~150 passengers (17 % full); 2025 average ~260"],["Alternative","Binter ATR 72-600, Tenerife North – La Palma, ~30 min"]],"flight_label":"Binter flight SPC–TFN","callout":"Counted per passenger or with ISO 14083 passenger equivalents, this crossing emitted more than the 30-minute flight would have. Counted by mass, the cars and trucks carry most of it. In its 2025 EU MRV report the operator put 76 % of the ship's emissions on passengers: about 110 kg for this crossing.","rows":[{"alloc":"passenger","occ":"typical","q":[130.09,148.48,170.01]},{"alloc":"passenger","occ":"observed","q":[213.16,254.38,306.74]},{"alloc":"iso","occ":"typical","q":[75.18,90.13,108.68]},{"alloc":"iso","occ":"observed","q":[96.3,120.61,153.59]},{"alloc":"mass","occ":"typical","q":[12.09,16.99,25.19]},{"alloc":"mass","occ":"observed","q":[12.55,17.85,27.18]}],"flight":{"co2":[25.51,29.78,34.94],"full":[28.27,33.89,41.24]}},"flight_band":{"regions":{"co2":[60.2,91.5],"full":[96.1,146.2]},"destinations":{"co2":[60.2,222.9],"full":[96.1,241.9]},"stops":{"co2":[60.6,222.9],"full":[96.8,241.9]}},"refs":[{"label":"car, alone","gpkm":209},{"label":"car, 4 aboard","gpkm":52}]}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+(() => {
+  'use strict';
+  const DATA = JSON.parse(document.getElementById('mock-data').textContent);
+  const DIMS = ['grain', 'alloc', 'occ', 'nonco2'];
+  const S = Object.assign({}, DATA.defaults);
+
+  // ---------- keys into precomputed variants (all numbers come from the Python model) ----------
+  const kLeg = () => `${S.alloc}|${S.occ}`;
+  const kFull = () => `${S.alloc}|${S.occ}|${S.nonco2}`;
+  const kTot = (s = S) => `${s.grain}|${s.alloc}|${s.occ}|${s.nonco2}|${s.scope}`;
+  const kCum = () => `${S.grain}|${S.alloc}|${S.occ}|${S.nonco2}`;
+  const inScope = d => S.scope === 'planned' || !d.planned;
+  const opt = (dim, id) => DATA.lenses[dim].options.find(o => o.id === id);
+
+  // ---------- formatting ----------
+  const nf = new Intl.NumberFormat('en-US', { maximumFractionDigits: 3 });
+  const sig = (v, n = 2) => (v == null || !isFinite(v)) ? '–' : v === 0 ? '0' : nf.format(Number(v.toPrecision(n)));
+  const neg = s => s.replace(/^-/, '−');
+  function mass(v, ref = v) {
+    return Math.abs(ref) >= 1000 ? `${neg(sig(v / 1000))} t` : `${neg(sig(v))} kg`;
+  }
+  function range(q) {
+    const ref = Math.max(Math.abs(q[0]), Math.abs(q[2]));
+    const t = ref >= 1000;
+    const f = v => neg(t ? sig(v / 1000) : sig(v));
+    const sep = (q[0] < 0) !== (q[2] < 0) || q[0] < 0 ? ' to ' : '–';
+    return `${f(q[0])}${sep}${f(q[2])} ${t ? 't' : 'kg'}`;
+  }
+  const tonnes = v => neg(sig(v / 1000));
+  const km = v => nf.format(Math.round(v / 10) * 10);
+  const gpkm = v => neg(sig(v));
+  const fmtDate = iso => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+
+  // ---------- tooltip ----------
+  const tip = document.getElementById('tip');
+  function showTip(evt, head, rows) {
+    tip.replaceChildren();
+    if (head) { const h = document.createElement('div'); h.className = 't-h'; h.textContent = head; tip.appendChild(h); }
+    for (const r of rows) {
+      const row = document.createElement('div'); row.className = 't-r';
+      if (r.color) { const k = document.createElement('i'); k.className = 't-k'; k.style.borderColor = r.color; row.appendChild(k); }
+      const v = document.createElement('span'); v.className = 't-v'; v.textContent = r.value; row.appendChild(v);
+      if (r.label) { const l = document.createElement('span'); l.className = 't-l'; l.textContent = r.label; row.appendChild(l); }
+      tip.appendChild(row);
+    }
+    tip.hidden = false;
+    let x, y;
+    if (evt && evt.clientX != null && evt.type !== 'focus') { x = evt.clientX; y = evt.clientY; }
+    else { const b = evt.target.getBoundingClientRect(); x = b.left + b.width / 2; y = b.top; }
+    const w = tip.offsetWidth, h = tip.offsetHeight, pad = 12;
+    let left = x + 14, top = y - h - 10;
+    if (left + w > innerWidth - pad) left = x - w - 14;
+    if (left < pad) left = pad;
+    if (top < pad) top = y + 16;
+    tip.style.left = `${left}px`; tip.style.top = `${top}px`;
+  }
+  const hideTip = () => { tip.hidden = true; };
+  function bindTip(sel, fn) {
+    sel.attr('tabindex', 0)
+      .on('pointerenter pointermove focus', function (evt, d) { const c = fn(d); showTip(evt, c.head, c.rows); })
+      .on('pointerleave blur', hideTip);
+  }
+
+  // ---------- small helpers ----------
+  const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  function svgIn(host, w, h) {
+    host.replaceChildren();
+    return d3.select(host).append('svg').attr('width', w).attr('height', h).attr('viewBox', `0 0 ${w} ${h}`).attr('role', 'img');
+  }
+  function logTicks(domain) {
+    const out = [];
+    for (let e = Math.floor(Math.log10(domain[0])); e <= Math.ceil(Math.log10(domain[1])); e++) {
+      for (const m of [1, 3]) { const v = m * 10 ** e; if (v >= domain[0] * 0.999 && v <= domain[1] * 1.001) out.push(v); }
+    }
+    return out;
+  }
+  const tickKg = v => v >= 1000 ? `${nf.format(v / 1000)} t` : `${nf.format(v)} kg`;
+  function intervalMark(g, x, y, q, color, r = 5) {
+    g.append('line').attr('x1', x(q[0])).attr('x2', x(q[2])).attr('y1', y).attr('y2', y)
+      .attr('stroke', color).attr('stroke-width', 2.5).attr('stroke-linecap', 'round');
+    g.append('circle').attr('cx', x(q[1])).attr('cy', y).attr('r', r)
+      .attr('fill', color).attr('stroke', css('--surface')).attr('stroke-width', 2);
+  }
+  function makeTable(host, cols, rows) {
+    host.replaceChildren();
+    const wrap = document.createElement('div'); wrap.className = 'tblwrap';
+    const t = document.createElement('table'); t.className = 'data';
+    const tr = t.createTHead().insertRow();
+    for (const c of cols) { const th = document.createElement('th'); th.textContent = c.label; if (c.num) th.className = 'num'; tr.appendChild(th); }
+    const tb = t.createTBody();
+    for (const r of rows) {
+      const row = tb.insertRow();
+      cols.forEach((c, i) => { const td = row.insertCell(); td.textContent = r[i]; if (c.num) td.className = 'num'; });
+    }
+    wrap.appendChild(t); host.appendChild(wrap);
+  }
+  const lensText = (s = S) => `${opt('grain', s.grain).label} · ${opt('alloc', s.alloc).label} · ${opt('occ', s.occ).label} · ${opt('nonco2', s.nonco2).label}`;
+
+  // ---------- lens bar ----------
+  function buildLensBar() {
+    const row = document.getElementById('lens-row');
+    for (const dim of DIMS) {
+      const def = DATA.lenses[dim];
+      const fs = document.createElement('fieldset'); fs.className = 'lens';
+      const lg = document.createElement('legend'); lg.textContent = def.title; fs.appendChild(lg);
+      const seg = document.createElement('div'); seg.className = 'seg';
+      for (const o of def.options) {
+        const inp = document.createElement('input');
+        inp.type = 'radio'; inp.name = `lens-${dim}`; inp.id = `lens-${dim}-${o.id}`; inp.value = o.id;
+        inp.addEventListener('change', () => { S[dim] = o.id; update(); });
+        const lab = document.createElement('label'); lab.htmlFor = inp.id; lab.textContent = o.label; lab.title = o.hint;
+        seg.append(inp, lab);
+      }
+      fs.appendChild(seg); row.appendChild(fs);
+    }
+    const sc = document.getElementById('scope-planned');
+    sc.addEventListener('change', () => { S.scope = sc.checked ? 'planned' : 'todate'; update(); });
+    const tg = document.getElementById('lens-toggle');
+    tg.addEventListener('click', () => { const open = document.body.classList.toggle('lens-open'); tg.setAttribute('aria-expanded', String(open)); });
+    document.getElementById('lens-reset').addEventListener('click', () => { Object.assign(S, DATA.defaults); update(); });
+    document.querySelectorAll('.tbtn[data-table]').forEach(b => b.addEventListener('click', () => {
+      const on = b.getAttribute('aria-pressed') !== 'true';
+      b.setAttribute('aria-pressed', String(on));
+      document.getElementById(`${b.dataset.table}-table`).hidden = !on;
+    }));
+  }
+  function syncInputs() {
+    for (const dim of DIMS) { const el = document.getElementById(`lens-${dim}-${S[dim]}`); if (el) el.checked = true; }
+    document.getElementById('scope-planned').checked = S.scope === 'planned';
+    document.getElementById('lens-summary').textContent = lensText();
+  }
+
+  // ---------- hero + robustness strip ----------
+  function renderHero() {
+    const t = DATA.totals[kTot()];
+    document.getElementById('hero-avoided').textContent = tonnes(t.avoided[1]);
+    document.getElementById('hero-range').textContent = `${neg(sig(t.avoided[0] / 1000))} to ${neg(sig(t.avoided[2] / 1000))} t`;
+    document.getElementById('hero-scope').textContent = S.scope === 'planned' ? 'including the planned crossing' : `trip so far, to ${fmtDate(DATA.meta.today)}`;
+    document.getElementById('hero-actual').textContent = `${tonnes(t.actual[1])} t`;
+    document.getElementById('hero-actual-r').textContent = `90 %: ${neg(sig(t.actual[0] / 1000))}–${neg(sig(t.actual[2] / 1000))} t`;
+    document.getElementById('hero-flying').textContent = `${tonnes(t.flying[1])} t`;
+    document.getElementById('hero-flying-r').textContent = `90 %: ${neg(sig(t.flying[0] / 1000))}–${neg(sig(t.flying[2] / 1000))} t`;
+    const other = DATA.totals[kTot(Object.assign({}, S, { scope: S.scope === 'planned' ? 'todate' : 'planned' }))].avoided;
+    document.getElementById('hero-alt').textContent = S.scope === 'planned'
+      ? `Trip so far, without the crossing: ${tonnes(other[1])} t (90 %: ${tonnes(other[0])} to ${tonnes(other[2])} t)`
+      : `Including the planned crossing: ${tonnes(other[1])} t (90 %: ${tonnes(other[0])} to ${tonnes(other[2])} t)`;
+  }
+  function allCombos() {
+    const out = [];
+    for (const g of DATA.lenses.grain.options) for (const a of DATA.lenses.alloc.options)
+      for (const o of DATA.lenses.occ.options) for (const n of DATA.lenses.nonco2.options) {
+        const s = { grain: g.id, alloc: a.id, occ: o.id, nonco2: n.id, scope: S.scope };
+        out.push({ s, v: DATA.totals[kTot(s)].avoided[1], cur: g.id === S.grain && a.id === S.alloc && o.id === S.occ && n.id === S.nonco2 });
+      }
+    return out;
+  }
+  function renderStrip() {
+    const host = document.getElementById('strip-chart');
+    const combos = allCombos();
+    const vals = combos.map(c => c.v);
+    const pos = vals.filter(v => v > 0).length;
+    const sum = document.getElementById('strip-sum');
+    sum.replaceChildren();
+    const b = document.createElement('b'); b.textContent = `Not flying comes out lower in ${pos} of ${combos.length}`;
+    sum.append(b, document.createTextNode(` ways of counting (from ${tonnes(d3.min(vals))} to ${tonnes(d3.max(vals))} t). Each tick is one combination of switches; the bold one is yours.`));
+    // one row per ferry-share method: that choice drives most of the spread
+    const rowsDef = DATA.lenses.alloc.options;
+    const W = Math.max(host.clientWidth, 260), rowH = 26, m = { l: 98, r: 14, t: 22, b: 24 };
+    const H = m.t + rowsDef.length * rowH + m.b, yAx = H - m.b;
+    const lo = Math.min(0, d3.min(vals)), hi = Math.max(0, d3.max(vals));
+    const pad = (hi - lo) * 0.05 || 100;
+    const x = d3.scaleLinear().domain([lo - pad, hi + pad]).range([m.l, W - m.r]);
+    const svg = svgIn(host, W, H).attr('aria-label', `Avoided emissions under all ${combos.length} method combinations`);
+    const ax = svg.append('g').attr('class', 'ax');
+    ax.append('line').attr('class', 'base').attr('x1', m.l).attr('x2', W - m.r).attr('y1', yAx).attr('y2', yAx);
+    for (const t of x.ticks(W < 380 ? 3 : 5)) {
+      ax.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', m.t - 4).attr('y2', yAx);
+      ax.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t === 0 ? '0' : `${neg(nf.format(t / 1000))} t`);
+    }
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', m.t - 8).attr('y2', yAx).attr('stroke', css('--ink-2')).attr('stroke-width', 1.2);
+    svg.append('text').attr('class', 'lbl-muted').attr('x', x(0) - 4).attr('y', m.t - 10).attr('text-anchor', 'end').text('flying lower ←');
+    svg.append('text').attr('class', 'lbl-muted').attr('x', x(0) + 4).attr('y', m.t - 10).text('→ not flying lower');
+    const yRow = id => m.t + rowsDef.findIndex(r => r.id === id) * rowH + rowH / 2;
+    rowsDef.forEach(r => {
+      svg.append('text').attr('class', r.id === S.alloc ? 'lbl-strong' : 'lbl').attr('x', 0).attr('y', yRow(r.id) + 4).text(r.label);
+    });
+    const g = svg.append('g');
+    for (const c of combos.filter(c => !c.cur)) {
+      const yc = yRow(c.s.alloc);
+      g.append('line').attr('x1', x(c.v)).attr('x2', x(c.v)).attr('y1', yc - 7).attr('y2', yc + 7)
+        .attr('stroke', css('--ink-2')).attr('stroke-opacity', 0.5).attr('stroke-width', 2).attr('stroke-linecap', 'round');
+    }
+    const cur = combos.find(c => c.cur), yc = yRow(cur.s.alloc);
+    g.append('line').attr('x1', x(cur.v)).attr('x2', x(cur.v)).attr('y1', yc - 10).attr('y2', yc + 10)
+      .attr('stroke', css('--ink')).attr('stroke-width', 3).attr('stroke-linecap', 'round');
+    g.append('circle').attr('cx', x(cur.v)).attr('cy', yc - 10).attr('r', 4.5).attr('fill', css('--ink')).attr('stroke', css('--surface')).attr('stroke-width', 2);
+    // nearest-mark hover layer
+    svg.append('rect').attr('x', m.l).attr('y', m.t - 4).attr('width', W - m.l - m.r).attr('height', yAx - m.t + 4).attr('fill', 'transparent')
+      .on('pointermove', evt => {
+        const [px, py] = d3.pointer(evt);
+        const row = rowsDef[Math.max(0, Math.min(rowsDef.length - 1, Math.floor((py - m.t) / rowH)))].id;
+        const pool = combos.filter(c => c.s.alloc === row);
+        const c = pool.reduce((a, b) => Math.abs(x(b.v) - px) < Math.abs(x(a.v) - px) ? b : a);
+        showTip(evt, lensText(c.s) + (c.cur ? ' (current)' : ''), [{ value: `${tonnes(c.v)} t`, label: 'avoided (median)' }]);
+      })
+      .on('pointerleave', hideTip);
+    const rows = combos.slice().sort((a, b) => b.v - a.v).map(c => [lensText(c.s) + (c.cur ? ' (current)' : ''), `${tonnes(c.v)} t`]);
+    makeTable(document.getElementById('strip-table'), [{ label: 'Lens combination' }, { label: 'Avoided (median)', num: true }], rows);
+  }
+
+  // ---------- arc diagram ----------
+  function renderArcs() {
+    const host = document.getElementById('arc-chart');
+    const stops = DATA.stops.filter(inScope);
+    const segs = DATA.segments.filter(inScope);
+    const js = DATA.journeys[S.grain].filter(inScope);
+    const anchors = new Set(js.flatMap(j => [j.from_stop, j.to_stop]));
+    const W = Math.max(host.parentElement.clientWidth, 700), H = 352;
+    const m = { l: 52, r: 52 }, y0 = 244;
+    const x = d3.scalePoint().domain(stops.map(s => s.id)).range([m.l, W - m.r]);
+    const svg = svgIn(host, W, H).attr('aria-label', 'Route with the flights used for the selected comparison');
+    // actual route along the baseline
+    for (const sg of segs) {
+      svg.append('line').attr('x1', x(sg.from_stop)).attr('x2', x(sg.to_stop)).attr('y1', y0).attr('y2', y0)
+        .attr('stroke', css('--actual')).attr('stroke-width', 3).attr('stroke-linecap', 'round')
+        .attr('stroke-dasharray', sg.planned ? '7 6' : null);
+      const mx = (x(sg.from_stop) + x(sg.to_stop)) / 2;
+      svg.append('text').attr('class', 'lbl').attr('x', mx).attr('y', y0 + 19).attr('text-anchor', 'middle').text(sg.label);
+      svg.append('text').attr('class', 'lbl-muted').attr('x', mx).attr('y', y0 + 33).attr('text-anchor', 'middle').text(`${km(sg.km)} km`);
+      const hit = svg.append('line').attr('x1', x(sg.from_stop)).attr('x2', x(sg.to_stop)).attr('y1', y0).attr('y2', y0)
+        .attr('stroke', 'transparent').attr('stroke-width', 18).datum(sg);
+      bindTip(hit, d => ({ head: d.title, rows: [{ value: mass(d.q[kLeg()][1]), label: `median, ${range(d.q[kLeg()])}`, color: css('--actual') }, { value: `${km(d.km)} km`, label: d.label }] }));
+    }
+    // flights as arcs
+    const maxKm = DATA.meta.max_flight_km;
+    for (const j of js) {
+      const x1 = x(j.from_stop), x2 = x(j.to_stop);
+      const h = 44 + 150 * Math.sqrt(j.flight_km / maxKm);
+      const path = `M${x1},${y0} C${x1},${y0 - h * 1.33} ${x2},${y0 - h * 1.33} ${x2},${y0}`;
+      svg.append('path').attr('d', path).attr('fill', 'none').attr('stroke', css('--flying')).attr('stroke-width', 2.2)
+        .attr('stroke-dasharray', j.planned ? '7 6' : null);
+      const mx = (x1 + x2) / 2, top = y0 - h;
+      const q = j.flying[S.nonco2];
+      svg.append('text').attr('class', 'lbl-strong').attr('x', mx).attr('y', top - 22).attr('text-anchor', 'middle').text(j.flight_label);
+      svg.append('text').attr('class', 'lbl').attr('x', mx).attr('y', top - 8).attr('text-anchor', 'middle').text(`${mass(q[1])}`);
+      const hit = svg.append('path').attr('d', path).attr('fill', 'none').attr('stroke', 'transparent').attr('stroke-width', 16).datum(j);
+      bindTip(hit, d => ({
+        head: `${d.title} · ${d.flight_note}`,
+        rows: [{ value: mass(d.flying[S.nonco2][1]), label: `flying, ${range(d.flying[S.nonco2])}`, color: css('--flying') },
+               { value: mass(d.actual[kLeg()][1]), label: `actual, ${range(d.actual[kLeg()])}`, color: css('--actual') },
+               { value: `${km(d.flight_km)} km`, label: 'flown distance incl. routing' }]
+      }));
+    }
+    // stops
+    for (const s of stops) {
+      const isA = anchors.has(s.id);
+      svg.append('circle').attr('cx', x(s.id)).attr('cy', y0).attr('r', isA ? 7 : 5.5)
+        .attr('fill', isA ? css('--ink') : css('--surface')).attr('stroke', isA ? css('--surface') : css('--ink-2')).attr('stroke-width', 2);
+      svg.append('text').attr('class', 'lbl-strong').attr('x', x(s.id)).attr('y', y0 + 60).attr('text-anchor', 'middle').text(s.short);
+      svg.append('text').attr('class', 'lbl-muted').attr('x', x(s.id)).attr('y', y0 + 76).attr('text-anchor', 'middle').text(s.caption);
+      svg.append('text').attr('class', 'lbl-muted').attr('x', x(s.id)).attr('y', y0 + 91).attr('text-anchor', 'middle').text(s.kind_label);
+    }
+    document.getElementById('grain-explain').textContent = opt('grain', S.grain).explain;
+  }
+
+  // ---------- cumulative ----------
+  function renderCumulative() {
+    const host = document.getElementById('cum-chart');
+    const c = DATA.cumulative[kCum()];
+    const today = DATA.meta.today;
+    let pts = c.points.filter(p => S.scope === 'planned' || p.date <= today);
+    const W = Math.max(host.clientWidth, 280), narrow = W < 560;
+    const H = narrow ? 270 : 330, m = { l: 44, r: narrow ? 14 : 96, t: 34, b: 28 };
+    const parse = d3.utcParse('%Y-%m-%d');
+    const X = pts.map(p => parse(p.date));
+    const x = d3.scaleUtc().domain(d3.extent(X)).range([m.l, W - m.r]);
+    const yMax = d3.max(pts, p => Math.max(p.flying[2], p.actual[2])) * 1.06;
+    const y = d3.scaleLinear().domain([0, yMax]).nice().range([H - m.b, m.t]);
+    const svg = svgIn(host, W, H).attr('aria-label', 'Cumulative emissions, actual travel vs flying instead');
+    const ax = svg.append('g').attr('class', 'ax');
+    for (const t of y.ticks(narrow ? 4 : 5)) {
+      ax.append('line').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(t)).attr('y2', y(t));
+      ax.append('text').attr('x', m.l - 8).attr('y', y(t) + 4).attr('text-anchor', 'end').text(t === 0 ? '0' : `${nf.format(t / 1000)} t`);
+    }
+    ax.append('line').attr('class', 'base').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0));
+    for (const t of x.ticks(narrow ? 4 : 7)) {
+      ax.append('text').attr('x', x(t)).attr('y', H - 8).attr('text-anchor', 'middle').text(d3.utcFormat('%-d %b')(t));
+    }
+    const todayX = x(parse(today));
+    // the model always emits a point dated today: solid up to it, dashed (planned) after it
+    const iToday = pts.findIndex(p => p.date === today);
+    const series = [['flying', css('--flying'), css('--flying-wash')], ['actual', css('--actual'), css('--actual-wash')]];
+    for (const [key, col, wash] of series) {
+      const area = d3.area().curve(d3.curveStepAfter).x((p, i) => x(X[i])).y0(p => y(p[key][0])).y1(p => y(p[key][2]));
+      svg.append('path').attr('d', area(pts)).attr('fill', wash);
+      const lineIdx = arr => d3.line().curve(d3.curveStepAfter).x(i => x(X[i])).y(i => y(pts[i][key][1]))(arr);
+      const idx = pts.map((p, i) => i);
+      const cut = iToday === -1 ? idx.length - 1 : iToday;
+      svg.append('path').attr('d', lineIdx(idx.slice(0, cut + 1))).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2.2);
+      if (cut < idx.length - 1) {
+        svg.append('path').attr('d', lineIdx(idx.slice(cut))).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2.2).attr('stroke-dasharray', '6 5');
+      }
+      if (!narrow) {
+        const last = pts[pts.length - 1][key];
+        svg.append('text').attr('class', 'lbl-strong').attr('x', W - m.r + 8).attr('y', y(last[1]) + 4)
+          .text(`${key === 'flying' ? 'Flying' : 'Actual'} ${mass(last[1])}`);
+      }
+    }
+    // milestones and today
+    let lastLabelX = -Infinity;
+    for (const s of DATA.milestones.filter(inScope)) {
+      if (s.date > (S.scope === 'planned' ? '9999' : today)) continue;
+      const mx = x(parse(s.date));
+      svg.append('line').attr('x1', mx).attr('x2', mx).attr('y1', m.t - 6).attr('y2', m.t + 2).attr('stroke', css('--ink-2'));
+      if (mx - lastLabelX < 62) continue;   // ticks always, labels only where they fit
+      svg.append('text').attr('class', 'lbl-muted').attr('x', mx).attr('y', m.t - 10).attr('text-anchor', 'middle').text(s.label);
+      lastLabelX = mx;
+    }
+    if (S.scope === 'planned') {
+      svg.append('line').attr('x1', todayX).attr('x2', todayX).attr('y1', m.t).attr('y2', H - m.b).attr('stroke', css('--rule'));
+      svg.append('text').attr('class', 'lbl-muted').attr('x', todayX + 4).attr('y', H - m.b - 6).text('today');
+    }
+    // crosshair
+    const cross = svg.append('line').attr('y1', m.t).attr('y2', H - m.b).attr('stroke', css('--ink-2')).attr('stroke-width', 1).attr('visibility', 'hidden');
+    svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', W - m.l - m.r).attr('height', H - m.t - m.b).attr('fill', 'transparent')
+      .on('pointermove', evt => {
+        const d = x.invert(d3.pointer(evt)[0]);
+        let i = d3.bisectRight(X, d) - 1; if (i < 0) i = 0;
+        const p = pts[i];
+        cross.attr('x1', x(d)).attr('x2', x(d)).attr('visibility', 'visible');
+        showTip(evt, `${d3.utcFormat('%-d %b %Y')(d)}${p.date > today ? ' · planned' : ''}`, [
+          { value: mass(p.flying[1]), label: `flying, ${range(p.flying)}`, color: css('--flying') },
+          { value: mass(p.actual[1]), label: `actual, ${range(p.actual)}`, color: css('--actual') },
+          { value: mass(p.avoided[1]), label: `avoided, ${range(p.avoided)}` }]);
+      })
+      .on('pointerleave', () => { cross.attr('visibility', 'hidden'); hideTip(); });
+    makeTable(document.getElementById('cum-table'),
+      [{ label: 'Date' }, { label: 'Actual (median)', num: true }, { label: 'Flying (median)', num: true }, { label: 'Avoided, 90 %', num: true }],
+      pts.map(p => [fmtDate(p.date) + (p.date > today ? ' (planned)' : ''), mass(p.actual[1]), mass(p.flying[1]), range(p.avoided)]));
+  }
+
+  // ---------- journeys (dumbbell on a log axis) ----------
+  function renderJourneys() {
+    const host = document.getElementById('jr-chart');
+    const js = DATA.journeys[S.grain].filter(inScope);
+    const W = Math.max(host.clientWidth, 280), narrow = W < 640;
+    const labelW = narrow ? 0 : Math.min(270, W * 0.33), rightW = narrow ? 12 : 128;
+    const rowH = narrow ? 84 : 58, top = 8, axisH = 26;
+    const H = top + js.length * rowH + axisH;
+    const vals = js.flatMap(j => [j.actual[kLeg()][0], j.flying[S.nonco2][2], j.actual[kLeg()][2], j.flying[S.nonco2][0]]);
+    const x = d3.scaleLog().domain([Math.max(0.5, d3.min(vals) * 0.6), d3.max(vals) * 1.5]).range([labelW + 10, W - rightW]);
+    const svg = svgIn(host, W, H).attr('aria-label', 'Actual vs flying emissions for each journey');
+    const ax = svg.append('g').attr('class', 'ax');
+    for (const t of logTicks(x.domain())) {
+      ax.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top).attr('y2', H - axisH);
+      ax.append('text').attr('x', x(t)).attr('y', H - 8).attr('text-anchor', 'middle').text(tickKg(t));
+    }
+    js.forEach((j, i) => {
+      const yT = top + i * rowH;
+      const yMid = narrow ? yT + 50 : yT + rowH / 2;
+      const g = svg.append('g');
+      if (narrow) {
+        g.append('text').attr('class', 'lbl-strong').attr('x', 0).attr('y', yT + 16).text(j.title + (j.planned ? ' (planned)' : ''));
+        g.append('text').attr('class', 'lbl-muted').attr('x', 0).attr('y', yT + 31).text(`${j.actual_label} vs. ${j.flight_label}`);
+      } else {
+        g.append('text').attr('class', 'lbl-strong').attr('x', 0).attr('y', yMid - 3).text(j.title + (j.planned ? ' (planned)' : ''));
+        g.append('text').attr('class', 'lbl-muted').attr('x', 0).attr('y', yMid + 13).text(`${j.actual_label} vs. ${j.flight_label}`);
+      }
+      const qa = j.actual[kLeg()], qf = j.flying[S.nonco2], qd = j.diff[kFull()];
+      g.append('line').attr('x1', x(qa[1])).attr('x2', x(qf[1])).attr('y1', yMid).attr('y2', yMid).attr('stroke', css('--rule')).attr('stroke-width', 1.5);
+      intervalMark(g, x, yMid - 6, qf, css('--flying'));
+      intervalMark(g, x, yMid + 6, qa, css('--actual'));
+      const better = qd[1] >= 0;
+      const ann = better ? `saves ${mass(qd[1])}` : `▲ ${mass(-qd[1])} more`;
+      if (narrow) g.append('text').attr('class', `lbl ${better ? 'good' : 'bad'}`).attr('x', W).attr('y', yT + 16).attr('text-anchor', 'end').text(ann);
+      else g.append('text').attr('class', `lbl ${better ? 'good' : 'bad'}`).attr('x', W).attr('y', yMid + 4).attr('text-anchor', 'end').text(ann);
+      const hit = g.append('rect').attr('x', 0).attr('y', yT).attr('width', W).attr('height', rowH).attr('fill', 'transparent').datum(j);
+      bindTip(hit, d => ({ head: d.title, rows: [
+        { value: mass(d.flying[S.nonco2][1]), label: `flying (${d.flight_label}), ${range(d.flying[S.nonco2])}`, color: css('--flying') },
+        { value: mass(d.actual[kLeg()][1]), label: `actual, ${range(d.actual[kLeg()])}`, color: css('--actual') },
+        { value: mass(d.diff[kFull()][1]), label: `difference, ${range(d.diff[kFull()])}` }] }));
+    });
+    makeTable(document.getElementById('jr-table'),
+      [{ label: 'Journey' }, { label: 'Actual, 90 %', num: true }, { label: 'Flying, 90 %', num: true }, { label: 'Avoided (median)', num: true }],
+      js.map(j => [`${j.title}${j.planned ? ' (planned)' : ''}`, range(j.actual[kLeg()]), range(j.flying[S.nonco2]), mass(j.diff[kFull()][1])]));
+  }
+
+  // ---------- spotlight: one ferry crossing under every method ----------
+  function renderSpotlight() {
+    const sp = DATA.spotlight;
+    document.getElementById('spot-lede').textContent = sp.lede;
+    const facts = document.getElementById('spot-facts');
+    facts.replaceChildren();
+    for (const [k, v] of sp.facts) {
+      const dt = document.createElement('dt'); dt.textContent = k;
+      const dd = document.createElement('dd'); dd.textContent = v;
+      facts.append(dt, dd);
+    }
+    const host = document.getElementById('spot-chart');
+    const W = Math.max(host.clientWidth, 280), narrow = W < 520;
+    const labelW = narrow ? 0 : 170, rowH = narrow ? 50 : 40, top = 34, axisH = 26;
+    const rows = sp.rows;
+    const H = top + rows.length * rowH + axisH;
+    const qf = sp.flight[S.nonco2];
+    const vals = rows.flatMap(r => [r.q[0], r.q[2]]).concat([qf[0], qf[2]]);
+    const x = d3.scaleLog().domain([d3.min(vals) * 0.6, d3.max(vals) * 1.5]).range([labelW + 8, W - 12]);
+    const svg = svgIn(host, W, H).attr('aria-label', 'Emissions of one ferry crossing under each counting method, vs the flight');
+    const ax = svg.append('g').attr('class', 'ax');
+    for (const t of logTicks(x.domain())) {
+      ax.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 6).attr('y2', H - axisH);
+      ax.append('text').attr('x', x(t)).attr('y', H - 8).attr('text-anchor', 'middle').text(tickKg(t));
+    }
+    svg.append('rect').attr('x', x(qf[0])).attr('width', x(qf[2]) - x(qf[0])).attr('y', top - 6).attr('height', H - axisH - top + 6).attr('fill', css('--flying-wash'));
+    svg.append('line').attr('x1', x(qf[1])).attr('x2', x(qf[1])).attr('y1', top - 6).attr('y2', H - axisH).attr('stroke', css('--flying')).attr('stroke-width', 2);
+    svg.append('text').attr('class', 'lbl').attr('x', x(qf[1])).attr('y', top - 12).attr('text-anchor', x(qf[1]) > W * 0.75 ? 'end' : 'middle')
+      .text(`${sp.flight_label}: ${mass(qf[1])}`);
+    let above = 0;
+    rows.forEach((r, i) => {
+      const yT = top + i * rowH, yMid = narrow ? yT + 34 : yT + rowH / 2;
+      const cur = r.alloc === S.alloc && r.occ === S.occ;
+      if (r.q[1] > qf[1]) above++;
+      const label = `${opt('alloc', r.alloc).label} · ${opt('occ', r.occ).label}`;
+      if (narrow) svg.append('text').attr('class', cur ? 'lbl-strong' : 'lbl').attr('x', 0).attr('y', yT + 14).text(label + (cur ? '  ← current' : ''));
+      else svg.append('text').attr('class', cur ? 'lbl-strong' : 'lbl').attr('x', 0).attr('y', yMid + 4).text(label);
+      const g = svg.append('g');
+      intervalMark(g, x, yMid, r.q, css('--actual'), cur ? 6 : 5);
+      if (cur && !narrow) g.append('text').attr('class', 'lbl-muted').attr('x', Math.min(x(r.q[2]) + 8, W - 60)).attr('y', yMid + 4).text('current');
+      const hit = svg.append('rect').attr('x', 0).attr('y', yT).attr('width', W).attr('height', rowH).attr('fill', 'transparent').datum(r);
+      bindTip(hit, d => ({ head: `${opt('alloc', d.alloc).label} · ${opt('occ', d.occ).label}`, rows: [
+        { value: mass(d.q[1]), label: `this crossing, ${range(d.q)}`, color: css('--actual') },
+        { value: mass(qf[1]), label: `${sp.flight_label}, ${range(qf)}`, color: css('--flying') }] }));
+    });
+    const call = document.getElementById('spot-callout');
+    call.replaceChildren();
+    const b = document.createElement('b'); b.textContent = `Above the flight in ${above} of ${rows.length} ways of counting.`;
+    call.append(b, document.createTextNode(' ' + sp.callout));
+    makeTable(document.getElementById('spot-table'),
+      [{ label: 'Method' }, { label: 'This crossing, 90 %', num: true }, { label: 'Median', num: true }],
+      rows.map(r => [`${opt('alloc', r.alloc).label} · ${opt('occ', r.occ).label}`, range(r.q), mass(r.q[1])]).concat([[sp.flight_label, range(qf), mass(qf[1])]]));
+  }
+
+  // ---------- intensity per leg ----------
+  function renderIntensity() {
+    const host = document.getElementById('int-chart');
+    const legs = DATA.legs.filter(inScope);
+    const W = Math.max(host.clientWidth, 280), narrow = W < 600;
+    const labelW = narrow ? 0 : 240, rowH = narrow ? 46 : 40, top = 30, axisH = 26;
+    const H = top + legs.length * rowH + axisH;
+    const band = DATA.flight_band[S.grain][S.nonco2];
+    const vals = legs.flatMap(l => [l.q[kLeg()][0] / l.km * 1000, l.q[kLeg()][2] / l.km * 1000]).concat(band, DATA.refs.map(r => r.gpkm));
+    const x = d3.scaleLog().domain([Math.max(0.3, d3.min(vals) * 0.6), d3.max(vals) * 1.4]).range([labelW + 8, W - 12]);
+    const svg = svgIn(host, W, H).attr('aria-label', 'Grams of CO2e per passenger-kilometre for each leg');
+    const ax = svg.append('g').attr('class', 'ax');
+    for (const t of logTicks(x.domain())) {
+      ax.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 6).attr('y2', H - axisH);
+      ax.append('text').attr('x', x(t)).attr('y', H - 8).attr('text-anchor', 'middle').text(`${nf.format(t)} g`);
+    }
+    svg.append('rect').attr('x', x(band[0])).attr('width', x(band[1]) - x(band[0])).attr('y', top - 6).attr('height', H - axisH - top + 6).attr('fill', css('--flying-wash'));
+    svg.append('text').attr('class', 'lbl').attr('x', x(Math.sqrt(band[0] * band[1]))).attr('y', top - 12).attr('text-anchor', 'middle').text('flights');
+    for (const r of DATA.refs) {
+      svg.append('line').attr('x1', x(r.gpkm)).attr('x2', x(r.gpkm)).attr('y1', top - 6).attr('y2', H - axisH).attr('stroke', css('--muted')).attr('stroke-width', 1.2);
+      if (!narrow) svg.append('text').attr('class', 'lbl-muted').attr('x', x(r.gpkm) + 3).attr('y', H - axisH - 4).text(r.label);
+    }
+    legs.forEach((l, i) => {
+      const yT = top + i * rowH, yMid = narrow ? yT + 32 : yT + rowH / 2;
+      const q = l.q[kLeg()].map(v => v / l.km * 1000);
+      const label = `${l.short}${l.planned ? ' (planned)' : ''}`;
+      if (narrow) svg.append('text').attr('class', 'lbl').attr('x', 0).attr('y', yT + 13).text(`${label} · ${l.mode_label}`);
+      else {
+        svg.append('text').attr('class', 'lbl').attr('x', 0).attr('y', yMid - 2).text(label);
+        svg.append('text').attr('class', 'lbl-muted').attr('x', 0).attr('y', yMid + 12).text(l.mode_label);
+      }
+      intervalMark(svg.append('g'), x, yMid, q, css('--actual'));
+      const hit = svg.append('rect').attr('x', 0).attr('y', yT).attr('width', W).attr('height', rowH).attr('fill', 'transparent').datum(l);
+      bindTip(hit, d => {
+        const qq = d.q[kLeg()].map(v => v / d.km * 1000);
+        return { head: `${d.title} · ${d.mode_label}`, rows: [{ value: `${gpkm(qq[1])} g/pkm`, label: `${gpkm(qq[0])}–${gpkm(qq[2])}`, color: css('--actual') }, { value: mass(d.q[kLeg()][1]), label: `over ${km(d.km)} km` }] };
+      });
+    });
+  }
+
+  // ---------- legs table ----------
+  function renderTable() {
+    const t = document.getElementById('legs-table');
+    t.replaceChildren();
+    const cols = [['Date'], ['Leg'], ['Mode'], ['km', 1], ['kg CO₂e', 1], ['g/pkm', 1], ['Grade'], ['']];
+    const tr = t.createTHead().insertRow();
+    for (const [c, n] of cols) { const th = document.createElement('th'); th.textContent = c; if (n) th.className = 'num'; tr.appendChild(th); }
+    const tb = t.createTBody();
+    for (const l of DATA.legs.filter(inScope)) {
+      const q = l.q[kLeg()];
+      const row = tb.insertRow(); if (l.planned) row.className = 'planned';
+      const cell = (txt, cls, sub) => {
+        const td = row.insertCell(); if (cls) td.className = cls;
+        td.append(document.createTextNode(txt));
+        if (sub) { const s = document.createElement('span'); s.className = 'sm'; s.textContent = sub; td.appendChild(s); }
+        return td;
+      };
+      cell(fmtDate(l.date));
+      const legCell = cell(l.title);
+      if (l.planned) { const p = document.createElement('span'); p.className = 'pill'; p.textContent = 'planned'; legCell.appendChild(p); }
+      cell(l.mode_label, null, l.service);
+      cell(km(l.km), 'num', l.km_note);
+      cell(mass(q[1]), 'num', range(q));
+      cell(gpkm(q[1] / l.km * 1000), 'num');
+      const gtd = row.insertCell(); const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = l.grade; badge.title = l.grade_note; gtd.appendChild(badge);
+      const btd = row.insertCell(); const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'how'; btn.textContent = 'How'; btn.setAttribute('aria-expanded', 'false'); btd.appendChild(btn);
+      const trow = tb.insertRow(); trow.className = 'trace-row'; trow.hidden = true;
+      const ttd = trow.insertCell(); ttd.colSpan = cols.length;
+      const pre = document.createElement('p'); pre.className = 'trace'; pre.textContent = l.trace[kLeg()];
+      const src = document.createElement('span'); src.className = 'src'; src.textContent = `\nSources: ${l.sources.join(' · ')}`;
+      pre.appendChild(src); ttd.appendChild(pre);
+      btn.addEventListener('click', () => { const open = trow.hidden; trow.hidden = !open; btn.setAttribute('aria-expanded', String(open)); });
+    }
+  }
+
+  // ---------- wiring ----------
+  function update() {
+    syncInputs();
+    renderHero(); renderStrip(); renderArcs(); renderCumulative(); renderJourneys(); renderSpotlight(); renderIntensity(); renderTable();
+  }
+  buildLensBar();
+  document.getElementById('foot').textContent = DATA.meta.footer;
+  update();
+  let raf = 0, lastW = innerWidth;
+  addEventListener('resize', () => {
+    if (innerWidth === lastW) return; lastW = innerWidth;
+    cancelAnimationFrame(raf); raf = requestAnimationFrame(() => { renderStrip(); renderArcs(); renderCumulative(); renderJourneys(); renderSpotlight(); renderIntensity(); });
+  });
+  const mq = matchMedia('(prefers-color-scheme: dark)');
+  if (mq.addEventListener) mq.addEventListener('change', update);
+  new MutationObserver(update).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+})();
+</script>

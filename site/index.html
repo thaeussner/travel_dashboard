@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Flight-free travel</title>
+<meta name="description" content="Costs and transport emissions of a flight-free trip from Switzerland to the Canary Islands and on to the Caribbean.">
+<meta name="theme-color" content="#0f1c28">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/app.css">
+<style>
+  .doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding-block: 8px 24px; }
+  @media (max-width: 700px) { .doors { grid-template-columns: 1fr; } }
+  .door { display: grid; gap: 6px; text-decoration: none; color: var(--ink); background: var(--surface); border: 1px solid var(--ring); border-radius: 14px; padding: 18px 20px; }
+  .door:hover { border-color: var(--ink-2); }
+  .door:focus-visible { outline: 2px solid var(--actual); outline-offset: 3px; }
+  .door h2 { font-family: var(--font-display); font-weight: 600; font-size: 30px; }
+  .door .big { font-size: 40px; font-weight: 600; line-height: 1.05; }
+  .door .big small { font-size: 16px; font-weight: 500; color: var(--ink-2); }
+  .door .go { color: var(--actual); font-weight: 500; }
+</style>
+<script type="module" src="assets/home.js"></script>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="./">Flight-free travel</a>
+  <nav class="nav" aria-label="Pages"><a href="costs/">Costs</a><a href="emissions/">Emissions</a></nav>
+  <button class="sync owner-only" id="sync-pill" type="button">Synced</button>
+</div></header>
+<main class="wrap">
+  <section class="page-head">
+    <p class="kicker">Switzerland → Canary Islands → Caribbean, without flying</p>
+    <h1>Flight-free travel</h1>
+    <p class="sub">A personal log of a slow trip: what it costs, and what the overland and sea route emits compared with the flights it replaced.</p>
+  </section>
+  <section class="doors">
+    <a class="door" href="costs/">
+      <span class="kicker">Costs</span>
+      <h2>Money</h2>
+      <span class="big" id="costs-big">–</span>
+      <span class="muted" id="costs-sub">Totals and averages per day, week, month and country</span>
+      <span class="go">Open costs →</span>
+    </a>
+    <a class="door" href="emissions/">
+      <span class="kicker">Emissions</span>
+      <h2>Not flying</h2>
+      <span class="big" id="em-big">–</span>
+      <span class="muted" id="em-sub">Actual travel against realistic flights, with every method choice as a switch</span>
+      <span class="go">Open emissions →</span>
+    </a>
+  </section>
+  <footer class="end"><span id="foot"></span><a href="#" data-owner-link>Owner</a></footer>
+</main>
+</body>
+</html>

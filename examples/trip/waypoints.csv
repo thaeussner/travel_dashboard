@@ -1,0 +1,11 @@
+id,name,type,country,arrive,depart,note
+zurich,Zürich,destination,Switzerland,,2026-09-26,home
+paris,Paris,stop,France,2026-09-26,2026-09-26,change of trains
+hendaye,Hendaye,stop,France,2026-09-26,2026-09-27,
+madrid,Madrid,stop,Spain,2026-09-27,2026-09-28,
+sevilla,Sevilla,stop,Spain,2026-09-28,2026-09-28,
+huelva,Huelva,stop,Spain,2026-09-28,2026-09-28,ferry port
+tenerife,Santa Cruz de Tenerife,destination,Spain,2026-09-30,2026-10-12,
+la-palma,Santa Cruz de La Palma,destination,Spain,2026-10-12,2026-10-17,
+tenerife-2,Los Cristianos,destination,Spain,2026-10-17,2026-11-22,
+martinique,Le Marin,destination,Martinique,2026-12-12,,planned landfall

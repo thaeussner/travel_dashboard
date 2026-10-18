@@ -1,0 +1,317 @@
+# Emission profiles. Read by travel_dashboard/profiles.py; reasoning in docs/METHODOLOGY.md.
+#
+# A number is fixed, or [low, central, high], sampled as a triangular distribution in the Monte
+# Carlo. Each parameter is drawn once per draw and shared by every travel that uses it.
+# A travel row uses its mode's defaults, overlaid by the first [[vehicles]] entry whose `match`
+# pattern (a regex, whole words, case-insensitive) is found in the row's `vehicle` text.
+#
+# Units
+#   g_pkm       g CO2e per passenger-km at the factor's typical load (well-to-wheel)
+#   g_vkm       g CO2e per vehicle-km (well-to-wheel)
+#   kg_fuel_nm  kg fuel per nautical mile (ships)
+#   fuels       kg CO2e per kg fuel (ships, planes) or per litre (cars, yachts), well-to-wheel
+#   seats       default capacity when the row has no occ_max
+#   lf          typical load factor (share of seats taken)
+
+[meta]
+version = "2026-10-18"
+
+[fuels]
+mgo = [3.80, 3.88, 3.95]        # per kg marine gas oil: IMO 4th GHG Study 3.206 + FuelEU Maritime upstream 14.4 g/MJ
+hfo = [3.55, 3.68, 3.88]        # per kg residual fuel / VLSFO: IMO 3.114 + upstream
+diesel = [3.25, 3.29, 3.40]     # per litre: DESNZ 2025 diesel 3.29, marine gas oil 3.40
+petrol = [2.70, 2.80, 2.95]     # per litre: DESNZ 2025 petrol incl. biofuel blend
+jet_wtt = [0.50, 0.54, 0.65]    # upstream per kg jet fuel (myclimate P = 0.538)
+
+[allocation]   # ferries: splitting a sailing between passengers and freight
+source = "ISO 14083:2023 Annex G passenger equivalents; DESNZ 2026 ferry masses"
+pax_t = [0.08, 0.10, 0.10]      # passenger + luggage, tonnes (DESNZ 0.10, EN 16258 0.08)
+car_peq = 1.3                   # ISO 14083 passenger equivalents per car
+car_t = 1.25                    # DESNZ car mass, tonnes
+truck_peq = 18                  # articulated truck
+truck_t = 22.2                  # DESNZ freight unit incl. vehicle, tonnes
+trailer_peq = [14, 15, 18]      # unaccompanied trailer 14 … articulated truck 18
+trailer_t = [18.0, 22.2, 26.0]
+
+[flight]
+source = "Per-flight fuel model, calibrated to DESNZ 2026 within ~10 %; non-CO2 after Lee et al. 2021"
+uplift = [0.04, 0.08, 0.12]     # flown distance above great circle (DESNZ +8 %)
+co2_per_kg = 3.16               # kg CO2 per kg jet fuel (ICAO)
+nonco2_long = [1.2, 1.7, 3.0]   # multiplier on combustion CO2: GWP100 1.7 (Lee 2021) … GWP*/ERF ~3
+nonco2_short = [1.0, 1.3, 2.0]  # jets under short_km spend less of the flight at cruise altitude
+nonco2_turboprop = [1.0, 1.1, 1.4]   # turboprops cruise low, where contrails rarely form
+short_km = 500
+wide_from_km = 4000             # aircraft not named: wide-body from this distance
+
+[flight.narrow]
+label = "narrow-body jet"
+match = ['a3(19|20|21)\w*', 'a220\w*', 'b?737\w*', 'e1[79]\d', 'e19\d', 'crj\w*', 'embraer']
+seats = 180
+lf = [0.80, 0.85, 0.92]         # IATA 2025: European carriers 84 %; easyJet 90 %; SWISS group 83 %
+lto_kg = [550, 750, 950]        # taxi, take-off, climb and landing fuel per flight
+cruise_kg_km = [2.4, 2.7, 3.0]
+cargo = 0
+
+[flight.wide]
+label = "wide-body jet"
+match = ['a3[3-5]\d\w*', 'a380', 'b?7[4678]7\w*', 'dreamliner']
+seats = 350
+lf = [0.78, 0.83, 0.88]
+lto_kg = [1800, 2200, 2700]
+cruise_kg_km = [6.0, 6.8, 7.6]
+cargo = [0.06, 0.12, 0.20]      # share of fuel allocated to belly freight
+
+[flight.turboprop]
+label = "turboprop"
+match = ['atr\w*', 'dash ?8', 'q400', 'turboprop', 'saab ?\d+']
+seats = 72
+lf = [0.60, 0.72, 0.85]
+lto_kg = [140, 190, 250]
+cruise_kg_km = [1.25, 1.45, 1.70]
+cargo = 0
+
+# ----------------------------------------------------------------------------------- modes
+[modes.train]
+kind = "factor"
+label = "train (generic)"
+g_pkm = [3, 15, 45]             # EEA/CE Delft (EU, 2018): high-speed 15.8, conventional 41.2; FR/CH grids far lower
+seats = 400
+lf = [0.45, 0.60, 0.75]
+grade = "D"
+source = "EEA/CE Delft 2021 (EU 2018 data, location-based electricity)"
+
+[modes.bus]
+kind = "factor"
+label = "local bus (generic)"
+g_pkm = [60, 130, 160]          # DESNZ 2025: average local bus 130, outside London 157
+seats = 60
+lf = [0.12, 0.20, 0.30]         # DESNZ assumes ~11 passengers
+grade = "D"
+source = "DESNZ 2025 local bus"
+
+[modes.coach]
+kind = "factor"
+label = "coach (generic)"
+g_pkm = [25, 34, 48]            # FlixBus Iberia 27.2 · DESNZ 2025 34.3 · DESNZ 2026 ~48
+seats = 50
+lf = [0.35, 0.50, 0.70]
+grade = "C"
+source = "DESNZ 2025 coach; FlixBus 2025"
+
+[modes.car]
+kind = "vehicle"
+label = "car (petrol, generic)"
+fuel = "petrol"
+g_vkm = [190, 209, 230]         # DESNZ 2025 average petrol car (diesel 215)
+occupancy = [1.0, 1.6, 2.2]     # typical occupants (ADEME 1.6)
+grade = "C"
+source = "DESNZ 2025 passenger vehicles"
+
+[modes.taxi]
+kind = "vehicle"
+label = "taxi"
+fuel = "diesel"
+g_vkm = [150, 210, 260]
+occupancy = [1.0, 1.4, 2.0]
+grade = "D"
+source = "DESNZ 2025 (taxi ≈ average car incl. empty running)"
+
+[modes.ferry]
+kind = "ship"
+label = "ro-pax ferry (generic)"
+fuel = "hfo"
+kg_fuel_nm = [145, 170, 257]    # EU MRV 2024-25, Spain–Canaries ro-pax: Sicilia 145-162, Marie Curie 170, Volcán de Tinamar 245-257
+seats = 1000
+lf = [0.10, 0.20, 0.40]
+trailers = [60, 100, 150]       # freight units per sailing on a freight-heavy line
+cars = [20, 50, 90]
+grade = "D"
+source = "EU MRV 2024-2025 (Spain–Canaries ro-pax)"
+
+[modes.fast_ferry]
+kind = "ship"
+label = "fast ferry (generic)"
+fuel = "mgo"
+kg_fuel_nm = [130, 160, 214]    # EU MRV 2024-25, Fred. Olsen high-speed craft 139-214
+seats = 860
+lf = [0.21, 0.28, 0.35]         # MRV-derived average 21-31 %
+vehicles = [40, 75, 110]
+truck_share = [0.02, 0.05, 0.10]
+grade = "D"
+source = "EU MRV 2024-2025 (Canary Islands high-speed craft)"
+
+[modes.plane]
+kind = "flight"
+label = "plane"
+grade = "C"
+
+[modes.sail]
+kind = "fuel"
+label = "sailing yacht"
+fuel = "diesel"
+l_per_100km = [1.0, 3.0, 8.0]   # motoring and charging: ~50-400 L per Atlantic crossing (estimate)
+occupancy = [4, 5.5, 7]         # crew; ARC 2025 averaged ~5.5
+grade = "C"
+source = "Estimate from the ARC 2024 skipper survey (~3 h/day charging); DESNZ 2025 diesel"
+
+[modes.bike]
+kind = "zero"
+label = "bike"
+grade = "A"
+
+[modes.walk]
+kind = "zero"
+label = "walk"
+grade = "A"
+
+[modes.other]
+kind = "factor"
+label = "other (generic)"
+g_pkm = [20, 100, 250]
+seats = 1
+lf = 1
+grade = "D"
+source = "Placeholder: choose a specific mode where possible"
+
+# -------------------------------------------------------------------- specific vehicles
+# First match wins: keep specific entries above generic ones.
+
+[[vehicles]]
+name = "TGV Lyria"
+mode = "train"
+match = ['lyria']
+g_pkm = [1.0, 2.5, 6.0]
+seats = 507
+lf = [0.55, 0.70, 0.85]
+grade = "C"
+source = "SNCF Info GES 2025: TGV Lyria 2.5 g/pkm (location-based French mix)"
+
+[[vehicles]]
+name = "TGV"
+mode = "train"
+match = ['tgv', 'inoui', 'ouigo']
+g_pkm = [1.4, 2.3, 5.0]
+seats = 509
+lf = [0.55, 0.70, 0.85]
+grade = "C"
+source = "SNCF Info GES 2025: TGV INOUI 2.3, OUIGO 1.4 g/pkm; ADEME 2.93 incl. rolling stock"
+
+[[vehicles]]
+name = "Renfe AVE / Avlo"
+mode = "train"
+match = ['ave', 'avlo', 'iryo']
+g_pkm = [3.6, 8.0, 18.0]
+seats = 400
+lf = [0.60, 0.75, 0.85]
+grade = "C"
+source = "Renfe 2025: 3.6 g/pkm market-based; ~8 location-based (Spanish grid ~150 g/kWh)"
+
+[[vehicles]]
+name = "Renfe Alvia / Intercity"
+mode = "train"
+match = ['alvia', 'renfe', 'intercity', 'media distancia']
+g_pkm = [3.6, 11.0, 25.0]
+seats = 300
+lf = [0.50, 0.65, 0.80]
+grade = "C"
+source = "Renfe 2025: 3.6 g/pkm market-based; ~11 location-based for older stock"
+
+[[vehicles]]
+name = "Intercités"
+mode = "train"
+match = ['intercit\w*']
+g_pkm = [4.0, 5.0, 9.0]
+seats = 400
+lf = [0.40, 0.55, 0.70]
+grade = "C"
+source = "SNCF Info GES 2025: Intercités 4.8 g/pkm; ADEME 7.5"
+
+[[vehicles]]
+name = "TER"
+mode = "train"
+match = ['ter']
+g_pkm = [14, 19, 28]
+seats = 220
+lf = [0.20, 0.30, 0.40]
+grade = "C"
+source = "SNCF Info GES 2025: TER 19 g/pkm; ADEME 27.7"
+
+[[vehicles]]
+name = "SBB"
+mode = "train"
+match = ['sbb', 'ic ?\d*', 'ir ?\d*', 's-?bahn', 'regio ?express']
+g_pkm = [0.9, 5.0, 9.0]
+seats = 600
+lf = [0.25, 0.35, 0.50]
+grade = "C"
+source = "mobitool v3.1: SBB 0.9 g/pkm operation (market-based); ~5 with the Swiss consumer mix"
+
+[[vehicles]]
+name = "FlixBus"
+mode = "coach"
+match = ['flix\w*']
+g_pkm = [22, 27, 34]
+seats = 50
+lf = [0.50, 0.60, 0.75]
+grade = "C"
+source = "FlixBus 2025: Iberia 27.2, France 25.5 g/pkm (WTW, actual passenger-km)"
+
+[[vehicles]]
+name = "Bencomo Express"
+mode = "fast_ferry"
+match = ['bencomo\w*']
+kg_fuel_nm = [130, 145, 170]
+seats = 859
+pax_typical = [230, 260, 300]   # MRV-derived average aboard (29-31 % of 859)
+vehicles = [40, 75, 110]        # line average 0.29 vehicles per passenger
+truck_share = [0.02, 0.05, 0.10]
+grade = "B"
+source = "EU MRV 2024-2025: Bencomo Express 139-145 kg/nm, ~260 passengers aboard on average"
+
+[[vehicles]]
+name = "Benchijigua Express"
+mode = "fast_ferry"
+match = ['benchijigua\w*']
+kg_fuel_nm = [160, 168, 180]
+seats = 1291
+pax_typical = [290, 315, 340]
+vehicles = [60, 95, 140]
+truck_share = [0.02, 0.05, 0.10]
+grade = "B"
+source = "EU MRV 2024-2025: Benchijigua Express 165-170 kg/nm, ~315 passengers aboard on average"
+
+[[vehicles]]
+name = "Fred. Olsen fast ferry"
+mode = "fast_ferry"
+match = ['fred\.? ?olsen', 'bajamar\w*', 'ba[ñn]aderos\w*', 'betancuria\w*', 'bentago\w*']
+kg_fuel_nm = [139, 160, 214]
+seats = 900
+lf = [0.21, 0.27, 0.31]
+vehicles = [40, 75, 110]
+truck_share = [0.02, 0.05, 0.10]
+grade = "C"
+source = "EU MRV 2024-2025: Fred. Olsen high-speed fleet 139-214 kg/nm, 21-31 % average load"
+
+[[vehicles]]
+name = "Volcán de Tinamar"
+mode = "ferry"
+match = ['volc[aá]n de tinamar', 'tinamar']
+kg_fuel_nm = [245, 251, 257]
+seats = 1500
+lf = [0.08, 0.10, 0.12]
+trailers = [80, 120, 170]
+cars = [20, 50, 90]
+grade = "B"
+source = "EU MRV 2024-2025: Volcán de Tinamar 245-257 kg/nm, ~10 % average load"
+
+[[vehicles]]
+name = "Huelva–Canarias ro-pax"
+mode = "ferry"
+match = ['marie curie', 'buenavista\w*', 'sicilia']
+kg_fuel_nm = [145, 165, 190]
+seats = 1000
+lf = [0.10, 0.18, 0.35]
+trailers = [60, 100, 150]
+cars = [20, 50, 90]
+grade = "C"
+source = "EU MRV 2024-2025: Marie Curie 170, Sicilia 145-162 kg/nm"

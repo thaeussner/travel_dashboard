@@ -1,0 +1,76 @@
+# Flight-free travel
+
+A personal dashboard for a slow trip:
+
+- **Costs:** CHF amounts by date, category and country.
+- **Emissions:** each leg, against the realistic alternatives you would have taken instead.
+
+It's a static site on GitHub Pages. Friends can view it; only you can edit.
+
+## Setup (once)
+
+1. Push this repo to GitHub.
+2. In the repo, go to **Settings → Pages → Build and deployment** and set **Source: GitHub Actions**.
+3. The workflow in `.github/workflows/build.yml` tests, builds and deploys on every push. It also
+   runs once a day.
+4. The site appears at `https://thaeussner.github.io/travel_dashboard/`.
+
+## Enable editing on your phone
+
+1. Create a fine-grained token at
+   [github.com/settings/personal-access-tokens/new](https://github.com/settings/personal-access-tokens/new):
+   - **Repository access:** only `travel_dashboard`
+   - **Permissions → Contents:** Read and write
+   - **Expiration:** up to a year
+2. Open the site and tap **Owner** at the bottom of any page. Paste the token.
+3. The token stays in that browser only. Friends don't have it, so they can't edit. If the phone is
+   lost, revoke the token on GitHub.
+4. Add the site to the home screen. On iPhone: Share → Add to Home Screen.
+
+Edits are saved to the CSV files in `data/` straight away. If you're offline, they wait on the phone
+and go up when you're back online. Charts for friends update after the next build, about 2 minutes
+later.
+
+## Data (plain CSV, editable by hand too)
+
+| file | columns |
+|---|---|
+| `data/costs.csv` | `id, date, amount, category, country` |
+| `data/waypoints.csv` | `id, name, type, country, arrive, depart, note` |
+| `data/travel.csv` | `id, type, option, main, date, from, to, mode, vehicle, km, occ_max, occ_obs, fuel_l, note` |
+
+**Costs:**
+
+- `amount` is CHF.
+- `category` is one of groceries, coffee, treats, activities, accommodation, transport,
+  restaurants, other.
+
+**Waypoints:**
+
+- `type` is `destination` (a place you'd have gone anyway) or `stop`.
+
+**Travel:**
+
+- `type` is `leg` (it happened) or `alt` (an alternative).
+- Alternative rows with the same `option` name form one alternative, e.g. a flight connecting in
+  Paris. The alternative replaces every leg between its first and last waypoint.
+- `main = 1` marks the alternative that counts for that span.
+- `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text.
+- `km` is entered by hand. For flights, use the great-circle distance; the model adds routing.
+- `occ_max` and `occ_obs` are capacity and observed head count.
+- `fuel_l` is litres burnt by the whole vehicle (sailing, car).
+
+**Emission factors and vessels** live in `config/emissions.toml`, each with its source. The
+reasoning is in `docs/METHODOLOGY.md`.
+
+## Local preview
+
+No dependencies beyond Python ≥ 3.12.
+
+```bash
+python -m travel_dashboard build --data examples/trip --today 2026-10-18   # example trip
+python -m travel_dashboard build                                           # your data/
+python -m travel_dashboard serve                                           # http://localhost:8000
+python -m travel_dashboard check                                           # list data issues
+python -m unittest discover -s tests
+```

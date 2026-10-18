@@ -1,0 +1,17 @@
+[site]
+title = "Flight-free travel"
+owner = "thaeussner"        # GitHub account that owns the repo (used by the in-browser editor)
+repo = "travel_dashboard"
+branch = "main"
+data_dir = "data"
+
+[emissions]
+draws = 2000                # Monte Carlo draws per lens combination
+seed = 20261018             # fixed seed: the same data always gives the same numbers
+
+[emissions.defaults]        # the method the page opens with (see docs/METHODOLOGY.md §9)
+level = "destination"
+alloc = "iso"
+occ = "observed"
+nonco2 = "full"
+scope = "all"

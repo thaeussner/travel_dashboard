@@ -1,0 +1,20 @@
+id,type,option,main,date,from,to,mode,vehicle,km,occ_max,occ_obs,fuel_l,note
+L01,leg,,,2026-09-26,zurich,paris,train,TGV Lyria,610,507,,,
+L02,leg,,,2026-09-26,paris,hendaye,train,TGV inOui,790,509,,,
+L03,leg,,,2026-09-27,hendaye,madrid,train,Renfe Alvia,640,,,,via Irun
+L04,leg,,,2026-09-28,madrid,sevilla,train,Renfe AVE,471,,,,
+L05,leg,,,2026-09-28,sevilla,huelva,coach,Damas,95,55,,,
+L06,leg,,,2026-09-28,huelva,tenerife,ferry,Buenavista Express,1370,1250,,,via Las Palmas
+L07,leg,,,2026-10-12,tenerife,la-palma,fast_ferry,Fred. Olsen,126,859,,,vessel not noted
+L08,leg,,,2026-10-17,la-palma,tenerife-2,fast_ferry,Bencomo Express,126,859,150,,
+L09,leg,,,2026-11-22,tenerife-2,martinique,sail,45 ft yacht,5300,6,5,,planned
+A01,alt,fly-zrh-tfs,1,,zurich,tenerife,plane,A320 (Edelweiss),3063,180,,,daily direct
+A02,alt,fly-via-mad,,,zurich,Madrid Barajas,plane,A320,1245,180,,,
+A03,alt,fly-via-mad,,,Madrid Barajas,tenerife,plane,A321,1771,200,,,
+A04,alt,binter-out,1,,tenerife,la-palma,plane,ATR 72-600 (Binter),139,72,,,
+A05,alt,binter-back,1,,la-palma,tenerife-2,plane,ATR 72-600 (Binter),139,72,,,
+A06,alt,fly-paris,1,,tenerife-2,Paris Orly,plane,A320,2814,180,,,no nonstop from the Canaries
+A07,alt,fly-paris,1,,Paris Orly,martinique,plane,A350 (Air Caraïbes),6852,429,,,
+A08,alt,stop-zrh-biq,1,,zurich,hendaye,plane,A320 (Edelweiss),901,180,,,seasonal direct
+A09,alt,stop-biq-mad,1,,hendaye,madrid,plane,A320,373,180,,,assumed direct
+A10,alt,stop-mad-tfn,1,,madrid,tenerife,plane,A321,1771,200,,,

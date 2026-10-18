@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Emissions · Flight-free travel</title>
+<meta name="description" content="Emissions of the overland and sea route compared with the flights it replaced, with every method choice as a switch.">
+<meta name="theme-color" content="#0f1c28">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/app.css">
+<script src="../vendor/d3.v7.9.0.min.js"></script>
+<script type="module" src="../assets/emissions.js"></script>
+</head>
+<body>
+<header class="topbar"><div class="wrap">
+  <a class="brand" href="../">Flight-free travel</a>
+  <nav class="nav" aria-label="Pages"><a href="../costs/">Costs</a><a href="../emissions/" aria-current="page">Emissions</a></nav>
+  <button class="sync owner-only" id="sync-pill" type="button">Synced</button>
+</div></header>
+
+<div class="wrap">
+  <section class="page-head">
+    <p class="kicker">Transport emissions · kg CO₂e per passenger</p>
+    <h1>Emissions</h1>
+    <p class="sub">What the overland and sea route emitted, against the flights it replaced. Every method choice is a switch, every number has a range, and every leg shows its arithmetic.</p>
+  </section>
+</div>
+
+<div class="lensbar">
+  <div class="wrap lensbar-in">
+    <button class="lens-toggle" id="lens-toggle" type="button" aria-expanded="false" aria-controls="lens-row">Method: <span id="lens-summary"></span> ▾</button>
+    <div class="lens-row" id="lens-row"></div>
+    <div class="lens-extra">
+      <label for="scope-all"><input type="checkbox" id="scope-all"> Include planned travel</label>
+      <button class="linkbtn" id="lens-reset" type="button">Reset to recommended</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+  <div id="empty" hidden></div>
+  <div id="dash">
+    <section class="hero" aria-labelledby="hero-label">
+      <div>
+        <p class="eyebrow" id="hero-label">Avoided by not flying</p>
+        <p class="hero-num"><span id="hero-avoided">–</span> <span class="unit">t CO₂e</span></p>
+        <p class="hero-range">90 % interval <b id="hero-range">–</b> · <span id="hero-scope"></span></p>
+        <p class="hero-range" id="hero-alt"></p>
+        <dl class="pair">
+          <div><dt><i class="lkey actual"></i>Actual travel</dt><dd id="hero-actual">–</dd><dd class="r" id="hero-actual-r"></dd></div>
+          <div><dt><i class="lkey flying"></i>Alternatives instead</dt><dd id="hero-flying">–</dd><dd class="r" id="hero-flying-r"></dd></div>
+        </dl>
+      </div>
+      <figure class="card" style="margin:0">
+        <div class="fig-head">
+          <p class="eyebrow" style="margin:0">Every way of counting</p>
+          <button class="tbtn" type="button" data-table="strip" aria-pressed="false">Table</button>
+        </div>
+        <p class="hero-range" style="margin-top:0;font-size:14px" id="strip-sum"></p>
+        <div class="chart" id="strip-chart"></div>
+        <div class="ftable" id="strip-table" hidden></div>
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="h-route">
+      <h2 id="h-route">How the comparison is built</h2>
+      <p class="lede">Each arc is an alternative you entered, replacing the legs beneath it. Travel without an alternative counts the same in both worlds.</p>
+      <figure class="card">
+        <div class="fig-head">
+          <div class="legend">
+            <span><i class="lkey actual"></i>Legs travelled</span>
+            <span><i class="lkey flying"></i>Main alternative</span>
+            <span><i class="dotkey"></i>Destination</span>
+            <span><i class="dotkey hollow"></i>Stop</span>
+            <span><i class="lkey planned"></i>Planned</span>
+          </div>
+        </div>
+        <div class="scroll-x"><div class="chart" id="route-chart"></div></div>
+        <p class="explain" id="level-explain"></p>
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="h-cum">
+      <h2 id="h-cum">Over time</h2>
+      <p class="lede">Cumulative emissions of the route as travelled and with the alternatives. A journey switches to its alternative on the day it ends. Bands are 90 % intervals.</p>
+      <figure class="card">
+        <div class="fig-head">
+          <div class="legend">
+            <span><i class="lkey actual"></i>Actual travel</span>
+            <span><i class="lkey flying"></i>With alternatives</span>
+            <span><i class="lkey planned"></i>Planned</span>
+          </div>
+          <button class="tbtn" type="button" data-table="cum" aria-pressed="false">Table</button>
+        </div>
+        <div class="chart" id="cum-chart"></div>
+        <div class="ftable" id="cum-table" hidden></div>
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="h-jr">
+      <h2 id="h-jr">Journey by journey</h2>
+      <p class="lede">Each row is a journey between two stops of the current comparison, against its main alternative. Hollow dots are your other alternatives. Log scale: equal gaps mean equal ratios.</p>
+      <figure class="card">
+        <div class="fig-head">
+          <div class="legend">
+            <span><i class="lkey actual"></i>Actual travel</span>
+            <span><i class="lkey flying"></i>Main alternative</span>
+            <span><i class="dotkey flying-hollow"></i>Other alternatives</span>
+          </div>
+          <button class="tbtn" type="button" data-table="jr" aria-pressed="false">Table</button>
+        </div>
+        <div class="chart" id="jr-chart"></div>
+        <div class="ftable" id="jr-table" hidden></div>
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="h-mc">
+      <h2 id="h-mc">Method check</h2>
+      <p class="lede">One journey under every ferry-share and occupancy setting, against its alternative. This is where the method choice matters most.</p>
+      <figure class="card">
+        <div class="fig-head">
+          <div class="field" style="min-width:min(100%,320px)"><label for="mc-select">Journey</label><select id="mc-select" class="plain"></select></div>
+          <button class="tbtn" type="button" data-table="mc" aria-pressed="false">Table</button>
+        </div>
+        <div class="chart" id="mc-chart"></div>
+        <p class="callout" id="mc-callout"></p>
+        <div class="ftable" id="mc-table" hidden></div>
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="h-int">
+      <h2 id="h-int">Per kilometre</h2>
+      <p class="lede">Grams of CO₂e per passenger-kilometre for every leg and every segment of the main alternatives, on a log scale.</p>
+      <figure class="card">
+        <div class="fig-head">
+          <div class="legend">
+            <span><i class="lkey actual"></i>Leg travelled</span>
+            <span><i class="lkey flying"></i>Alternative segment</span>
+            <span><i class="lkey" style="color:var(--muted)"></i>Car references</span>
+          </div>
+        </div>
+        <div class="chart" id="int-chart"></div>
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="h-legs">
+      <h2 id="h-legs">Every leg and alternative</h2>
+      <p class="lede">Median and 90 % interval under the selected lens, with a data-quality grade. Open <b>How</b> for the calculation with central values and its sources.</p>
+      <div class="tblwrap"><table class="data" id="legs-table"></table></div>
+      <h3 class="h2" style="font-size:22px;margin-top:22px">Alternatives</h3>
+      <div class="tblwrap"><table class="data" id="alts-table"></table></div>
+    </section>
+  </div>
+
+  <section class="block owner-only" id="editor" aria-labelledby="h-ed">
+    <h2 id="h-ed">Trip data</h2>
+    <p class="lede">Add or fix waypoints, legs and alternatives, including past and planned ones. Saved to the repo right away. The charts above update after the next build, about two minutes later.</p>
+    <div class="ed-tabs">
+      <div class="seg" role="radiogroup" aria-label="Show">
+        <input type="radio" name="ed-tab" id="tab-j" value="journeys" checked><label for="tab-j">Journeys</label>
+        <input type="radio" name="ed-tab" id="tab-w" value="waypoints"><label for="tab-w">Waypoints</label>
+      </div>
+      <button class="btn small" id="add-wp" type="button">Add waypoint</button>
+      <button class="btn small" id="add-leg" type="button">Add leg</button>
+      <button class="btn small" id="add-alt" type="button">Add alternative</button>
+    </div>
+    <div id="ed-body"></div>
+    <div id="issues"></div>
+  </section>
+
+  <section class="block" aria-labelledby="h-read">
+    <h2 id="h-read">Reading this page</h2>
+    <div class="notes">
+      <div>
+        <h3>Switches vs. ranges</h3>
+        <p>The switches are <b>choices</b>: equally defensible ways of counting that give different answers. They are never blended into an error bar. The ranges are <b>uncertainty</b> within one way of counting: factors, engine loads, load factors and the size of aviation's non-CO₂ effect, sampled together.</p>
+      </div>
+      <div>
+        <h3>Fair comparison</h3>
+        <p>Every switch applies to actual travel and alternatives alike. "As observed" only changes travel where a head count was entered; alternatives that never happened use typical loads. The alternatives are the realistic options chosen by hand for the same destinations.</p>
+      </div>
+      <div>
+        <h3>Data quality</h3>
+        <dl class="grades">
+          <dt><span class="badge">A</span></dt><dd>Measured fuel or operator data for that trip</dd>
+          <dt><span class="badge">B</span></dt><dd>Vessel- or service-specific data</dd>
+          <dt><span class="badge">C</span></dt><dd>Operator or country-specific factor</dd>
+          <dt><span class="badge">D</span></dt><dd>Generic factor for the mode</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+  <footer class="end"><span id="foot"></span><a href="#" data-owner-link>Owner</a></footer>
+</main>
+</body>
+</html>
