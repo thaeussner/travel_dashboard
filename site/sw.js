@@ -1,6 +1,6 @@
 // Offline support: the app shell is cached, data is fetched fresh when possible.
 // The GitHub API is never cached; unsaved edits live in localStorage (see assets/store.js).
-const CACHE = 'flight-free-v2';
+const CACHE = 'flight-free-v3';
 const SHELL = [
   './', './costs/', './emissions/', './method/', './manifest.webmanifest', './icons/icon.svg',
   './assets/app.css', './assets/common.js', './assets/store.js', './assets/editor.js',

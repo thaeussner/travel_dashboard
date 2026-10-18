@@ -3,7 +3,7 @@ import * as store from './store.js';
 import { openForm } from './editor.js';
 import {
   $, $$, nf, sig, neg, mass, range, tonnes, kmFmt, gpkm, fmtDate, todayISO, loadJSON, initChrome,
-  showTip, hideTip, bindTip, css, svgIn, logTicks, tickKg, intervalMark, makeTable, wireTableToggles,
+  showTip, hideTip, bindTip, css, svgIn, logTicks, logMinor, minorMarks, tickKg, intervalMark, makeTable, wireTableToggles,
   onResize, onThemeChange, toast,
 } from './common.js';
 
@@ -67,6 +67,9 @@ function localOf(wid) {
 }
 
 // ---------------------------------------------------------------- lens bar
+/** "Every stop" and "Direct" only change anything once an alternative of that kind exists. */
+const levelUsed = id => id === 'destination' || (DATA?.options || []).some(o => o.level === id);
+const lensOptions = dim => DATA.lenses[dim].options.filter(o => dim !== 'level' || levelUsed(o.id));
 function buildLensBar() {
   const row = $('#lens-row');
   for (const dim of DIMS) {
@@ -74,7 +77,7 @@ function buildLensBar() {
     const fs = document.createElement('fieldset'); fs.className = 'lens';
     const lg = document.createElement('legend'); lg.textContent = def.title; fs.appendChild(lg);
     const seg = document.createElement('div'); seg.className = 'seg';
-    for (const o of def.options) {
+    for (const o of lensOptions(dim)) {
       const inp = document.createElement('input');
       inp.type = 'radio'; inp.name = `lens-${dim}`; inp.id = `lens-${dim}-${o.id}`; inp.value = o.id;
       inp.addEventListener('change', () => { S[dim] = o.id; renderDash(); });
@@ -116,7 +119,7 @@ function renderHero() {
 
 function allCombos() {
   const out = [];
-  for (const l of DATA.lenses.level.options) for (const a of DATA.lenses.alloc.options)
+  for (const l of lensOptions('level')) for (const a of DATA.lenses.alloc.options)
     for (const o of DATA.lenses.occ.options) for (const n of DATA.lenses.nonco2.options) {
       const s = { level: l.id, alloc: a.id, occ: o.id, nonco2: n.id, scope: S.scope };
       out.push({ s, v: DATA.totals[kTot(s)].avoided[1],
@@ -132,7 +135,7 @@ function renderStrip() {
   const sum = $('#strip-sum');
   sum.replaceChildren();
   const b = document.createElement('b'); b.textContent = `Not flying comes out lower in ${pos} of ${combos.length}`;
-  sum.append(b, ` ways of counting (from ${tonnes(d3.min(vals))} to ${tonnes(d3.max(vals))} t). Each tick is one combination of switches; the bold one is yours.`);
+  sum.append(b, ` ways of counting (${tonnes(d3.min(vals))} to ${tonnes(d3.max(vals))} t). The bold tick is yours.`);
   const rowsDef = DATA.lenses.alloc.options;
   const W = Math.max(host.clientWidth, 260), rowH = 26, m = { l: 98, r: 14, t: 22, b: 24 };
   const H = m.t + rowsDef.length * rowH + m.b, yAx = H - m.b;
@@ -142,7 +145,8 @@ function renderStrip() {
   const svg = svgIn(host, W, H, `Avoided emissions under all ${combos.length} method combinations`);
   const ax = svg.append('g').attr('class', 'ax');
   ax.append('line').attr('class', 'base').attr('x1', m.l).attr('x2', W - m.r).attr('y1', yAx).attr('y2', yAx);
-  for (const t of x.ticks(W < 380 ? 3 : 5)) {
+  minorMarks(ax, x.ticks(W < 380 ? 12 : 24).map(x), yAx);
+  for (const t of x.ticks(W < 380 ? 5 : 9)) {
     ax.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', m.t - 4).attr('y2', yAx);
     ax.append('text').attr('x', x(t)).attr('y', H - 6).attr('text-anchor', 'middle').text(t === 0 ? '0' : `${neg(nf.format(t / 1000))} t`);
   }
@@ -182,30 +186,52 @@ function wrapWords(text, max = 15) {
   }
   return lines.slice(0, 2);
 }
+/** "8–17 Oct", "17 Oct – 2 Nov": a waypoint's stay, short enough for the route chart. */
+function spanShort(a, d) {
+  if (!a || !d || a === d) return dateSpan(a, d);
+  return a.slice(0, 7) === d.slice(0, 7) ? `${fmtDate(a, { day: 'numeric' })}–${fmtDate(d)}` : `${fmtDate(a)} – ${fmtDate(d)}`;
+}
 function renderRoute() {
   const host = $('#route-chart');
   const wps = DATA.waypoints.filter(w => S.scope === 'all' || !w.planned);
   const ids = new Set(wps.map(w => w.id));
   const legs = DATA.travels.filter(t => t.type === 'leg' && !t.local && inScope(t) && ids.has(t.from) && ids.has(t.to));
-  const segs = [...d3.group(legs, t => `${t.from}|${t.to}`).values()].map(list => ({
-    from: list[0].from, to: list[0].to, legs: list, km: d3.sum(list, t => t.km), planned: list.every(t => t.planned),
-    label: [...new Set(list.map(legLabel))].join(' · '),
-  }));
   const js = journeys().filter(j => j.option && ids.has(j.start) && ids.has(j.end));
   const skipped = new Set(js.flatMap(j => j.skipped || []));
-  const avail = host.parentElement.clientWidth;
-  const step = Math.max(84, Math.min(130, (avail - 120) / Math.max(1, wps.length - 1)));
-  const W = Math.max(avail, (wps.length - 1) * step + 120), H = 392, y0 = 252;
+  const avail = host.parentElement.clientWidth, narrow = avail < 520;
+  const minStep = narrow ? 70 : 84, pad = narrow ? 44 : 60;
+  // Fit the width: first merge stops between legs of the same mode (two TGVs in a row), then show
+  // only destinations. The ends of every arc always stay.
+  const arcEnds = new Set(js.flatMap(j => [j.start, j.end]));
+  const anchor = (w, i) => i === 0 || i === wps.length - 1 || w.type === 'destination' || arcEnds.has(w.id);
+  const oneMode = w => new Set(legs.filter(t => t.from === w.id || t.to === w.id).map(t => t.mode)).size === 1;
+  const levels = [wps, wps.filter((w, i) => anchor(w, i) || !oneMode(w)), wps.filter(anchor)];
+  const shown = levels.find(l => (l.length - 1) * minStep + 2 * pad <= avail) || levels[levels.length - 1];
+  const merged = wps.filter(w => !shown.includes(w));
+  const note = $('#route-merged');
+  const names = [...new Set(merged.map(w => shortName(w.name)))];
+  if (note) note.textContent = !merged.length ? '' : names.length <= 3 ? `Merged to fit: ${names.join(', ')}` : `${merged.length} stops merged to fit`;
+  const pos = new Map(wps.map((w, i) => [w.id, i]));
+  const segs = [];
+  for (let i = 0; i + 1 < shown.length; i++) {
+    const a = pos.get(shown[i].id), b = pos.get(shown[i + 1].id);
+    const list = legs.filter(t => pos.get(t.from) >= a && pos.get(t.from) < b);
+    if (list.length) segs.push({ from: shown[i].id, to: shown[i + 1].id, legs: list, km: d3.sum(list, t => t.km || 0), planned: list.every(t => t.planned) });
+  }
+  const step = Math.max(minStep, Math.min(130, (avail - 2 * pad) / Math.max(1, shown.length - 1)));
+  const W = Math.max(avail, (shown.length - 1) * step + 2 * pad), H = 392, y0 = 252;
   const fit = (text, px, size = 6.6) => { const n = Math.max(4, Math.floor(px / size)); return text.length > n ? `${text.slice(0, n - 1)}…` : text; };
-  const x = d3.scalePoint().domain(wps.map(w => w.id)).range([60, W - 60]);
+  const x = d3.scalePoint().domain(shown.map(w => w.id)).range([pad, W - pad]);
   const svg = svgIn(host, W, H, 'Route with the alternatives used for the selected comparison');
   const maxKm = d3.max(DATA.options, optionKm) || 1;
   for (const sg of segs) {
     svg.append('line').attr('x1', x(sg.from)).attr('x2', x(sg.to)).attr('y1', y0).attr('y2', y0)
       .attr('stroke', css('--actual')).attr('stroke-width', 3).attr('stroke-linecap', 'round').attr('stroke-dasharray', sg.planned ? '7 6' : null);
-    const mx = (x(sg.from) + x(sg.to)) / 2;
-    const lab = fit(sg.label, Math.abs(x(sg.to) - x(sg.from)) - 8);
-    svg.append('text').attr('class', 'lbl').attr('x', mx).attr('y', y0 + 19).attr('text-anchor', 'middle').text(lab);
+    const mx = (x(sg.from) + x(sg.to)) / 2, width = Math.abs(x(sg.to) - x(sg.from)) - 8;
+    const modes = [...new Set(sg.legs.map(t => t.mode))];
+    let label = modes.length === 1 ? [...new Set(sg.legs.map(legLabel))].join(' · ') : modes.map(m => MODE_LABEL[m] || m).join(' · ');
+    if (modes.length > 1 && label.length * 6.6 > width) label = `${sg.legs.length} legs`;
+    svg.append('text').attr('class', 'lbl').attr('x', mx).attr('y', y0 + 19).attr('text-anchor', 'middle').text(fit(label, width));
     svg.append('text').attr('class', 'lbl-muted').attr('x', mx).attr('y', y0 + 33).attr('text-anchor', 'middle').text(sg.km ? `${kmFmt(sg.km)} km` : '');
     const hit = svg.append('line').attr('x1', x(sg.from)).attr('x2', x(sg.to)).attr('y1', y0).attr('y2', y0).attr('stroke', 'transparent').attr('stroke-width', 18).datum(sg);
     bindTip(hit, d => ({ head: `${shortName(wpName(d.from))} → ${shortName(wpName(d.to))}`,
@@ -231,16 +257,18 @@ function renderRoute() {
       { value: mass(d.q[kFull()].actual[1]), label: `travelled, ${range(d.q[kFull()].actual)}`, color: css('--actual') },
       { value: `${kmFmt(optionKm(OPT.get(d.option)))} km`, label: 'alternative distance' }] }));
   }
-  for (const w of wps) {
+  for (const w of shown) {
     const dest = w.type === 'destination';
     svg.append('circle').attr('cx', x(w.id)).attr('cy', y0).attr('r', dest ? 7 : 5.5)
       .attr('fill', dest ? css('--ink') : css('--surface')).attr('stroke', dest ? css('--surface') : css('--ink-2')).attr('stroke-width', 2);
     const lines = wrapWords(shortName(w.name), Math.max(9, Math.floor(step / 7.6)));
     lines.forEach((ln, i) => svg.append('text').attr('class', 'lbl-strong').attr('x', x(w.id)).attr('y', y0 + 58 + i * 15).attr('text-anchor', 'middle').text(ln));
-    const cap = dateSpan(w.arrive, w.depart);
+    const cap = spanShort(w.arrive, w.depart);
     const yy = y0 + 58 + lines.length * 15;
     svg.append('text').attr('class', 'lbl-muted').attr('x', x(w.id)).attr('y', yy + 2).attr('text-anchor', 'middle').text(cap);
-    svg.append('text').attr('class', 'lbl-muted').attr('x', x(w.id)).attr('y', yy + 16).attr('text-anchor', 'middle').text(w.planned ? `${w.type} · planned` : w.type);
+    // the dot already tells destination from stop; narrow steps keep only "planned"
+    const kind = step < 84 ? (w.planned ? 'planned' : '') : w.planned ? `${w.type} · planned` : w.type;
+    svg.append('text').attr('class', 'lbl-muted').attr('x', x(w.id)).attr('y', yy + 16).attr('text-anchor', 'middle').text(kind);
     const loc = localOf(w.id);
     if (loc) {
       const t = svg.append('text').attr('class', 'lbl').attr('x', x(w.id)).attr('y', yy + 32).attr('text-anchor', 'middle').text(`+ local ${mass(loc.q[1])}`).datum(loc);
@@ -273,13 +301,17 @@ function renderCumulative() {
     ax.append('text').attr('x', m.l - 8).attr('y', y(t) + 4).attr('text-anchor', 'end').text(t === 0 ? '0' : t >= 1000 ? `${nf.format(t / 1000)} t` : `${nf.format(t)} kg`);
   }
   ax.append('line').attr('class', 'base').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0));
+  const days = (X[X.length - 1] - X[0]) / 864e5;
+  minorMarks(ax, x.ticks(d3.utcDay.every(Math.max(1, Math.ceil(days / ((W - m.l - m.r) / 9))))).map(x), H - m.b);
   let lastTick = -Infinity;
-  for (const t of x.ticks(narrow ? 4 : 7)) {
-    if (x(t) - lastTick < 58) continue;
+  for (const t of x.ticks(narrow ? 5 : 8)) {
+    if (x(t) - lastTick < 50) continue;
+    ax.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', m.t).attr('y2', H - m.b);
     ax.append('text').attr('x', x(t)).attr('y', H - 8).attr('text-anchor', 'middle').text(d3.utcFormat('%-d %b')(t));
     lastTick = x(t);
   }
   const iToday = pts.findIndex(p => p.date === today);
+  const finals = [];
   for (const [key, col, wash] of [['flying', css('--flying'), css('--flying-wash')], ['actual', css('--actual'), css('--actual-wash')]]) {
     svg.append('path').attr('d', d3.area().curve(d3.curveStepAfter).x((p, i) => x(X[i])).y0(p => y(p[key][0])).y1(p => y(p[key][2]))(pts)).attr('fill', wash);
     const line = idx => d3.line().curve(d3.curveStepAfter).x(i => x(X[i])).y(i => y(pts[i][key][1]))(idx);
@@ -287,10 +319,15 @@ function renderCumulative() {
     const cut = iToday === -1 ? idx.length - 1 : iToday;
     svg.append('path').attr('d', line(idx.slice(0, cut + 1))).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2.2);
     if (cut < idx.length - 1) svg.append('path').attr('d', line(idx.slice(cut))).attr('fill', 'none').attr('stroke', col).attr('stroke-width', 2.2).attr('stroke-dasharray', '6 5');
-    if (!narrow) {
-      const last = pts[pts.length - 1][key];
-      svg.append('text').attr('class', 'lbl-strong').attr('x', W - m.r + 8).attr('y', y(last[1]) + 4).text(`${key === 'flying' ? 'Alternatives' : 'Actual'} ${mass(last[1])}`);
-    }
+    const last = pts[pts.length - 1][key];
+    finals.push({ key, col, v: last[1], y: y(last[1]) });
+  }
+  // the final sums: a dot at the end of each line and, where there is room, its label beside it
+  finals.sort((a, b) => a.y - b.y);
+  if (finals[1].y - finals[0].y < 15) { const mid = (finals[0].y + finals[1].y) / 2; finals[0].ly = mid - 7.5; finals[1].ly = mid + 7.5; }
+  for (const f of finals) {
+    svg.append('circle').attr('cx', x(X[X.length - 1])).attr('cy', f.y).attr('r', 4.5).attr('fill', f.col).attr('stroke', css('--surface')).attr('stroke-width', 2);
+    if (!narrow) svg.append('text').attr('class', 'lbl-strong').attr('x', W - m.r + 10).attr('y', (f.ly ?? f.y) + 4).text(`${f.key === 'flying' ? 'Alternatives' : 'Actual'} ${mass(f.v)}`);
   }
   let lastRight = -Infinity;
   for (const w of DATA.waypoints.filter(w => w.type === 'destination' && w.arrive && (S.scope === 'all' || w.arrive <= today))) {
@@ -346,7 +383,9 @@ function renderJourneys() {
   const x = d3.scaleLog().domain([Math.max(0.5, d3.min(vals) * 0.6), (d3.max(vals) || 10) * 1.5]).range([labelW + 10, W - rightW]);
   const svg = svgIn(host, W, H, 'Actual vs alternative emissions for each journey');
   const ax = svg.append('g').attr('class', 'ax');
-  for (const t of logTicks(x.domain())) {
+  minorMarks(ax, logMinor(x.domain()).map(x), H - axisH);
+  ax.append('line').attr('class', 'base').attr('x1', x.range()[0]).attr('x2', x.range()[1]).attr('y1', H - axisH).attr('y2', H - axisH);
+  for (const t of logTicks(x.domain(), x.range()[1] - x.range()[0])) {
     ax.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top).attr('y2', H - axisH);
     ax.append('text').attr('x', x(t)).attr('y', H - 8).attr('text-anchor', 'middle').text(tickKg(t));
   }
@@ -435,7 +474,9 @@ function renderMethodCheck() {
   const x = d3.scaleLog().domain([d3.min(vals) * 0.6, d3.max(vals) * 1.5]).range([labelW + 8, W - 12]);
   const svg = svgIn(host, W, H, 'One journey under each counting method, against its alternative');
   const ax = svg.append('g').attr('class', 'ax');
-  for (const t of logTicks(x.domain())) {
+  minorMarks(ax, logMinor(x.domain()).map(x), H - axisH);
+  ax.append('line').attr('class', 'base').attr('x1', x.range()[0]).attr('x2', x.range()[1]).attr('y1', H - axisH).attr('y2', H - axisH);
+  for (const t of logTicks(x.domain(), x.range()[1] - x.range()[0])) {
     ax.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 6).attr('y2', H - axisH);
     ax.append('text').attr('x', x(t)).attr('y', H - 8).attr('text-anchor', 'middle').text(tickKg(t));
   }
@@ -488,7 +529,9 @@ function renderIntensity() {
   const x = d3.scaleLog().domain([Math.max(0.3, d3.min(vals) * 0.6), d3.max(vals) * 1.4]).range([labelW + 8, W - 12]);
   const svg = svgIn(host, W, H, 'Grams of CO2e per passenger-kilometre');
   const ax = svg.append('g').attr('class', 'ax');
-  for (const t of logTicks(x.domain())) {
+  minorMarks(ax, logMinor(x.domain()).map(x), H - axisH);
+  ax.append('line').attr('class', 'base').attr('x1', x.range()[0]).attr('x2', x.range()[1]).attr('y1', H - axisH).attr('y2', H - axisH);
+  for (const t of logTicks(x.domain(), x.range()[1] - x.range()[0])) {
     ax.append('line').attr('x1', x(t)).attr('x2', x(t)).attr('y1', top - 6).attr('y2', H - axisH);
     ax.append('text').attr('x', x(t)).attr('y', H - 8).attr('text-anchor', 'middle').text(`${nf.format(t)} g`);
   }
@@ -563,6 +606,7 @@ function renderTables() {
 }
 
 function renderDash() {
+  if (!levelUsed(S.level)) S.level = 'destination';
   syncInputs();
   renderHero(); renderStrip(); renderRoute(); renderCumulative(); renderJourneys(); renderMethodCheck(); renderIntensity(); renderTables();
 }
@@ -984,7 +1028,7 @@ function renderEditor() {
   if (dests.length) localGroups(ed.pos.get(dests[dests.length - 1].id), Infinity);
   const direct = d3.group(ed.alts.filter(t => skipsDest(t.option)), t => t.option);
   if (direct.size) {
-    const box = group('Across several destinations', 'Alternatives that skip destinations, used under "Compare against: Direct"', '', '', false);
+    const box = group('Across several destinations', 'Alternatives that skip destinations, used under "Compare: Direct"', '', '', false);
     for (const [optName, rows] of direct) {
       const e = ends.get(optName);
       const s = document.createElement('div'); s.className = 'ed-sub';

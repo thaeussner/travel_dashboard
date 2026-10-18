@@ -21,7 +21,7 @@ GRADE_NOTES = {
 }
 
 LENS_DEFS = {
-    "level": {"title": "Compare against", "options": [
+    "level": {"title": "Compare", "options": [
         {"id": "destination", "label": "Destinations",
          "hint": "Your alternatives between destinations",
          "explain": "Destinations: each journey between two destinations is compared with the alternative you marked "
@@ -37,7 +37,7 @@ LENS_DEFS = {
                     "between, local trips at the places it skips included. This asks what the trip cost against "
                     "flying straight there. Elsewhere the destination-level alternative stays."},
     ]},
-    "alloc": {"title": "Ferry share", "options": [
+    "alloc": {"title": "Ferries", "options": [
         {"id": "passenger", "label": "Per passenger",
          "hint": "All of the ship's emissions divided by its passengers; freight ignored (upper bound)"},
         {"id": "iso", "label": "ISO 14083",
@@ -49,7 +49,7 @@ LENS_DEFS = {
         {"id": "typical", "label": "Typical", "hint": "Typical load factors everywhere"},
         {"id": "observed", "label": "As observed", "hint": "Your observed head count where you entered one"},
     ]},
-    "nonco2": {"title": "Flights count", "options": [
+    "nonco2": {"title": "Flights", "options": [
         {"id": "co2", "label": "CO₂ only", "hint": "Fuel burnt plus fuel production"},
         {"id": "full", "label": "+ non-CO₂", "hint": "Adds contrails and NOx (multiplier ~1.7, range 1.2–3)"},
     ]},

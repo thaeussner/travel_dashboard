@@ -62,7 +62,7 @@ later.
   alternative of its own and counts the same in both worlds, unless an alternative skips that place.
   In the form, tick "Local trip".
 - An alternative that skips destinations, e.g. `CDG → FDF` from Paris to Martinique, is used under
-  "Compare against: Direct": the trip against flying straight there. Travel before its start (the
+  "Compare: Direct": the trip against flying straight there. Travel before its start (the
   TGV to Paris) counts the same in both worlds.
 - `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text. A
   flight alternative may also start or end at an airport its waypoint lists, e.g. `TFN` for

@@ -4,7 +4,7 @@
 import * as store from './store.js';
 import { openForm } from './editor.js';
 import {
-  $, chf, chf2, fmtDate, todayISO, loadJSON, initChrome, svgIn, css, showTip, hideTip, bindTip,
+  $, chf, chf2, fmtDate, todayISO, loadJSON, initChrome, svgIn, css, showTip, hideTip, bindTip, minorMarks,
   makeTable, wireTableToggles, onResize, onThemeChange, toast, nf,
 } from './common.js';
 
@@ -134,7 +134,8 @@ function renderTime(rows, w) {
     ax.append('text').attr('x', m.l - 8).attr('y', y(t) + 4).attr('text-anchor', 'end').text(nf.format(t));
   }
   ax.append('line').attr('class', 'base').attr('x1', m.l).attr('x2', W - m.r).attr('y1', y(0)).attr('y2', y(0));
-  const every = Math.max(1, Math.ceil(keys.length / Math.max(2, Math.floor((W - m.l) / 64))));
+  minorMarks(ax, keys.map(k => x(k) + x.bandwidth() / 2), y(0));
+  const every = Math.max(1, Math.ceil(keys.length / Math.max(2, Math.floor((W - m.l) / 48))));
   keys.forEach((k, i) => {
     if (i % every) return;
     ax.append('text').attr('x', x(k) + x.bandwidth() / 2).attr('y', H - 8).attr('text-anchor', 'middle').text(periodLabel(k));

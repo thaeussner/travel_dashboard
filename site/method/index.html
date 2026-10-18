@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Method · Flight-free travel</title>
-<meta name="description" content="How the emissions are calculated: what counts, the alternatives, the switches, ferries under ISO 14083, flights and data quality.">
+<meta name="description" content="The emission factors behind every number, per passenger-km: mode defaults, named vehicles, ferries and sources.">
 <meta name="theme-color" content="#0f1c28">
 <link rel="manifest" href="../manifest.webmanifest">
 <link rel="icon" href="../icons/icon.svg" type="image/svg+xml">
@@ -14,13 +14,10 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="../assets/app.css">
 <style>
-  .prose { max-width: 72ch; }
-  .prose p, .prose li { color: var(--ink-2); }
-  .prose p + p { margin-top: 10px; }
-  .prose b { color: var(--ink); }
-  .prose ul { padding-left: 20px; margin: 8px 0 0; }
-  .prose li + li { margin-top: 4px; }
   .toc { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; font-size: 14px; }
+  .fnotes { max-width: 80ch; padding-left: 20px; margin: 14px 0 0; color: var(--ink-2); font-size: 14px; }
+  .fnotes li + li { margin-top: 4px; }
+  .fnotes b { color: var(--ink); }
   .ship-card { margin-top: 14px; }
   .ship-card h3 { font-size: 16px; font-weight: 600; margin: 0 0 2px; }
   .ship-facts { font-size: 13.5px; color: var(--muted); margin-bottom: 8px; }
@@ -29,6 +26,8 @@
   #factors-table td:first-child b { margin-right: 6px; }
   #factors-table td.num b { font-size: 15px; }
   #factors-table .badge { vertical-align: 1px; }
+  .sources { padding-left: 20px; margin: 8px 0 0; color: var(--ink-2); }
+  .sources li + li { margin-top: 4px; }
 </style>
 <script src="../vendor/d3.v7.9.0.min.js"></script>
 <script type="module" src="../assets/method.js"></script>
@@ -42,52 +41,43 @@
 
 <main class="wrap">
   <section class="page-head">
-    <p class="kicker">Emissions method</p>
-    <h1>How the numbers are made</h1>
-    <p class="sub">Every emissions number comes from published factors plus a few observations from the trip, combined in a small Python model. This page explains the choices in plain terms.</p>
-    <nav class="toc" aria-label="On this page">
-      <a href="#counts">What counts</a><a href="#compare">Route vs. alternatives</a><a href="#switches">Switches and ranges</a>
-      <a href="#ferries">Ferries and ISO 14083</a><a href="#occupancy">Occupancy</a><a href="#flights">Flights and non-CO₂</a>
-      <a href="#other">Trains, buses, cars, sailing</a><a href="#factors">Default factors</a><a href="#quality">Data quality</a>
-      <a href="#sources">Sources</a>
-    </nav>
+    <p class="kicker">g CO₂e per passenger-km</p>
+    <h1>Method</h1>
+    <p class="sub">The emission factors behind every number. Each plot on the Emissions page explains itself under “Method”.</p>
+    <nav class="toc" aria-label="On this page"><a href="#factors">Factors</a><a href="#ferries">Ferries</a><a href="#quality">Grades</a><a href="#sources">Sources</a></nav>
   </section>
 
-  <section class="block prose" id="counts">
-    <h2 class="h2">What counts</h2>
-    <p>Each journey's greenhouse gases <b>per passenger</b>, in kg CO₂e: carbon dioxide plus methane and nitrous oxide, converted to CO₂ equivalents over 100 years (GWP100).</p>
-    <p>It is counted <b>well-to-wheel</b>: producing the fuel or electricity, plus burning it. Building trains, ships, aircraft, tracks and ports is left out, as in most published factors. Train electricity uses each country's grid mix, not operators' green-power certificates.</p>
-  </section>
-
-  <section class="block prose" id="compare">
-    <h2 class="h2">Your route against the alternatives</h2>
-    <ul>
-      <li><b>Legs</b> are what actually happened. <b>Alternatives</b> are what would realistically have happened instead, chosen by hand. Usually that's flights with their real connections, for example Zurich via Barcelona to La Palma.</li>
-      <li><b>Destinations</b> are places that would have been visited anyway. <b>Stops</b> exist only because of slow travel, like a night in Hendaye. A <b>journey</b> is everything between two destinations, and it is compared with the alternative marked as main for it.</li>
-      <li><b>Local trips</b>, like driving around La Palma, start and end at the same place. Where the alternative goes too, they would have happened either way and count the same in both worlds. At a place an alternative skips, they count only as your travel.</li>
-      <li>The comparison keeps the destinations fixed. It doesn't guess at a different trip that might have happened by plane. The exception is <b>Direct</b>, below.</li>
-      <li><b>Direct</b> asks a different question: what did the whole trip cost against flying straight there? An alternative that skips destinations, like the flight from Paris to Martinique, replaces everything in between, the island stays included. Travel before it, the TGV to Paris, counts the same in both worlds. It is a stricter test: one long flight usually emits less than the several flights it takes to visit the same places.</li>
+  <section class="block" id="factors">
+    <h2>Factors</h2>
+    <div class="fig-head">
+      <div class="seg" id="factors-seg" role="radiogroup" aria-label="Rows">
+        <input type="radio" name="fgroup" id="fg-default" value="default" checked><label for="fg-default">Mode defaults</label>
+        <input type="radio" name="fgroup" id="fg-named" value="named"><label for="fg-named">Matched by name</label>
+      </div>
+    </div>
+    <p class="explain" id="factors-note"></p>
+    <div id="factors-table"></div>
+    <ul class="fnotes">
+      <li><b>Scope:</b> producing the fuel or electricity plus burning it. Building vehicles and infrastructure is left out.</li>
+      <li><b>Trains:</b> each country's grid mix, not green certificates. Renfe's certificates would give 3.6, the low end of its range.</li>
+      <li><b>Flights:</b> fuel per flight for the aircraft class. With “+ non-CO₂” the CO₂ is multiplied by about 1.7 (1.2–3) for contrails and NOx. Only flights get this.</li>
+      <li><b>Ships:</b> the ship's own fuel per nautical mile from EU reports, split by the ferry share below. Soot and sulphate effects are left out, as in ISO 14083.</li>
+      <li><b>Cars and sailing:</b> litres you log beat any factor (grade A). A yacht's engine hours count 1.2–4 L/h (grade B); add half an hour per hour of dinghy use.</li>
+      <li><b>Occupancy:</b> the factors are at typical loads. A head count you enter rescales them.</li>
     </ul>
   </section>
 
-  <section class="block prose" id="switches">
-    <h2 class="h2">Switches and ranges</h2>
-    <p>The switches on the emissions page are <b>choices</b>. Each is a defensible way of counting with no single right answer: compare at destinations, at every stop or direct, how a ferry is split, typical or observed occupancy, and flights with or without non-CO₂ effects. The page computes all 36 combinations; the strip at the top shows them all at once.</p>
-    <p>The ranges are <b>uncertainty</b> within one way of counting. Every input that isn't known exactly (emission factors, load factors, fuel use) has a low, central and high value. The model draws all of them together 2,000 times and shows the middle 90 %. Inputs that are physically the same, such as one ship's fuel use, are drawn once per round and shared, so totals and differences keep honest ranges.</p>
-  </section>
-
   <section class="block" id="ferries">
-    <h2>Ferries: splitting one ship</h2>
-    <div class="prose">
-      <p>A ferry burns fuel to carry passengers, cars and trucks at the same time. How much of it belongs to one passenger depends entirely on how the ship is split. That is why the ferry share is a switch:</p>
-      <ul>
-        <li><b>Per passenger</b>: all of the ship's emissions divided by its passengers. Freight is ignored, so this is an upper bound. For a freight ferry like the Marie Curie it blames the passengers for a hundred trucks.</li>
-        <li><b>ISO 14083</b> (the default): the international standard for transport emissions (2023). It splits the ship by <b>passenger equivalents</b>, using the table below. Every person counts as one, on foot or with a car; the car itself adds another 1.3. The weights blend mass and space. A truck weighs as much as 200 people but needs no cabins, lounges or restaurants.</li>
-        <li><b>By mass</b>: split by weight, as the UK government (DESNZ) does: 100 kg per passenger with luggage, 1.25 t per car, about 22 t per truck. Heavy freight takes nearly everything, so this is a lower bound.</li>
-      </ul>
-      <p>The freight on board is the ship's typical load, from its route and EU emissions data. It isn't something you can count from the deck.</p>
+    <h2>Ferries</h2>
+    <p class="lede">Each sailing split between passengers and freight, three ways. Blue is the passengers' share; every passenger carries an equal slice of it.</p>
+    <div class="legend" style="margin-bottom:4px">
+      <span><i class="dotkey" style="background:var(--actual)"></i>passengers</span>
+      <span><i class="dotkey" style="background:var(--rule)"></i>cars</span>
+      <span><i class="dotkey" style="background:var(--muted)"></i>trucks and trailers</span>
     </div>
-    <div class="tblwrap" style="margin-top:12px"><table class="data weights">
+    <div id="ships"></div>
+    <p class="explain" id="occ-example"></p>
+    <div class="tblwrap" style="margin-top:14px"><table class="data weights">
       <thead><tr><th>ISO 14083 passenger equivalents</th><th class="num">counts as</th></tr></thead>
       <tbody>
         <tr><td>passenger with luggage</td><td class="num">1</td></tr>
@@ -98,69 +88,23 @@
         <tr><td>articulated truck</td><td class="num">18</td></tr>
       </tbody>
     </table></div>
-    <p class="lede" style="margin-top:16px">Your ferries, split all three ways. The blue part is the passengers' share; every passenger carries an equal slice of it.</p>
-    <div class="legend" style="margin-bottom:4px">
-      <span><i class="dotkey" style="background:var(--actual)"></i>passengers</span>
-      <span><i class="dotkey" style="background:var(--rule)"></i>cars</span>
-      <span><i class="dotkey" style="background:var(--muted)"></i>trucks and trailers</span>
-    </div>
-    <div id="ships"></div>
-    <p class="explain">Central values; the emissions page adds the uncertainty ranges. The per-passenger figure is your share when the passenger count is what you observed on board.</p>
+    <p class="explain">By mass instead counts 100 kg per passenger, 1.25 t per car and about 22 t per truck (DESNZ). Per passenger ignores the freight.</p>
   </section>
 
-  <section class="block prose" id="occupancy">
-    <h2 class="h2">Occupancy</h2>
-    <p><b>Typical</b> uses the usual load: the ship's average passengers, or the load behind a published factor. <b>As observed</b> uses the head count entered for that leg. A half-empty ferry or bus counts against you, which is honest about this particular trip. Alternatives that never happened always use typical loads.</p>
-    <p id="occ-example"></p>
-  </section>
-
-  <section class="block prose" id="flights">
-    <h2 class="h2">Flights and the non-CO₂ effect</h2>
-    <p>Each flight is modelled from fuel. Every take-off and landing burns a fixed amount, then fuel is added per kilometre for the aircraft class (narrow-body, wide-body or turboprop), plus 8 % because planes don't fly the straight line. This is shared over the seats at a typical 85 % load. Connections therefore cost more than their distance suggests.</p>
-    <p>At cruise altitude, aircraft warm the climate beyond their CO₂, through contrails and the ozone formed from NOx. With <b>+ non-CO₂</b> switched on, a flight's CO₂ from burning fuel is multiplied by about <b>1.7</b>, with a range of 1.2–3 because the science is uncertain. Short jet flights get 1.0–2 and turboprops 1.0–1.4, because they spend little time where contrails form.</p>
-    <p><b>Only flights get this multiplier.</b> Other legs are already in CO₂e, methane and nitrous oxide included. Ships do have short-lived effects of their own: soot warms, while sulphate aerosols from their exhaust cool. These partly cancel each other, and the standards (ISO 14083, DESNZ) leave them out. This page does the same.</p>
-  </section>
-
-  <section class="block prose" id="other">
-    <h2 class="h2">Trains, buses, cars and sailing</h2>
-    <ul>
-      <li><b>Trains and buses</b>: the operator's or country's factor per passenger-km, e.g. TGV Lyria 2.5 g/pkm from SNCF. It is scaled up or down if a head count was entered.</li>
-      <li><b>Cars</b>: size and fuel are read from the name, e.g. "Citroën C1 (95)" is a small petrol car at 183 g per vehicle-km (DESNZ 2025). That's divided by the people aboard. Litres refuelled beat any factor.</li>
-      <li><b>Sailing</b>: diesel litres if logged (best); otherwise engine hours, including the generator, times 1.2–4 L/h; otherwise 1–8 L per 100 km, about 50–400 L for an Atlantic crossing. The total is divided by the crew. The dinghy isn't transport: its outboard use goes into the engine hours, about half an hour per hour of dinghy use. Building the boat is not counted.</li>
-    </ul>
-  </section>
-
-  <section class="block" id="factors">
-    <h2>Default factors</h2>
-    <p class="lede">What each mode counts per passenger-km when a leg has nothing more specific: no vehicle name with its own data, no head count, no fuel. The second tab lists the vehicles and car classes with their own data. A leg uses one when its vehicle name matches, e.g. "TGV Lyria 9218" or "Citroën C1 (95)".</p>
-    <button class="btn small" id="factors-btn" type="button" aria-expanded="false" aria-controls="factors-panel">Show table</button>
-    <div id="factors-panel" hidden>
-      <div class="fig-head" style="margin-top:14px">
-        <div class="seg" id="factors-seg" role="radiogroup" aria-label="Rows">
-          <input type="radio" name="fgroup" id="fg-default" value="default" checked><label for="fg-default">Mode defaults</label>
-          <input type="radio" name="fgroup" id="fg-named" value="named"><label for="fg-named">Matched by name</label>
-        </div>
-      </div>
-      <p class="explain" id="factors-note"></p>
-      <div id="factors-table"></div>
-    </div>
-  </section>
-
-  <section class="block prose" id="quality">
-    <h2 class="h2">Data quality grades</h2>
+  <section class="block" id="quality">
+    <h2>Grades</h2>
     <dl class="grades">
-      <dt><span class="badge">A</span></dt><dd><b>Fuel measured for this trip</b>: litres refuelled for a car or logged on a boat. This is only possible where you buy or read the fuel yourself.</dd>
-      <dt><span class="badge">B</span></dt><dd><b>Specific to this vessel, service or trip</b>: the ship's own fuel per nautical mile from EU reports (Bencomo Express, Marie Curie), or a yacht's engine hours.</dd>
-      <dt><span class="badge">C</span></dt><dd><b>Operator, model or country factor</b>: TGV, Renfe, a small petrol car, an aircraft class.</dd>
-      <dt><span class="badge">D</span></dt><dd><b>Generic factor for the mode</b>, e.g. "local bus". These are worth researching if they matter.</dd>
+      <dt><span class="badge">A</span></dt><dd><b>Fuel measured for this trip:</b> litres refuelled for a car or logged on a boat.</dd>
+      <dt><span class="badge">B</span></dt><dd><b>This vessel, service or trip:</b> a ship's own fuel from EU reports, a yacht's engine hours.</dd>
+      <dt><span class="badge">C</span></dt><dd><b>Operator, model or country:</b> TGV, Renfe, a small petrol car, an aircraft class.</dd>
+      <dt><span class="badge">D</span></dt><dd><b>Generic for the mode,</b> e.g. "local bus". Worth researching if it matters.</dd>
     </dl>
-    <p style="margin-top:10px">For public transport, B is the best available: nobody publishes the fuel burnt on one particular sailing.</p>
   </section>
 
-  <section class="block prose" id="sources">
-    <h2 class="h2">Sources and details</h2>
-    <p>Every factor and its source is in <a href="https://github.com/thaeussner/travel_dashboard/blob/main/config/emissions.toml">config/emissions.toml</a>. The full methodology, with the research behind it, is in <a href="https://github.com/thaeussner/travel_dashboard/blob/main/docs/METHODOLOGY.md">docs/METHODOLOGY.md</a>. Main sources:</p>
-    <ul>
+  <section class="block" id="sources">
+    <h2>Sources</h2>
+    <p class="lede">Every factor and its source: <a href="https://github.com/thaeussner/travel_dashboard/blob/main/config/emissions.toml">config/emissions.toml</a>. The research behind them: <a href="https://github.com/thaeussner/travel_dashboard/blob/main/docs/METHODOLOGY.md">docs/METHODOLOGY.md</a>.</p>
+    <ul class="sources">
       <li>ISO 14083:2023 and the GLEC Framework (ferry allocation)</li>
       <li>EU MRV ship emission reports (ferry fuel and passengers)</li>
       <li>UK DESNZ 2025/26 conversion factors (cars, coaches, fuels)</li>

@@ -77,12 +77,27 @@ export function svgIn(host, w, h, label) {
   return d3.select(host).append('svg').attr('width', w).attr('height', h).attr('viewBox', `0 0 ${w} ${h}`)
     .attr('role', 'img').attr('aria-label', label || '');
 }
-export function logTicks(domain) {
+/** Labelled ticks of a log scale: 1-2-5 per decade where they fit (one per ~46 px), else 1-3, else powers of ten. */
+export function logTicks(domain, px = 640) {
+  for (const ms of [[1, 2, 5], [1, 3], [1]]) {
+    const out = [];
+    for (let e = Math.floor(Math.log10(domain[0])); e <= Math.ceil(Math.log10(domain[1])); e++) {
+      for (const m of ms) { const v = m * 10 ** e; if (v >= domain[0] * 0.999 && v <= domain[1] * 1.001) out.push(v); }
+    }
+    if (ms.length === 1 || out.length <= Math.max(3, px / 46)) return out;
+  }
+}
+/** Unlabelled minor ticks of a log scale: every whole multiple within each decade. */
+export function logMinor(domain) {
   const out = [];
   for (let e = Math.floor(Math.log10(domain[0])); e <= Math.ceil(Math.log10(domain[1])); e++) {
-    for (const m of [1, 3]) { const v = m * 10 ** e; if (v >= domain[0] * 0.999 && v <= domain[1] * 1.001) out.push(v); }
+    for (let m = 1; m <= 9; m++) { const v = m * 10 ** e; if (v >= domain[0] && v <= domain[1]) out.push(v); }
   }
   return out;
+}
+/** Short tick marks hanging below an axis line at y, for minor ticks. */
+export function minorMarks(ax, xs, y) {
+  for (const px of xs) ax.append('line').attr('class', 'minor').attr('x1', px).attr('x2', px).attr('y1', y).attr('y2', y + 4);
 }
 export const tickKg = v => (v >= 1000 ? `${nf.format(v / 1000)} t` : `${nf.format(v)} kg`);
 export function intervalMark(g, x, y, q, color, r = 5, hollow = false) {
@@ -105,11 +120,12 @@ export function makeTable(host, cols, rows) {
   }
   wrap.appendChild(t); host.appendChild(wrap);
 }
+/** "Table" and "Method" buttons: data-table="x" shows #x-table, data-toggle="id" shows #id. */
 export function wireTableToggles(root = document) {
-  $$('.tbtn[data-table]', root).forEach(b => b.addEventListener('click', () => {
+  $$('.tbtn[data-table], .tbtn[data-toggle]', root).forEach(b => b.addEventListener('click', () => {
     const on = b.getAttribute('aria-pressed') !== 'true';
     b.setAttribute('aria-pressed', String(on));
-    document.getElementById(`${b.dataset.table}-table`).hidden = !on;
+    document.getElementById(b.dataset.toggle || `${b.dataset.table}-table`).hidden = !on;
   }));
 }
 

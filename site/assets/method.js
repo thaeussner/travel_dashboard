@@ -1,5 +1,5 @@
-// Method page: plain-language explanation, with the trip's own ferries split three ways.
-// The split itself is computed in Python (model.ship_breakdown); this page only draws it.
+// Method page: the emission factors per passenger-km, and the trip's own ferries split three ways.
+// Both are computed in Python (factors.py, model.ship_breakdown); this page only draws them.
 import { $, loadJSON, initChrome, svgIn, css, bindTip, fmtDate, mass, nf, sig, onResize, onThemeChange } from './common.js';
 
 const [META, DATA] = await Promise.all([loadJSON('../data/meta.json'), loadJSON('../data/emissions.json')]);
@@ -79,8 +79,8 @@ function renderOccupancy() {
 }
 
 // Default factors: computed in Python (factors.py) with the same model as the dashboard.
-const LENS_TEXT = { passenger: 'divided by passengers only', iso: 'split by ISO 14083', mass: 'split by mass',
-  co2: 'count CO₂ only', full: 'include non-CO₂' };
+const LENS_TEXT = { passenger: 'on passengers only', iso: 'split by ISO 14083', mass: 'split by mass',
+  co2: 'CO₂ only', full: 'with non-CO₂' };
 function el(tag, cls, text) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -91,10 +91,9 @@ function renderFactors() {
   const F = DATA?.factors, host = $('#factors-table');
   if (!F) { host.textContent = 'No factors in the data yet.'; return; }
   const group = document.querySelector('input[name="fgroup"]:checked')?.value || 'default';
-  $('#factors-note').textContent = `Grams of CO₂e per passenger-km at typical load. The bold number is the central value `
-    + `from the config; the small one below is the middle 90 % of ${nf.format(F.draws)} draws. Ferries are `
-    + `${LENS_TEXT[F.alloc]} and flights ${LENS_TEXT[F.nonco2]}, as the emissions page opens. Flights depend on `
-    + `distance, since take-off and landing cost the same on any flight.`;
+  $('#factors-note').textContent = `At typical load. Bold: the central value from the config; below it the middle 90 % `
+    + `of ${nf.format(F.draws)} draws. Ferries ${LENS_TEXT[F.alloc]}, flights ${LENS_TEXT[F.nonco2]}, as the Emissions `
+    + `page opens. Flights get one row per distance: take-off and landing cost the same on any flight.`;
   const table = el('table', 'data');
   const head = table.createTHead().insertRow();
   head.append(el('th', null, group === 'named' ? 'Vehicle' : 'Mode'), el('th', 'num', 'g/pkm'));
@@ -118,21 +117,12 @@ function renderFactors() {
   wrap.appendChild(table);
   host.replaceChildren(wrap);
 }
-function showFactors(open) {
-  const btn = $('#factors-btn');
-  btn.setAttribute('aria-expanded', String(open));
-  btn.textContent = open ? 'Hide table' : 'Show table';
-  $('#factors-panel').hidden = !open;
-}
-
 function render() { renderShips(); renderOccupancy(); renderFactors(); }
 
 initChrome(META);
 render();
-$('#factors-btn').addEventListener('click', () => showFactors($('#factors-panel').hidden));
 $('#factors-seg').addEventListener('change', renderFactors);
-// The charts above render (and web fonts load) after the browser jumped to the anchor, so jump again.
-if (location.hash === '#factors') showFactors(true);
+// The charts render (and web fonts load) after the browser jumped to the anchor, so jump again.
 const target = location.hash && document.getElementById(location.hash.slice(1));
 if (target) { target.scrollIntoView(); document.fonts?.ready.then(() => target.scrollIntoView()); }
 onResize(renderShips);

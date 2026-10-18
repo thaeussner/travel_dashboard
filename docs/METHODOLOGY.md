@@ -126,7 +126,12 @@ about 1.45 for rail and 1.25 for road in France, Spain and Switzerland (Heinold 
 
 ### 3.6 Left out on purpose
 
-- Airport and station access trips: small, and partly cancelling.
+- **Getting to and from stations, ports and airports.** Airports are usually further out than
+  stations, so this favours flying slightly. But a flight's own emissions dwarf the access:
+  80 km to Tenerife North is about 3 kg by coach or 12 kg by taxi, against about 1.2 t for the
+  flights to Martinique. It would also need a guess at how you'd have reached each airport.
+  Where it matters, add the access as a segment of the alternative, e.g. `el-medano → TFN` by
+  bus, then `TFN → BCN` by plane.
 - Rebound effects: the money or time saved by flying.
 
 ## 4. Per-mode methods (summary)

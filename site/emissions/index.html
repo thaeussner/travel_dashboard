@@ -25,9 +25,9 @@
 
 <div class="wrap">
   <section class="page-head">
-    <p class="kicker">Transport emissions · kg CO₂e per passenger</p>
+    <p class="kicker">kg CO₂e per passenger</p>
     <h1>Emissions</h1>
-    <p class="sub">What the overland and sea route emitted, against the flights it replaced. Every method choice is a switch, every number has a range, and every leg shows its arithmetic.</p>
+    <p class="sub">The overland and sea route against the flights it replaced.</p>
   </section>
 </div>
 
@@ -47,7 +47,7 @@
   <div id="dash">
     <section class="hero" aria-labelledby="hero-label">
       <div>
-        <p class="eyebrow" id="hero-label">Avoided by not flying</p>
+        <p class="eyebrow" id="hero-label">Avoided</p>
         <p class="hero-num"><span id="hero-avoided">–</span> <span class="unit">t CO₂e</span></p>
         <p class="hero-range">90 % interval <b id="hero-range">–</b> · <span id="hero-scope"></span></p>
         <p class="hero-range" id="hero-alt"></p>
@@ -58,18 +58,24 @@
       </div>
       <figure class="card" style="margin:0">
         <div class="fig-head">
-          <p class="eyebrow" style="margin:0">Every way of counting</p>
-          <button class="tbtn" type="button" data-table="strip" aria-pressed="false">Table</button>
+          <p class="eyebrow" style="margin:0">Robustness</p>
+          <div class="fig-tools">
+            <button class="tbtn" type="button" data-toggle="strip-method" aria-pressed="false">Method</button>
+            <button class="tbtn" type="button" data-table="strip" aria-pressed="false">Table</button>
+          </div>
         </div>
         <p class="hero-range" style="margin-top:0;font-size:14px" id="strip-sum"></p>
         <div class="chart" id="strip-chart"></div>
+        <div class="method-note" id="strip-method" hidden>
+          <p><b>Avoided</b> is the alternatives minus your travel, in kg CO₂e per passenger: producing the fuel or electricity plus burning it. Building vehicles and infrastructure is left out.</p>
+          <p>The big number is the median of 2,000 Monte Carlo draws with its 90 % interval: the <b>uncertainty</b> of factors, loads and fuel use. The switches are <b>choices</b>. Each tick here is one combination of them; they are never blended into the range.</p>
+        </div>
         <div class="ftable" id="strip-table" hidden></div>
       </figure>
     </section>
 
     <section class="block" aria-labelledby="h-route">
-      <h2 id="h-route">How the comparison is built</h2>
-      <p class="lede">Each arc is an alternative you entered, replacing the legs beneath it. Travel without an alternative counts the same in both worlds. Under "Direct", an alternative can skip whole destinations.</p>
+      <h2 id="h-route">Route</h2>
       <figure class="card">
         <div class="fig-head">
           <div class="legend">
@@ -79,15 +85,20 @@
             <span><i class="dotkey hollow"></i>Stop</span>
             <span><i class="lkey planned"></i>Planned</span>
           </div>
+          <div class="fig-tools"><button class="tbtn" type="button" data-toggle="route-method" aria-pressed="false">Method</button></div>
         </div>
         <div class="scroll-x"><div class="chart" id="route-chart"></div></div>
-        <p class="explain" id="level-explain"></p>
+        <p class="explain" id="route-merged"></p>
+        <div class="method-note" id="route-method" hidden>
+          <p>Each arc is the main alternative you entered for a journey. It replaces the legs beneath it; travel without an alternative counts the same in both worlds.</p>
+          <p id="level-explain"></p>
+          <p>Local trips count in both worlds, unless an alternative skips the place. To fit the page, legs of the same mode merge first, then everything between destinations.</p>
+        </div>
       </figure>
     </section>
 
     <section class="block" aria-labelledby="h-cum">
-      <h2 id="h-cum">Over time</h2>
-      <p class="lede">Cumulative emissions of the route as travelled and with the alternatives. A journey switches to its alternative on the day it ends. Bands are 90 % intervals.</p>
+      <h2 id="h-cum">Timeline</h2>
       <figure class="card">
         <div class="fig-head">
           <div class="legend">
@@ -95,16 +106,21 @@
             <span><i class="lkey flying"></i>With alternatives</span>
             <span><i class="lkey planned"></i>Planned</span>
           </div>
-          <button class="tbtn" type="button" data-table="cum" aria-pressed="false">Table</button>
+          <div class="fig-tools">
+            <button class="tbtn" type="button" data-toggle="cum-method" aria-pressed="false">Method</button>
+            <button class="tbtn" type="button" data-table="cum" aria-pressed="false">Table</button>
+          </div>
         </div>
         <div class="chart" id="cum-chart"></div>
+        <div class="method-note" id="cum-method" hidden>
+          <p>Cumulative kg per passenger by date. A journey switches to its alternative on the day its last leg is done, so a saving shows up when the journey ends. Bands are 90 % intervals; dashed lines are planned travel.</p>
+        </div>
         <div class="ftable" id="cum-table" hidden></div>
       </figure>
     </section>
 
     <section class="block" aria-labelledby="h-jr">
-      <h2 id="h-jr">Journey by journey</h2>
-      <p class="lede">Each row is a journey between two stops of the current comparison, against its main alternative. Hollow dots are your other alternatives. Log scale: equal gaps mean equal ratios.</p>
+      <h2 id="h-jr">Journeys</h2>
       <figure class="card">
         <div class="fig-head">
           <div class="legend">
@@ -112,30 +128,47 @@
             <span><i class="lkey flying"></i>Main alternative</span>
             <span><i class="dotkey flying-hollow"></i>Other alternatives</span>
           </div>
-          <button class="tbtn" type="button" data-table="jr" aria-pressed="false">Table</button>
+          <div class="fig-tools">
+            <button class="tbtn" type="button" data-toggle="jr-method" aria-pressed="false">Method</button>
+            <button class="tbtn" type="button" data-table="jr" aria-pressed="false">Table</button>
+          </div>
         </div>
         <div class="chart" id="jr-chart"></div>
+        <div class="method-note" id="jr-method" hidden>
+          <p>Each journey of the current comparison against its main alternative, with 90 % intervals. Hollow dots are your other alternatives for the same journey. Log scale: equal gaps mean equal ratios.</p>
+        </div>
         <div class="ftable" id="jr-table" hidden></div>
       </figure>
     </section>
 
     <section class="block" aria-labelledby="h-mc">
-      <h2 id="h-mc">Method check</h2>
-      <p class="lede">One journey under every ferry-share and occupancy setting, against its alternative. This is where the method choice matters most.</p>
+      <h2 id="h-mc">Sensitivity</h2>
       <figure class="card">
         <div class="fig-head">
           <div class="field" style="min-width:min(100%,320px)"><label for="mc-select">Journey</label><select id="mc-select" class="plain"></select></div>
-          <button class="tbtn" type="button" data-table="mc" aria-pressed="false">Table</button>
+          <div class="fig-tools">
+            <button class="tbtn" type="button" data-toggle="mc-method" aria-pressed="false">Method</button>
+            <button class="tbtn" type="button" data-table="mc" aria-pressed="false">Table</button>
+          </div>
         </div>
         <div class="chart" id="mc-chart"></div>
         <p class="callout" id="mc-callout"></p>
+        <div class="method-note" id="mc-method" hidden>
+          <p>One journey under every ferry share and occupancy setting, against its alternative.</p>
+          <ul>
+            <li><b>Per passenger:</b> the whole ship on its passengers, freight ignored (upper bound).</li>
+            <li><b>ISO 14083:</b> split by passenger equivalents: passenger 1, car 1.3, truck 18.</li>
+            <li><b>By mass:</b> 100 kg per passenger against about 22 t per truck (lower bound).</li>
+            <li><b>Occupancy:</b> typical loads, or the head count you entered.</li>
+          </ul>
+          <p>Your ferries split all three ways are on the <a href="../method/#ferries">Method page</a>.</p>
+        </div>
         <div class="ftable" id="mc-table" hidden></div>
       </figure>
     </section>
 
     <section class="block" aria-labelledby="h-int">
-      <h2 id="h-int">Per kilometre</h2>
-      <p class="lede">Grams of CO₂e per passenger-kilometre for every leg and every segment of the main alternatives, on a log scale.</p>
+      <h2 id="h-int">Intensity</h2>
       <figure class="card">
         <div class="fig-head">
           <div class="legend">
@@ -143,14 +176,19 @@
             <span><i class="lkey flying"></i>Alternative segment</span>
             <span><i class="lkey" style="color:var(--muted)"></i>Car references</span>
           </div>
+          <div class="fig-tools"><button class="tbtn" type="button" data-toggle="int-method" aria-pressed="false">Method</button></div>
         </div>
         <div class="chart" id="int-chart"></div>
+        <div class="method-note" id="int-method" hidden>
+          <p>Grams CO₂e per passenger-km for each leg and each segment of the main alternatives, with the switches above. The factors behind them are on the <a href="../method/#factors">Method page</a>.</p>
+          <p>With “+ non-CO₂”, flights multiply their CO₂ by about 1.7 (1.2–3) for contrails and NOx at altitude. No other mode gets this.</p>
+        </div>
       </figure>
     </section>
 
     <section class="block" aria-labelledby="h-legs">
-      <h2 id="h-legs">Every leg and alternative</h2>
-      <p class="lede">Median and 90 % interval under the selected lens, with a data-quality grade. Open <b>How</b> for the calculation with central values and its sources.</p>
+      <h2 id="h-legs">Legs</h2>
+      <p class="lede">Median and 90 % interval. <b>How</b> shows the arithmetic. Grades: A fuel measured · B vessel or service data · C operator or country factor · D generic.</p>
       <div class="tblwrap"><table class="data" id="legs-table"></table></div>
       <h3 class="h2" style="font-size:22px;margin-top:22px">Alternatives</h3>
       <div class="tblwrap"><table class="data" id="alts-table"></table></div>
@@ -158,8 +196,8 @@
   </div>
 
   <section class="block owner-only" id="editor" aria-labelledby="h-ed">
-    <h2 id="h-ed">Trip data</h2>
-    <p class="lede">Add or fix waypoints, legs and alternatives, including past and planned ones. Saved to the repo right away. The charts above update after the next build, about two minutes later.</p>
+    <h2 id="h-ed">Editor</h2>
+    <p class="lede">Saved to the repo right away; the charts update after the next build, about two minutes later.</p>
     <div class="ed-tabs">
       <div class="seg" role="radiogroup" aria-label="Show">
         <input type="radio" name="ed-tab" id="tab-j" value="journeys" checked><label for="tab-j">Journeys</label>
@@ -174,29 +212,6 @@
     <div id="issues"></div>
   </section>
 
-  <section class="block" aria-labelledby="h-read">
-    <h2 id="h-read">Reading this page</h2>
-    <p class="lede">Short version below. The <a href="../method/">Method page</a> explains every switch, with your own ferries as examples, and lists the <a href="../method/#factors">default factor of every mode</a>.</p>
-    <div class="notes">
-      <div>
-        <h3>Switches vs. ranges</h3>
-        <p>The switches are <b>choices</b>: equally defensible ways of counting that give different answers. They are never blended into an error bar. The ranges are <b>uncertainty</b> within one way of counting: factors, engine loads, load factors and the size of aviation's non-CO₂ effect, sampled together.</p>
-      </div>
-      <div>
-        <h3>Fair comparison</h3>
-        <p>Every switch applies to actual travel and alternatives alike. "As observed" only changes travel where a head count was entered; alternatives that never happened use typical loads. The alternatives are the realistic options chosen by hand for the same destinations.</p>
-      </div>
-      <div>
-        <h3>Data quality</h3>
-        <dl class="grades">
-          <dt><span class="badge">A</span></dt><dd>Fuel measured for this trip (litres you logged)</dd>
-          <dt><span class="badge">B</span></dt><dd>Specific to this vessel, service or trip</dd>
-          <dt><span class="badge">C</span></dt><dd>Operator, model or country factor</dd>
-          <dt><span class="badge">D</span></dt><dd>Generic factor for the mode</dd>
-        </dl>
-      </div>
-    </div>
-  </section>
   <footer class="end"><span id="foot"></span><a href="#" data-owner-link>Owner</a></footer>
 </main>
 </body>

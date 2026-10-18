@@ -11,9 +11,13 @@ There are two separate pages, each with its own input:
 2. **Emissions** (`site/emissions/`): legs that happened against hand-picked realistic alternatives,
    with method switches (lenses), Monte Carlo ranges and per-leg arithmetic.
 
-A third page, **Method** (`site/method/`), explains the emissions method in plain language for
-friends: the trip's own ferries split three ways (`ship_breakdown` in `model.py`) and a table of
-default factors per mode and named vehicle (`factors.py`), both computed in Python.
+A third page, **Method** (`site/method/`), holds the emission factors per passenger-km (mode
+defaults and named vehicles, `factors.py`) and the trip's own ferries split three ways
+(`ship_breakdown` in `model.py`), both computed in Python. The explanations live with the plots:
+each plot on the Emissions page has a short Method note behind a toggle.
+
+Page conventions (owner's choice): one-word section names (Route, Timeline, Journeys, …), short
+descriptions, method text in the per-plot notes rather than under headings.
 
 Docs:
 
@@ -70,6 +74,8 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
     their ends, which may be stops; elsewhere the destination-level journeys, and a cut-off piece
     (Zurich → Paris) has no alternative. It answers "the trip against flying straight there", by
     the owner's request.
+  - The page only offers "Every stop" and "Direct" once an alternative of that kind exists
+    (`levelUsed` in `emissions.js`); Python always computes all three.
 - **Ferries:** use the vessel's typical freight from config. There is no freight input, by the
   owner's choice.
 - **Sailing:** litres (`fuel_l`, grade A), else engine hours (`engine_h` × L/h, grade B), else a

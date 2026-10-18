@@ -176,6 +176,12 @@ select.plain { border: 1px solid var(--rule); background: var(--surface); border
 .ax text { fill: var(--muted); font-size: 11.5px; font-family: var(--font-ui); font-variant-numeric: tabular-nums; }
 .ax line, .ax path { stroke: var(--grid); }
 .ax .base { stroke: var(--rule); }
+.ax .minor { stroke: var(--rule); }
+.fig-tools { display: flex; gap: 6px; margin-left: auto; }
+.method-note { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font-size: 14px; color: var(--ink-2); max-width: 80ch; }
+.method-note p + p, .method-note p + ul, .method-note ul + p { margin-top: 6px; }
+.method-note ul { padding-left: 18px; margin: 0; }
+.method-note b { color: var(--ink); font-weight: 600; }
 .lbl { fill: var(--ink-2); font-size: 12.5px; }
 .lbl-strong { fill: var(--ink); font-size: 13.5px; font-weight: 600; }
 .lbl-muted { fill: var(--muted); font-size: 11.5px; }
