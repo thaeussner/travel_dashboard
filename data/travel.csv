@@ -1,13 +1,14 @@
-id,type,option,main,date,from,to,mode,vehicle,km,occ_max,occ_obs,fuel_l,note
-Lhimi,leg,,,2026-10-04,zurich,paris,train,TGV Lyria,650,,,,
-Lzj7q,leg,,,2026-10-04,paris,hendaye,train,TGV,800,,,,
-Lxgv5,leg,,,2026-10-05,irun,madrid,train,Renfe,550,,,,
-Lvtgp,leg,,,2026-10-05,madrid,huelva,train,Renfe,600,,,,
-Lxf7u,leg,,,2026-10-06,huelva,santa-cruz-de-tenerife,ferry,Balearia / Fred Olsen: Marie Curie,1300,880,200,,
-L4mru,leg,,,2026-10-08,santa-cruz-de-tenerife,los-cristianos,coach,Fred Olsen Ferry Bus,75,,10,,regular Coach
-L8p5q,leg,,,2026-10-08,los-cristianos,la-palma,fast_ferry,Fred Olsen Bencomo Express,140,859,150,,20 foot passengers
-Ldsu8,leg,,,2026-10-17,la-palma,los-cristianos-2,fast_ferry,Fred Olsen Bencomo Express,140,859,160,,15 foot passengers
-L6uvs,leg,,,2026-10-17,los-cristianos-2,el-medano,bus,Titsa Bus,20,50,50,,
-Abcn1,alt,fly-via-bcn,1,,zurich,Barcelona (BCN),plane,A320 (Vueling),857,180,,,"ZRH-BCN, Vueling or SWISS, ~1 h 45"
-Abcn2,alt,fly-via-bcn,1,,Barcelona (BCN),la-palma,plane,A320neo (Vueling),2282,186,,,"BCN-SPC direct, Vueling ~3 h 45; Edelweiss ZRH-SPC direct only from 25 Oct (winter)"
-Lhawb,leg,,,2026-10-05,hendaye,irun,bus,,10,,,,
+id,type,option,main,date,from,to,mode,vehicle,km,occ_max,occ_obs,fuel_l,engine_h,note
+Lhimi,leg,,,2026-10-04,zurich,paris,train,TGV Lyria,650,,,,,
+Lzj7q,leg,,,2026-10-04,paris,hendaye,train,TGV,800,,,,,
+Lxgv5,leg,,,2026-10-05,irun,madrid,train,Renfe,550,,,,,
+Lvtgp,leg,,,2026-10-05,madrid,huelva,train,Renfe,600,,,,,
+Lxf7u,leg,,,2026-10-06,huelva,santa-cruz-de-tenerife,ferry,Balearia / Fred Olsen: Marie Curie,1300,880,200,,,
+L4mru,leg,,,2026-10-08,santa-cruz-de-tenerife,los-cristianos,coach,Fred Olsen Ferry Bus,75,,10,,,regular Coach
+L8p5q,leg,,,2026-10-08,los-cristianos,la-palma,fast_ferry,Fred Olsen Bencomo Express,140,859,150,,,20 foot passengers
+Ldsu8,leg,,,2026-10-17,la-palma,los-cristianos-2,fast_ferry,Fred Olsen Bencomo Express,140,859,160,,,15 foot passengers
+L6uvs,leg,,,2026-10-17,los-cristianos-2,el-medano,bus,Titsa Bus,20,50,50,,,
+Abcn1,alt,fly-via-bcn,1,,zurich,Barcelona (BCN),plane,A320 (Vueling),857,180,,,,"ZRH-BCN, Vueling or SWISS, ~1 h 45"
+Abcn2,alt,fly-via-bcn,1,,Barcelona (BCN),la-palma,plane,A320neo (Vueling),2282,186,,,,"BCN-SPC direct, Vueling ~3 h 45; Edelweiss ZRH-SPC direct only from 25 Oct (winter)"
+Lhawb,leg,,,2026-10-05,hendaye,irun,bus,,10,,,,,
+Lnwho,leg,,,2026-10-25,el-medano,maritinique,sail,,5000,,,50,20,
