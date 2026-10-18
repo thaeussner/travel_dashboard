@@ -15,3 +15,5 @@ Lnwho,leg,,,2026-10-25,el-medano,maritinique,sail,,5000,,,50,20,
 Aby5e,alt,Flight TFN-FDF,1,,TFN,BCN,plane,A320 (Vueling),,180,,,,"TFN-BCN, Vueling ~3 h 30"
 Acdg1,alt,Flight TFN-FDF,1,,BCN,CDG,plane,A320 (Vueling or Air France),,180,,,,"BCN-CDG, Vueling or Air France ~2 h"
 Afdf1,alt,Flight TFN-FDF,1,,CDG,FDF,plane,Boeing 777-300ER (Air France),,472,,,,"CDG-FDF, Air France 2x daily (from CDG since 29 Mar 2026), 472-seat 777 ~8 h 45"
+Adir1,alt,Direct ZRH-FDF,1,,ZRH,CDG,plane,A220-300 (SWISS),,145,,,,"ZRH-CDG, SWISS ~1 h 25"
+Adir2,alt,Direct ZRH-FDF,1,,CDG,FDF,plane,Boeing 777-300ER (Air France),,472,,,,"CDG-FDF, Air France 2x daily, 472-seat 777 ~8 h 45"
