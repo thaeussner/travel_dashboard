@@ -54,12 +54,17 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
     (`from_code`/`to_code`), because the build then replaces the chain's ends with waypoint ids.
   - An option replaces every leg between its first and last waypoint. `main = 1` picks it when
     several options share a span.
-  - A leg with `from == to` is a local trip at that waypoint (e.g. driving around an island). It
-    belongs to no journey, is counted in both worlds, and is kept out of waypoint ordering.
+  - A leg with `from == to` is a local trip at that waypoint (e.g. driving around an island). It is
+    kept out of waypoint ordering. It counts in both worlds where the alternative goes too; at a
+    place an alternative skips, it is part of that journey and counts only as actual travel
+    (`montecarlo` keeps `local_total` per level for the "Local travel" row).
 - **Levels:**
   - "destination": one journey per pair of consecutive destinations.
   - "stop": stop-level options are used where they tile a whole destination span; otherwise the
     destination-level option is the fallback (`travel_dashboard/trip.py`).
+  - "direct": options that skip destinations (one flight Zurich → Martinique) replace everything
+    between their ends, with as few journeys as possible; elsewhere the destination-level fallback.
+    It answers "the trip against flying straight there", by the owner's request.
 - **Ferries:** use the vessel's typical freight from config. There is no freight input, by the
   owner's choice.
 - **Sailing:** litres (`fuel_l`, grade A), else engine hours (`engine_h` × L/h, grade B), else a
@@ -87,7 +92,7 @@ config/            emissions.toml (all factors, vessels, flight classes), settin
 data/              the owner's CSVs; reference/airports.csv (IATA → coordinates); examples/trip/ for demos and tests
 travel_dashboard/  tables.py (parse/validate), geo.py (airports, km from codes), profiles.py (config → per-travel parameters, shared sampling),
                    model.py (per-passenger kg, traces, ship breakdown), trip.py (ordering, options, journeys per level),
-                   montecarlo.py (24 lens combos × draws), factors.py (default factor table), costs.py,
+                   montecarlo.py (36 lens combos × draws), factors.py (default factor table), costs.py,
                    export.py (JSON contract), cli.py
 site/              index.html, costs/, emissions/, method/, assets/ (app.css, common.js, store.js, editor.js,
                    costs.js, emissions.js, home.js, method.js), vendor/d3.v7.9.0.min.js, sw.js,

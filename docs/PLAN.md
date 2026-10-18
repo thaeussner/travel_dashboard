@@ -63,8 +63,11 @@ Details in METHODOLOGY.md §3:
   the main option spanning exactly that pair.
 - **Every stop:** inside each destination span, stop-level options are used where they tile the
   whole span; elsewhere the destination-level option stays.
-- **Lenses:** level (2) × ferry share (3) × occupancy (2) × flights' non-CO₂ (2) = 24 scenarios,
-  each with 2,000 Monte Carlo draws. The page switches between them and shows all 24 at once in the
+- **Direct:** where an option skips destinations (one flight Zurich → Martinique), it replaces
+  everything between its ends, using as few journeys as possible; elsewhere the destination-level
+  option stays.
+- **Lenses:** level (3) × ferry share (3) × occupancy (2) × flights' non-CO₂ (2) = 36 scenarios,
+  each with 2,000 Monte Carlo draws. The page switches between them and shows all 36 at once in the
   robustness strip.
 - **Scopes:** "trip so far" and "including planned travel". A journey switches to its alternative
   on the date of its last leg.
@@ -76,7 +79,7 @@ tables.py      read + validate the CSVs → typed rows + issues (fix-ups, skippe
 profiles.py    config → parameters per travel row (mode defaults + matched vehicle), shared sampling
 model.py       per-passenger kg for one draw and lens: factor | vehicle | fuel | ship | flight; traces
 trip.py        waypoint order, alternative chains, journeys per level
-montecarlo.py  24 lens combinations × draws → p5/p50/p95 per travel, option, journey, total, day
+montecarlo.py  36 lens combinations × draws → p5/p50/p95 per travel, option, journey, total, day
 costs.py       normalise cost rows + summary
 export.py      site/data/{emissions,costs,meta}.json (the data contract)
 cli.py         build | check | serve

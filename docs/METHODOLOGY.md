@@ -36,7 +36,7 @@ Two rules follow:
 - **Lenses are symmetric.** A lens applies to actual and counterfactual travel alike. The one asymmetry
   is unavoidable: you can only observe occupancy on vehicles you actually used, so flights you didn't
   take always get typical load factors.
-- **Robustness is shown, not claimed.** The headline is computed under all 24 lens combinations, and
+- **Robustness is shown, not claimed.** The headline is computed under all 36 lens combinations, and
   the page shows that spread next to the selected value.
 
 ## 3. The comparison: your legs against your alternatives
@@ -61,26 +61,33 @@ question has no defensible answer.
   its first and last waypoint. Connection points such as "Paris Orly" are plain text, not waypoints.
 - **Several options** may cover the same span, e.g. direct vs. via Madrid, or flight vs. car. The one
   marked **main** counts; the others are shown next to it for comparison.
-- **Local trips** start and end at the same waypoint, e.g. driving around La Palma. They belong to no
-  journey and have no alternative, so they count the same in both worlds. They appear in the totals,
-  in the "Local travel" row and under their waypoint on the route.
+- **Local trips** start and end at the same waypoint, e.g. driving around La Palma. They have no
+  alternative of their own. Where the alternative world goes too, they would have happened either
+  way and count the same in both worlds: in the totals, the "Local travel" row and under their
+  waypoint on the route. At a place an alternative skips (a stop between its ends, or a destination
+  under "Direct"), they belong to that journey and count only as your travel.
 
-### 3.3 Two levels (lens)
+### 3.3 Three levels (lens)
 
 | level | journeys | alternative used |
 |---|---|---|
 | **Destinations** (default) | each pair of consecutive destinations | the main option spanning exactly that pair |
 | **Every stop** | inside each destination span, the finest chain of stop-level options covering it | falls back to the destination-level option where stop-level options don't cover the whole span |
+| **Direct** | as few journeys as possible, using options that skip destinations | falls back to the destination-level option where no such option covers a span |
 
-- An option is **stop-level** when at least one of its ends is a stop.
-- These options are reported and not used:
-  - a destination-level option that skips a destination
-  - a stop-level option that crosses a destination
+- An option is **direct** when a destination lies between its ends, e.g. one flight Zurich →
+  Martinique. It must start and end at destinations. Otherwise an option is **stop-level** when at
+  least one of its ends is a stop, and **destination-level** when both are destinations.
+- Stop-level options outside every destination span are reported and not used.
 - A journey without any alternative counts the same in both worlds, so no saving is claimed for it.
-  Local trips are the typical case.
 
-A single flight from home to the final destination (Switzerland → Caribbean) is deliberately not a
-level. Nobody spending a month on Tenerife would have flown past it.
+**Direct asks a different question.** The other levels keep the destinations fixed: you would have
+gone to La Palma anyway, by plane if not by ferry. Direct asks what the whole trip cost against flying
+straight to where it ends, as if the places in between had not been visited. That isn't how the trip
+would have happened: nobody spending a month on Tenerife would have flown past it. But it is the
+stricter test. One long flight usually emits less than the several flights it takes to visit the
+same places, so a saving that holds under Direct holds whatever the alternative. Local trips at the
+skipped places count only as your travel (§3.2), since the direct flight never goes there.
 
 ### 3.4 Timing and scope
 

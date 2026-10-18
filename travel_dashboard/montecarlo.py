@@ -59,10 +59,17 @@ def run(trip: Trip, profiles: Profiles, today: dt.date, draws: int, seed: int) -
                    | {today})
     di = {d: i for i, d in enumerate(dates)}
     nd = len(dates)
-    local: dict[str, list[Travel]] = {}      # local travel per waypoint: in both worlds, never replaced
+    local: dict[str, list[Travel]] = {}      # local travel per waypoint
     for t in trip.legs:
         if t.from_ == t.to:
             local.setdefault(t.from_, []).append(t)
+    # local travel at a place an alternative skips is part of that journey (and swapped with it, in
+    # the scopes where the journey is); the rest counts in both worlds
+    def swaps(j, s: str) -> bool:
+        return bool(j.option) and (s == "all" or (j.date is not None and j.date <= today))
+    kept = {(lvl, s): [t for lts in local.values() for t in lts
+                       if not any(swaps(j, s) and t in j.legs for j in trip.journeys[lvl])]
+            for lvl in LEVELS for s in SCOPES}
 
     store: dict[tuple, array] = defaultdict(lambda: array("d"))
 
@@ -86,13 +93,12 @@ def run(trip: Trip, profiles: Profiles, today: dt.date, draws: int, seed: int) -
                 if t.date <= today:
                     act["todate"] += v[t.id]
             for s in SCOPES:
-                lsum = 0.0
                 for wid, lts in local.items():
-                    w_sum = sum(v[t.id] for t in lts if s == "all" or t.date <= today)
-                    store[("local", wid, ck, s)].append(w_sum)
-                    lsum += w_sum
+                    store[("local", wid, ck, s)].append(sum(v[t.id] for t in lts if s == "all" or t.date <= today))
                 if local:
-                    store[("local_total", ck, s)].append(lsum)
+                    for lvl in LEVELS:
+                        store[("local_total", lvl, ck, s)].append(
+                            sum(v[t.id] for t in kept[(lvl, s)] if s == "all" or t.date <= today))
             opt_total = {o.id: sum(v[r.id] for r in o.rows) for o in trip.options}
             for oid, tot in opt_total.items():
                 store[("option", oid, ck)].append(tot)
@@ -138,7 +144,8 @@ def run(trip: Trip, profiles: Profiles, today: dt.date, draws: int, seed: int) -
         "local": [{"waypoint": wid, "legs": [t.id for t in lts],
                    "q": {f"{ckey(c)}|{s}": q[("local", wid, ckey(c), s)] for c in COMBOS for s in SCOPES}}
                   for wid, lts in local.items()],
-        "local_total": {f"{ckey(c)}|{s}": q[("local_total", ckey(c), s)] for c in COMBOS for s in SCOPES} if local else {},
+        "local_total": {f"{lvl}|{ckey(c)}|{s}": q[("local_total", lvl, ckey(c), s)]
+                        for lvl in LEVELS for c in COMBOS for s in SCOPES} if local else {},
         "cumulative": {f"{lvl}|{ckey(c)}": [
             {"date": d.isoformat(), **{k: q[("cum", lvl, ckey(c), i, k)] for k in ("actual", "flying", "avoided")}}
             for i, d in enumerate(dates)] for lvl in LEVELS for c in COMBOS},

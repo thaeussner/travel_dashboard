@@ -6,7 +6,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from travel_dashboard import factors, geo, trip as trip_mod
+from travel_dashboard import factors, geo, montecarlo, trip as trip_mod
 from travel_dashboard.model import kg
 from travel_dashboard.profiles import Profiles, Sampler
 from travel_dashboard.tables import Issue, Travel, Waypoint, read_costs, read_travel, read_waypoints
@@ -193,7 +193,23 @@ class TestTrip(unittest.TestCase):
         self.assertIsNone(t.journeys["destination"][0].option)
         msgs = " ".join(i.message for i in issues)
         self.assertIn("one chain", msgs)
-        self.assertIn("skips a destination", msgs)
+        self.assertNotIn("skip", [i.id for i in issues])           # skipping a destination makes it a direct one
+
+    def test_direct_level_replaces_several_destinations(self):
+        local = leg("C1", "d1", "d1", "car", 300, "2026-10-03")      # at a place the direct flight skips
+        alts = [alt("A1", "first", "home", "d1", main=True), alt("D1", "direct", "home", "d2")]
+        t = trip_mod.build(self.wps, self.legs + [local] + alts, [])
+        self.assertEqual(t.options[1].level, "direct")
+        self.assertEqual([j.option.id if j.option else None for j in t.journeys["destination"]], ["first", None])
+        (j,) = t.journeys["direct"]                                  # one journey home → d2 instead of two
+        self.assertEqual((j.start, j.end, j.option.id), ("home", "d2", "direct"))
+        self.assertEqual(sorted(x.id for x in j.legs), ["C1", "L1", "L2", "L3", "L4"])   # local travel included
+        self.assertEqual(j.skipped, ["s1", "s2", "d1"])
+        for lvl in ("destination", "stop"):                          # elsewhere d1 is visited in both worlds
+            self.assertNotIn("C1", [x.id for jj in t.journeys[lvl] for x in jj.legs])
+        mc = montecarlo.run(t, PROFILES, dt.date(2026, 12, 1), 50, 1)
+        self.assertGreater(mc["local_total"]["destination|iso|typical|full|all"][1], 0)
+        self.assertEqual(mc["local_total"]["direct|iso|typical|full|all"][1], 0)   # only in your travel there
 
     def test_alternative_may_start_at_a_waypoints_airport(self):
         wps = [Waypoint("tf", "El Medano", "destination", arrive=dt.date(2026, 10, 17), airport="TFS TFN"),

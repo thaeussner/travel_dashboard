@@ -8,6 +8,11 @@
   main option spanning exactly that pair.
 - Level "stop": inside each destination span, stop-level options (at least one end is a stop) are
   used when they tile the whole span; otherwise the destination-level option is the fallback.
+- Level "direct": options that skip destinations (e.g. one flight Zurich → Martinique) replace
+  everything between their ends, using as few journeys as possible; elsewhere the
+  destination-level option is the fallback.
+- Local travel (from == to) counts in both worlds where the alternative also goes. At a place an
+  alternative skips, it belongs to that journey and only counts as your travel.
 """
 
 from __future__ import annotations
@@ -19,7 +24,7 @@ from dataclasses import dataclass, field
 from . import geo
 from .tables import Issue, Travel, Waypoint
 
-LEVELS = ("destination", "stop")
+LEVELS = ("destination", "stop", "direct")
 
 
 @dataclass
@@ -46,6 +51,7 @@ class Journey:
     option: Option | None
     extras: list[Option] = field(default_factory=list)
     date: dt.date | None = None
+    skipped: list[str] = field(default_factory=list)   # waypoints strictly inside, which the alternative skips
 
     def planned(self, today: dt.date) -> bool:
         return self.date is None or self.date > today
@@ -230,7 +236,9 @@ def build(waypoints: list[Waypoint], travel: list[Travel], issues: list[Issue]) 
             issues.append(Issue("travel", name, f"{chain[0].from_!r} → {chain[-1].to!r} fits several waypoints; "
                                                 f"using {a} → {b}"))
         chain[0].from_, chain[-1].to = a, b
-        level = "destination" if wtype[a] == "destination" and wtype[b] == "destination" else "stop"
+        skips_dest = any(wtype[w.id] == "destination" for w in ordered[pos[a] + 1:pos[b]])
+        level = ("direct" if skips_dest else
+                 "destination" if wtype[a] == "destination" and wtype[b] == "destination" else "stop")
         options.append(Option(name, chain, a, b, level, any(r.main for r in rows)))
 
     journeys = _journeys(ordered, pos, wtype, legs, options, issues)
@@ -248,8 +256,11 @@ def _pick(opts: list[Option], issues: list[Issue]) -> tuple[Option | None, list[
 
 
 def _legs_between(legs: list[Travel], pos: dict[str, int], a: str, b: str) -> list[Travel]:
-    """Legs of the journey from a to b. Local travel (from == to) belongs to no journey."""
-    return [t for t in legs if t.from_ != t.to and pos[a] <= pos[t.from_] and pos[t.to] <= pos[b]]
+    """Legs of the journey from a to b, with the local travel at the places in between.
+
+    Local travel at a and b stays out: the alternative goes there too, so it counts in both worlds."""
+    return [t for t in legs if (pos[a] <= pos[t.from_] and pos[t.to] <= pos[b] and t.from_ != t.to)
+            or (t.from_ == t.to and pos[a] < pos[t.from_] < pos[b])]
 
 
 def _date(legs: list[Travel], option: Option | None) -> dt.date | None:
@@ -262,30 +273,38 @@ def _date(legs: list[Travel], option: Option | None) -> dt.date | None:
     return None
 
 
+def _journey(level: str, a: str, b: str, legs, pos, ordered, picked) -> Journey:
+    main, extras = picked
+    jl = _legs_between(legs, pos, a, b)
+    skipped = [w.id for w in ordered[pos[a] + 1:pos[b]]] if main else []
+    return Journey(level, a, b, jl, main, extras, _date(jl, main), skipped)
+
+
 def _journeys(ordered, pos, wtype, legs, options, issues) -> dict[str, list[Journey]]:
     dests = [w.id for w in ordered if w.type == "destination"]
     spans = list(zip(dests, dests[1:]))
     by_span: dict[tuple[str, str], list[Option]] = defaultdict(list)
+    by_direct: dict[tuple[str, str], list[Option]] = defaultdict(list)
     for o in options:
-        if o.level == "destination":
-            if (o.start, o.end) not in spans:
-                issues.append(Issue("travel", o.id, "alternative skips a destination; it is only used if it spans "
-                                                    "two consecutive destinations"))
+        if o.level == "direct":
+            if wtype[o.start] != "destination" or wtype[o.end] != "destination":
+                issues.append(Issue("travel", o.id, "an alternative that skips destinations must start and end at "
+                                                    "destinations; not used"))
                 continue
+            by_direct[(o.start, o.end)].append(o)
+        elif o.level == "destination":
             by_span[(o.start, o.end)].append(o)
         else:
-            inside = [w for w in ordered[pos[o.start] + 1:pos[o.end]] if wtype[w.id] == "destination"]
-            if inside or not any(pos[a] <= pos[o.start] and pos[o.end] <= pos[b] for a, b in spans):
-                issues.append(Issue("travel", o.id, "stop-level alternative crosses a destination; not used"))
+            if not any(pos[a] <= pos[o.start] and pos[o.end] <= pos[b] for a, b in spans):
+                issues.append(Issue("travel", o.id, "stop-level alternative lies outside the destinations; not used"))
                 continue
             by_span[(o.start, o.end)].append(o)
 
-    out: dict[str, list[Journey]] = {"destination": [], "stop": []}
+    out: dict[str, list[Journey]] = {lvl: [] for lvl in LEVELS}
     for a, b in spans:
-        jlegs = _legs_between(legs, pos, a, b)
-        main, extras = _pick(by_span.get((a, b), []), issues)
-        dest_j = Journey("destination", a, b, jlegs, main, extras, _date(jlegs, main))
+        dest_j = _journey("destination", a, b, legs, pos, ordered, _pick(by_span.get((a, b), []), issues))
         out["destination"].append(dest_j)
+        jlegs, main, extras = dest_j.legs, dest_j.option, dest_j.extras
 
         # finest tiling of [a, b] by stop-level options
         inner = [w.id for w in ordered[pos[a]:pos[b] + 1]]
@@ -303,9 +322,25 @@ def _journeys(ordered, pos, wtype, legs, options, issues) -> dict[str, list[Jour
         tiling = best.get(b)
         if tiling:
             for s, e in tiling:
-                tl = _legs_between(legs, pos, s, e)
-                o, ex = edges[(s, e)]
-                out["stop"].append(Journey("stop", s, e, tl, o, ex, _date(tl, o)))
+                out["stop"].append(_journey("stop", s, e, legs, pos, ordered, edges[(s, e)]))
         else:
-            out["stop"].append(Journey("stop", a, b, jlegs, main, extras, dest_j.date))
+            out["stop"].append(Journey("stop", a, b, jlegs, main, extras, dest_j.date, dest_j.skipped))
+
+    # direct: as few journeys as possible, using alternatives that skip destinations
+    di = {d: i for i, d in enumerate(dests)}
+    direct = {(s, e): _pick(opts, issues) for (s, e), opts in by_direct.items()}
+    route: dict[int, list[tuple[int, int, tuple[str, str] | None]]] = {0: []}
+    for i in range(len(dests)):
+        if i not in route:
+            continue
+        steps = [(i + 1, None)] + [(di[e], (s, e)) for (s, e) in direct if s == dests[i]]
+        for j, key in steps:
+            if j < len(dests) and (j not in route or len(route[i]) + 1 < len(route[j])):
+                route[j] = route[i] + [(i, j, key)]
+    for i, j, key in route.get(len(dests) - 1, []):
+        if key is None:
+            d = out["destination"][i]
+            out["direct"].append(Journey("direct", d.start, d.end, d.legs, d.option, d.extras, d.date, d.skipped))
+        else:
+            out["direct"].append(_journey("direct", key[0], key[1], legs, pos, ordered, direct[key]))
     return out

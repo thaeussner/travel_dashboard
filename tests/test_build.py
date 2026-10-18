@@ -42,8 +42,8 @@ class TestBuild(unittest.TestCase):
         self.assertEqual(sum(r["group"] == "default" and r["mode"] == "plane" for r in rows), 4)
 
     def test_all_lens_combinations_present(self):
-        self.assertEqual(len(self.data["totals"]), 2 * 3 * 2 * 2 * 2)
-        self.assertEqual(len(self.data["cumulative"]), 2 * 3 * 2 * 2)
+        self.assertEqual(len(self.data["totals"]), 3 * 3 * 2 * 2 * 2)
+        self.assertEqual(len(self.data["cumulative"]), 3 * 3 * 2 * 2)
 
     def test_cumulative_ends_at_totals(self):
         for key, cum in self.data["cumulative"].items():
@@ -65,7 +65,7 @@ class TestBuild(unittest.TestCase):
         self.assertGreater(mass, 0)
 
     def test_local_travel_counts_in_both_worlds(self):
-        self.assertGreater(self.data["local_total"]["iso|observed|full|all"][1], 0)
+        self.assertGreater(self.data["local_total"]["destination|iso|observed|full|all"][1], 0)
         self.assertEqual([t["id"] for t in self.data["travels"] if t["local"]], ["L10"])
         for level in self.data["journeys"].values():
             for j in level:

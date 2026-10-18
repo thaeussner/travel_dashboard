@@ -58,7 +58,10 @@ later.
   Paris. The alternative replaces every leg between its first and last waypoint.
 - `main = 1` marks the alternative that counts for that span.
 - A leg with the same `from` and `to` is a local trip, e.g. driving around La Palma. It has no
-  alternative and counts the same in both worlds. In the form, tick "Local trip".
+  alternative of its own and counts the same in both worlds, unless an alternative skips that place.
+  In the form, tick "Local trip".
+- An alternative that skips destinations, e.g. `ZRH → CDG → FDF` from Zurich to Martinique, is used
+  under "Compare against: Direct": the whole trip against flying straight there.
 - `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text. A
   flight alternative may also start or end at an airport its waypoint lists, e.g. `TFN` for
   El Médano (`TFS TFN`), so you can write the whole connection in codes: `TFN → BCN → CDG → FDF`.

@@ -31,6 +31,11 @@ LENS_DEFS = {
          "explain": "Every stop: where you entered alternatives between stops that cover a whole journey, those are "
                     "used instead, usually more and shorter flights. Elsewhere the destination-level alternative "
                     "stays."},
+        {"id": "direct", "label": "Direct",
+         "hint": "Use alternatives that skip destinations, e.g. one flight Zurich → Martinique",
+         "explain": "Direct: where you entered an alternative that skips destinations, it replaces everything in "
+                    "between, local trips at the places it skips included. This asks what the trip cost against "
+                    "flying straight there. Elsewhere the destination-level alternative stays."},
     ]},
     "alloc": {"title": "Ferry share", "options": [
         {"id": "passenger", "label": "Per passenger",
@@ -92,7 +97,7 @@ def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: in
             rows.append({
                 "start": j.start, "end": j.end, "title": f"{trip.name(j.start)} → {trip.name(j.end)}",
                 "legs": [t.id for t in j.legs], "option": j.option.id if j.option else None,
-                "extras": [o.id for o in j.extras], "date": _iso(j.date), "planned": planned,
+                "extras": [o.id for o in j.extras], "date": _iso(j.date), "planned": planned, "skipped": j.skipped,
                 "q": mc["journeys"][lvl][ji],
             })
         journeys_out[lvl] = rows

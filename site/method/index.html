@@ -64,14 +64,15 @@
     <ul>
       <li><b>Legs</b> are what actually happened. <b>Alternatives</b> are what would realistically have happened instead, chosen by hand. Usually that's flights with their real connections, for example Zurich via Barcelona to La Palma.</li>
       <li><b>Destinations</b> are places that would have been visited anyway. <b>Stops</b> exist only because of slow travel, like a night in Hendaye. A <b>journey</b> is everything between two destinations, and it is compared with the alternative marked as main for it.</li>
-      <li><b>Local trips</b>, like driving around La Palma, start and end at the same place. They would have happened either way, so they count the same in both worlds.</li>
-      <li>The comparison keeps the destinations fixed. It doesn't guess at a different trip that might have happened by plane.</li>
+      <li><b>Local trips</b>, like driving around La Palma, start and end at the same place. Where the alternative goes too, they would have happened either way and count the same in both worlds. At a place an alternative skips, they count only as your travel.</li>
+      <li>The comparison keeps the destinations fixed. It doesn't guess at a different trip that might have happened by plane. The exception is <b>Direct</b>, below.</li>
+      <li><b>Direct</b> asks a different question: what did the whole trip cost against flying straight there? An alternative that skips destinations, like one flight Zurich → Martinique, replaces everything in between, the island stays included. It is a stricter test: one long flight usually emits less than the several flights it takes to visit the same places.</li>
     </ul>
   </section>
 
   <section class="block prose" id="switches">
     <h2 class="h2">Switches and ranges</h2>
-    <p>The switches on the emissions page are <b>choices</b>. Each is a defensible way of counting with no single right answer: compare at destinations or at every stop, how a ferry is split, typical or observed occupancy, and flights with or without non-CO₂ effects. The page computes all 24 combinations; the strip at the top shows them all at once.</p>
+    <p>The switches on the emissions page are <b>choices</b>. Each is a defensible way of counting with no single right answer: compare at destinations, at every stop or direct, how a ferry is split, typical or observed occupancy, and flights with or without non-CO₂ effects. The page computes all 36 combinations; the strip at the top shows them all at once.</p>
     <p>The ranges are <b>uncertainty</b> within one way of counting. Every input that isn't known exactly (emission factors, load factors, fuel use) has a low, central and high value. The model draws all of them together 2,000 times and shows the middle 90 %. Inputs that are physically the same, such as one ship's fuel use, are drawn once per round and shared, so totals and differences keep honest ranges.</p>
   </section>
 
