@@ -67,7 +67,7 @@
         <p class="hero-range" style="margin-top:0;font-size:14px" id="strip-sum"></p>
         <div class="chart" id="strip-chart"></div>
         <div class="method-note" id="strip-method" hidden>
-          <p><b>Avoided</b> is the alternatives minus your travel, in kg CO₂e per passenger: producing the fuel or electricity plus burning it. Building vehicles and infrastructure is left out.</p>
+          <p><b>Avoided</b> is the alternatives minus the actual travel, in kg CO₂e per passenger: producing the fuel or electricity plus burning it. Building vehicles and infrastructure is left out.</p>
           <p>The big number is the median of 2,000 Monte Carlo draws with its 90 % interval: the <b>uncertainty</b> of factors, loads and fuel use. The switches are <b>choices</b>. Each tick here is one combination of them; they are never blended into the range.</p>
         </div>
         <div class="ftable" id="strip-table" hidden></div>
@@ -90,7 +90,7 @@
         <div class="scroll-x"><div class="chart" id="route-chart"></div></div>
         <p class="explain" id="route-merged"></p>
         <div class="method-note" id="route-method" hidden>
-          <p>Each arc is the main alternative you entered for a journey. It replaces the legs beneath it; travel without an alternative counts the same in both worlds.</p>
+          <p>Each arc is the main alternative entered for a journey. It replaces the legs beneath it; travel without an alternative counts the same in both worlds.</p>
           <p id="level-explain"></p>
           <p>Local trips count in both worlds, unless an alternative skips the place. To fit the page, legs of the same mode merge first, then everything between destinations.</p>
         </div>
@@ -135,7 +135,7 @@
         </div>
         <div class="chart" id="jr-chart"></div>
         <div class="method-note" id="jr-method" hidden>
-          <p>Each journey of the current comparison against its main alternative, with 90 % intervals. Hollow dots are your other alternatives for the same journey. Log scale: equal gaps mean equal ratios.</p>
+          <p>Each journey of the current comparison against its main alternative, with 90 % intervals. Hollow dots are the other alternatives for the same journey. Log scale: equal gaps mean equal ratios.</p>
         </div>
         <div class="ftable" id="jr-table" hidden></div>
       </figure>
@@ -159,9 +159,9 @@
             <li><b>Per passenger:</b> the whole ship on its passengers, freight ignored (upper bound).</li>
             <li><b>ISO 14083:</b> split by passenger equivalents: passenger 1, car 1.3, truck 18.</li>
             <li><b>By mass:</b> 100 kg per passenger against about 22 t per truck (lower bound).</li>
-            <li><b>Occupancy:</b> typical loads, or the head count you entered.</li>
+            <li><b>Occupancy:</b> typical loads, or the head count entered.</li>
           </ul>
-          <p>Your ferries split all three ways are on the <a href="../method/#ferries">Method page</a>.</p>
+          <p>The trip's ferries, split all three ways, are on the <a href="../method/#ferries">Method page</a>.</p>
         </div>
         <div class="ftable" id="mc-table" hidden></div>
       </figure>

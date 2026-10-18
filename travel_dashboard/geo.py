@@ -3,7 +3,7 @@
 data/reference/airports.csv is a filtered copy of OurAirports (public domain): every airport with
 scheduled passenger service and an IATA code, with its country's name. Refresh it with
 `python -m travel_dashboard airports`. The build also writes it to site/data/airports.json, so the
-waypoint form can fill in the airports of a place as you type its name.
+waypoint form can fill in the airports of a place as its name is typed.
 
 A flight row (leg or alternative) may leave `km` empty. The build then takes the great-circle
 distance between the airports at both ends:

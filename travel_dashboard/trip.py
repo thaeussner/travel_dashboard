@@ -1,6 +1,6 @@
 """The trip's structure: ordered waypoints, legs, alternative options and journeys per level.
 
-- Waypoints are typed by hand: `destination` (a place you'd have gone anyway) or `stop`.
+- Waypoints are typed by hand: `destination` (a place that would have been visited anyway) or `stop`.
 - An alternative *option* is a chain of `alt` rows sharing an option name. It replaces every leg
   between its first and last waypoint. Intermediate points (e.g. "Paris Orly") are plain text. A
   flight may start or end at a waypoint's airport instead ("TFN" for El Medano with "TFS TFN").
@@ -12,7 +12,7 @@
   everything between their ends; elsewhere the destination-level option is the fallback. A piece
   cut off by a direct option (Zurich → Paris before a flight from Paris) has no alternative.
 - Local travel (from == to) counts in both worlds where the alternative also goes. At a place an
-  alternative skips, it belongs to that journey and only counts as your travel.
+  alternative skips, it belongs to that journey and only counts as actual travel.
 """
 
 from __future__ import annotations

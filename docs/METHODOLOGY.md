@@ -34,26 +34,26 @@ The central design idea. Two different things make an emissions number uncertain
 Two rules follow:
 
 - **Lenses are symmetric.** A lens applies to actual and counterfactual travel alike. The one asymmetry
-  is unavoidable: you can only observe occupancy on vehicles you actually used, so flights you didn't
-  take always get typical load factors.
+  is unavoidable: occupancy can only be observed on vehicles actually used, so flights not taken
+  always get typical load factors.
 - **Robustness is shown, not claimed.** The headline is computed under all 36 lens combinations, and
   the page shows that spread next to the selected value.
 
-## 3. The comparison: your legs against your alternatives
+## 3. The comparison: legs against alternatives
 
 ### 3.1 Same destinations, alternatives chosen by hand
 
-The comparison keeps the places you visited and asks how you would realistically have got between
-them otherwise. You enter those alternatives yourself as `alt` rows. Usually they are flights with
+The comparison keeps the places visited and asks how the trip would realistically have got between
+them otherwise. Those alternatives are entered by hand as `alt` rows. Usually they are flights with
 their real routings (e.g. via Paris for the French Antilles), but any mode works: a slower ferry, a
-car, a bus. The comparison doesn't model a different trip you might have taken if you flew. That
+car, a bus. The comparison doesn't model a different trip that might have been taken by plane. That
 question has no defensible answer.
 
 ### 3.2 Waypoints, legs and alternatives
 
 - **Waypoints** are typed by hand:
-  - **destination:** a place you would have gone anyway
-  - **stop:** exists only because of how you travelled; Hendaye is the canonical example
+  - **destination:** a place that would have been visited anyway
+  - **stop:** exists only because of the way of travelling; Hendaye is the canonical example
 
   There is no rule based on nights.
 - **Legs** connect waypoints: what actually happened.
@@ -65,7 +65,7 @@ question has no defensible answer.
   alternative of their own. Where the alternative world goes too, they would have happened either
   way and count the same in both worlds: in the totals, the "Local travel" row and under their
   waypoint on the route. At a place an alternative skips (a stop between its ends, or a destination
-  under "Direct"), they belong to that journey and count only as your travel.
+  under "Direct"), they belong to that journey and count only as actual travel.
 
 ### 3.3 Three levels (lens)
 
@@ -84,13 +84,13 @@ question has no defensible answer.
 - Stop-level options outside every destination span are reported and not used.
 - A journey without any alternative counts the same in both worlds, so no saving is claimed for it.
 
-**Direct asks a different question.** The other levels keep the destinations fixed: you would have
-gone to La Palma anyway, by plane if not by ferry. Direct asks what the whole trip cost against flying
+**Direct asks a different question.** The other levels keep the destinations fixed: La Palma would
+have been visited anyway, by plane if not by ferry. Direct asks what the whole trip cost against flying
 straight to where it ends, as if the places in between had not been visited. That isn't how the trip
 would have happened: nobody spending a month on Tenerife would have flown past it. But it is the
 stricter test. One long flight usually emits less than the several flights it takes to visit the
 same places, so a saving that holds under Direct holds whatever the alternative. Local trips at the
-skipped places count only as your travel (§3.2), since the direct flight never goes there.
+skipped places count only as actual travel (§3.2), since the direct flight never goes there.
 
 ### 3.4 Timing and scope
 
@@ -129,7 +129,7 @@ about 1.45 for rail and 1.25 for road in France, Spain and Switzerland (Heinold 
 - **Getting to and from stations, ports and airports.** Airports are usually further out than
   stations, so this favours flying slightly. But a flight's own emissions dwarf the access:
   80 km to Tenerife North is about 3 kg by coach or 12 kg by taxi, against about 1.2 t for the
-  flights to Martinique. It would also need a guess at how you'd have reached each airport.
+  flights to Martinique. It would also need a guess at how each airport would have been reached.
   Where it matters, add the access as a segment of the alternative, e.g. `el-medano → TFN` by
   bus, then `TFN → BCN` by plane.
 - Rebound effects: the money or time saved by flying.
@@ -145,14 +145,14 @@ about 1.45 for rail and 1.25 for road in France, Spain and Switzerland (Heinold 
 | Car / taxi | 209 g per vehicle-km (petrol, WTW) ÷ occupants | — | — | C/D |
 | Ferry | ship model × allocation lens × occupancy lens (§5) | — | — | B–D |
 | Sailing yacht | litres of diesel × 3.33 ÷ crew (logged, or engine hours × 1.2–4 L/h) | 18 | 50–400 L per crossing | A logged, B hours |
-| Flight (counterfactual, or actual if you ever fly) | per-flight fuel model + non-CO₂ lens (§6) | — | — | C |
+| Flight (counterfactual, or actual if one is ever taken) | per-flight fuel model + non-CO₂ lens (§6) | — | — | C |
 
 **Occupancy.** Every mode is modelled per vehicle, then divided by the people on board:
 
 - **"Typical":** the load factor behind the published factor or the vessel's data.
-- **"As observed":** your head count (`occ_obs`) against the capacity (`occ_max`).
+- **"As observed":** the head count entered (`occ_obs`) against the capacity (`occ_max`).
 
-So a near-empty bus or ferry counts against you under "As observed". Rows without a head count are
+So a near-empty bus or ferry counts against the actual travel under "As observed". Rows without a head count are
 the same under both settings.
 
 **Distances** are entered by hand (§3.5).
@@ -198,7 +198,7 @@ lifecycle) times typical energy use. Renfe's own 3.8 is the low end.
   small petrol car; "Golf TDI" is an average diesel.
 - **Per km, the fuel type hardly matters** (about ±3 %). Size does: a small car is about 12 % below
   the average.
-- **Per litre, the fuel type does matter.** If you log litres refuelled, petrol (EU 95 E5) is 2.90
+- **Per litre, the fuel type does matter.** For logged litres refuelled, petrol (EU 95 E5) is 2.90
   and diesel (EU B7) 3.22 kg CO₂e/L, so diesel is about 11 % more per litre. Logged litres beat any
   factor (grade A).
 - **Electric cars:** about 0.19 kWh/km times the grid where they charge.
@@ -224,7 +224,7 @@ The mode is only the starting point. Each row gets the most specific data availa
    - Cars get size and fuel from words in the text (§4.2).
    - Planes get an aircraft class from the aircraft name: A320 is narrow-body, A350 wide-body, ATR a
      turboprop. Without a name, the class is chosen by distance.
-4. **Your observations** override typical values:
+4. **Observations from the trip** override typical values:
    - observed and maximum occupancy, used by the "As observed" lens
    - logged litres, which make the row grade A
    - engine hours on a sailing yacht, which make it grade B (§4.4)
@@ -253,7 +253,7 @@ page's trace names the profile and its sources. To cover a new ship, train or bu
   3. Neither: 1–8 L per 100 km (grade C), below.
 
   `km` is optional when litres or engine hours are given; it then only feeds the distance totals.
-- **The dinghy** is not a separate mode: it never replaces a leg, it is how you get ashore. Its
+- **The dinghy** is not a separate mode: it never replaces a leg, it is how the crew gets ashore. Its
   outboard burns about 1–2 L/h against about 2.5 L/h for the main engine, so add about half an
   engine hour per hour of dinghy use to the leg it belongs to. It is stowed during an ocean
   crossing, so there is usually nothing to add there.
@@ -265,7 +265,7 @@ page's trace names the profile and its sources. To cover a new ship, train or bu
   - So 150 L shared by 5.5 crew is about 90 kg per person, or about 18 g/pkm.
 - **Not included:** building the boat (on the order of 30 t CO₂e for a 10 m yacht, shared over decades
   and many crews).
-- **The marginal view:** the boat would have sailed anyway, so your extra impact is close to zero. That
+- **The marginal view:** the boat would have sailed anyway, so the extra impact of joining is close to zero. That
   view isn't applied anywhere else either (§5.3).
 
 ## 5. Ferries
@@ -287,7 +287,7 @@ drive that spread:
    | conventional ro-pax | 125–257 kg |
 
 3. **Occupancy.** The Bencomo Express averaged about 260 passengers per sailing in 2025, 30 % of its
-   859 places. On your crossing there were about 150.
+   859 places. On the crossing taken there were about 150.
 
 ### 5.2 Ship model
 
@@ -342,7 +342,7 @@ lounges and restaurants take space without weighing much. The result sits betwee
   "just under 12 %".
 - **Chalmers Travel & Climate: 186 g/pkm.** Revenue-based allocation.
 - **The operators' own EU MRV allocation.** Bencomo 2025: 719 g/pkm TTW, with 76 % of emissions on
-  passengers (about 110 kg WTW for your crossing). Volcán de Tinamar: 36 g/pkm, 1 %.
+  passengers (about 110 kg WTW for the crossing taken). Volcán de Tinamar: 36 g/pkm, 1 %.
   - The same ship's passenger share swung from 22 % (2024) to 76 % (2025). The operators' allocation
     method is undisclosed and changes, so it serves as a cross-check only.
 
@@ -353,12 +353,12 @@ share was 12 % by mass, 57 % by area-plus-mass and 69 % by area: a factor of 5.6
 
 - **Typical:** the line's average passengers aboard, from MRV passenger-miles where available,
   otherwise a class default.
-- **As observed** (default): your head count (`occ_obs`) against the capacity (`occ_max`).
+- **As observed** (default): the head count entered (`occ_obs`) against the capacity (`occ_max`).
 - **Freight** is always the vessel's typical load from `config/emissions.toml` (the owner's
   choice: no per-trip freight input).
 - **Why observed is the default:**
   - ISO 14083 prefers primary data over defaults.
-  - It is conservative for a savings claim. A half-empty ferry counts against you.
+  - It is conservative for a savings claim. A half-empty ferry counts against the actual travel.
 - **How occupancy interacts with allocation:**
   - Per passenger and ISO: the passenger's share scales roughly with 1 / passengers.
   - By mass: occupancy hardly matters, because cargo dominates the mass.
@@ -374,9 +374,9 @@ fuel      145 kg MGO/nm (EU MRV 2025) × 68 nm         ≈ 9.9 t MGO
 emissions 9.9 t × 3.88 t CO₂e/t (well-to-wake)        ≈ 38 t CO₂e for the crossing
 ```
 
-Your share under each lens:
+The passenger's share under each lens:
 
-| lens | calculation | your share |
+| lens | calculation | share per passenger |
 |---|---|---|
 | Per passenger | 38 t ÷ 150 passengers | ≈ 250 kg |
 | ISO 14083 | 38 t ÷ (150 + ~165 peq for ~75 vehicles, ~5 % trucks) | ≈ 120 kg |
@@ -529,14 +529,14 @@ model. Trains, buses and cars emit near the ground, where nothing like contrails
 | C | operator, model or country-specific factor | SNCF TGV factor, Renfe, a small petrol car, an aircraft class |
 | D | generic factor for the mode | generic ro-pax, local bus |
 
-Grade A is only realistic where you buy or read the fuel yourself: a hire car you refuel, a yacht's
+Grade A is only realistic where the fuel is bought or read directly: a refuelled hire car, a yacht's
 tank. Nobody publishes the fuel burnt on one particular ferry sailing or train, so for public
 transport B is the best available. The grade is set in `profiles.resolve`, which also lists the
 trip's own data (litres, engine hours) that raise it.
 
-## 9. Proposed defaults (to confirm)
+## 9. Defaults
 
-| lens / choice | proposed default | why | alternatives on the page |
+| lens / choice | default | why | alternatives on the page |
 |---|---|---|---|
 | Comparison level | **Destinations** (types set by hand) | matches "where would I have gone anyway" | Every stop |
 | Ferry share | **ISO 14083 passenger equivalents** | the standard's recommendation; sits between the extremes | Per passenger, By mass |
@@ -545,15 +545,15 @@ trip's own data (litres, engine hours) that raise it.
 | Electricity | location-based grid mix | physical emissions; one rule for all operators | (range low end: market-based) |
 | Boundary | WTW, no infrastructure or vehicle manufacture | comparable with published factors | lifecycle shown as a note |
 
-Methodological questions for you:
+Open questions:
 
-1. **Ferry headline.** Are you comfortable with ISO 14083 as the headline? DESNZ's mass method, used in
-   much UK reporting, makes ferries look about 10× better.
-2. **Observed vs. typical occupancy** as the default. Observed is honest about *your* trip but noisy
-   (one head count).
+1. **Ferry headline.** ISO 14083 is the headline. DESNZ's mass method, used in much UK reporting,
+   makes ferries look about 10× better.
+2. **Observed vs. typical occupancy** as the default. Observed is honest about this particular trip but
+   noisy (one head count).
 3. **Non-CO₂ central value.** 1.7 (GWP100: DESNZ, UNFCCC convention) or 3 (GWP*/ERF: myclimate,
    atmosfair, SCNAT)?
-4. **Getting home.** Once you know how you'll get back, that journey belongs in the comparison too.
+4. **Getting home.** Once the way back is known, that journey belongs in the comparison too.
 
 ## 10. Sources
 

@@ -14,7 +14,7 @@ from .profiles import Profiles, central, plain
 from .tables import COLUMNS, COST_CATEGORIES, MODES, Tables
 
 GRADE_NOTES = {
-    "A": "Fuel measured for this trip (litres you logged)",
+    "A": "Fuel measured for this trip (logged litres)",
     "B": "Specific to this vessel, service or trip (ship data, engine hours)",
     "C": "Operator, model or country-specific factor",
     "D": "Generic factor for the mode",
@@ -23,17 +23,17 @@ GRADE_NOTES = {
 LENS_DEFS = {
     "level": {"title": "Compare", "options": [
         {"id": "destination", "label": "Destinations",
-         "hint": "Your alternatives between destinations",
-         "explain": "Destinations: each journey between two destinations is compared with the alternative you marked "
-                    "as main for it. Stops in between only exist because of how you travelled."},
+         "hint": "Alternatives between destinations",
+         "explain": "Destinations: each journey between two destinations is compared with the alternative marked "
+                    "as main for it. Stops in between only exist because of the way of travelling."},
         {"id": "stop", "label": "Every stop",
-         "hint": "Use stop-level alternatives where you entered them",
-         "explain": "Every stop: where you entered alternatives between stops that cover a whole journey, those are "
+         "hint": "Use stop-level alternatives where entered",
+         "explain": "Every stop: where alternatives between stops cover a whole journey, those are "
                     "used instead, usually more and shorter flights. Elsewhere the destination-level alternative "
                     "stays."},
         {"id": "direct", "label": "Direct",
          "hint": "Use alternatives that skip destinations, e.g. a flight Paris → Martinique",
-         "explain": "Direct: where you entered an alternative that skips destinations, it replaces everything in "
+         "explain": "Direct: where an alternative skips destinations, it replaces everything in "
                     "between, local trips at the places it skips included. This asks what the trip cost against "
                     "flying straight there. Elsewhere the destination-level alternative stays."},
     ]},
@@ -47,7 +47,7 @@ LENS_DEFS = {
     ]},
     "occ": {"title": "Occupancy", "options": [
         {"id": "typical", "label": "Typical", "hint": "Typical load factors everywhere"},
-        {"id": "observed", "label": "As observed", "hint": "Your observed head count where you entered one"},
+        {"id": "observed", "label": "As observed", "hint": "The observed head count, where one was entered"},
     ]},
     "nonco2": {"title": "Flights", "options": [
         {"id": "co2", "label": "CO₂ only", "hint": "Fuel burnt plus fuel production"},

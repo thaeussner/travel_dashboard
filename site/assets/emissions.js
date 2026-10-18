@@ -135,7 +135,7 @@ function renderStrip() {
   const sum = $('#strip-sum');
   sum.replaceChildren();
   const b = document.createElement('b'); b.textContent = `Not flying comes out lower in ${pos} of ${combos.length}`;
-  sum.append(b, ` ways of counting (${tonnes(d3.min(vals))} to ${tonnes(d3.max(vals))} t). The bold tick is yours.`);
+  sum.append(b, ` ways of counting (${tonnes(d3.min(vals))} to ${tonnes(d3.max(vals))} t). The bold tick is the current choice.`);
   const rowsDef = DATA.lenses.alloc.options;
   const W = Math.max(host.clientWidth, 260), rowH = 26, m = { l: 98, r: 14, t: 22, b: 24 };
   const H = m.t + rowsDef.length * rowH + m.b, yAx = H - m.b;
@@ -274,7 +274,7 @@ function renderRoute() {
       const t = svg.append('text').attr('class', 'lbl').attr('x', x(w.id)).attr('y', yy + 32).attr('text-anchor', 'middle').text(`+ local ${mass(loc.q[1])}`).datum(loc);
       bindTip(t, d => ({ head: `Local travel around ${shortName(w.name)}`, rows: [
         { value: mass(d.q[1]), label: `${d.n} trip${d.n === 1 ? '' : 's'}, ${range(d.q)}`, color: css('--actual') },
-        skipped.has(w.id) ? { value: 'yours', label: 'only in your travel: the alternative skips this place' }
+        skipped.has(w.id) ? { value: 'actual only', label: 'only in the actual travel: the alternative skips this place' }
           : { value: 'same', label: 'in both worlds: no alternative replaces it' }] }));
     }
   }
@@ -776,7 +776,7 @@ function waypointForm(existing, ed = editorData()) {
   const countries = [...new Set(ed.wps.map(w => w.country).filter(Boolean))];
   openForm({
     title: existing ? 'Edit waypoint' : 'Add waypoint',
-    intro: 'A destination is a place you would have gone anyway. A stop exists because of how you travelled.',
+    intro: 'A destination is a place that would have been visited anyway. A stop exists only because of the way of travelling.',
     fields: [
       { name: 'name', label: 'Place', type: 'text', required: true, placeholder: 'e.g. Santa Cruz de La Palma' },
       { name: 'type', label: 'Type', type: 'chips', required: true, options: [{ value: 'destination', label: 'Destination' }, { value: 'stop', label: 'Stop' }] },
@@ -924,7 +924,7 @@ function renderEditor() {
   if (!ed.wps.length && !ed.travel.length) {
     const p = document.createElement('div'); p.className = 'card empty';
     const b = document.createElement('b'); b.textContent = store.hasData('waypoints') ? 'No trip data yet' : 'Loading trip data…';
-    p.append(b, 'Start with your home as a destination, then add the places you went and the legs between them.');
+    p.append(b, 'Start with home as a destination, then add the places visited and the legs between them.');
     host.appendChild(p);
     return;
   }
