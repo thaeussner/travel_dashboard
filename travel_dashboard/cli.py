@@ -11,12 +11,13 @@ import time
 import tomllib
 from pathlib import Path
 
-from . import export
+from . import export, geo
 from .profiles import Profiles
 from .tables import read_all
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
+AIRPORTS = ROOT / "data" / "reference" / "airports.csv"
 
 
 def load_settings() -> dict:
@@ -40,7 +41,8 @@ def cmd_build(args) -> int:
     profiles = Profiles.load(ROOT / "config" / "emissions.toml")
     defaults = em.get("defaults", {"level": "destination", "alloc": "iso", "occ": "observed", "nonco2": "full",
                                    "scope": "all"})
-    em_json = export.emissions_json(tables, profiles, today, draws, em.get("seed", 20261018), defaults)
+    em_json = export.emissions_json(tables, profiles, today, draws, em.get("seed", 20261018), defaults,
+                                    geo.load_airports(AIRPORTS))
     sizes = {
         "emissions.json": export.write(out / "emissions.json", em_json),
         "costs.json": export.write(out / "costs.json", export.costs_json(tables, today)),
@@ -60,12 +62,19 @@ def cmd_check(args) -> int:
 
     data_dir = Path(args.data) if args.data else ROOT / "data"
     tables = read_all(data_dir)
-    trip_mod.build(tables.waypoints, tables.travel, tables.issues)
+    travel = geo.fill_flight_km(tables.travel, tables.waypoints, geo.load_airports(AIRPORTS), tables.issues)
+    trip_mod.build(tables.waypoints, travel, tables.issues)
     print(f"{len(tables.costs)} costs, {len(tables.waypoints)} waypoints, {len(tables.travel)} travel rows")
     _print_issues(tables.issues)
     errors = sum(i.level == "error" for i in tables.issues)
     print(f"{len(tables.issues)} issue(s), {errors} error(s)")
     return 1 if errors else 0
+
+
+def cmd_airports(args) -> int:
+    n = geo.download_airports(AIRPORTS)
+    print(f"wrote {n} airports with scheduled service to {AIRPORTS.relative_to(ROOT)}")
+    return 0
 
 
 def cmd_serve(args) -> int:
@@ -89,6 +98,7 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--out", help="output directory (default: site/data/)")
     c = sub.add_parser("check", help="validate the data and list issues")
     c.add_argument("--data")
+    sub.add_parser("airports", help="refresh data/reference/airports.csv from OurAirports")
     s = sub.add_parser("serve", help="preview the site locally")
     s.add_argument("--port", type=int, default=8000)
     args = ap.parse_args(argv)
@@ -96,4 +106,4 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd is None:
             args = ap.parse_args(["build", *(argv or sys.argv[1:])])
         return cmd_build(args)
-    return {"check": cmd_check, "serve": cmd_serve}[args.cmd](args)
+    return {"check": cmd_check, "serve": cmd_serve, "airports": cmd_airports}[args.cmd](args)

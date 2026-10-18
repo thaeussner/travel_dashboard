@@ -5,7 +5,7 @@
 
 export const COLUMNS = {
   costs: ['id', 'date', 'amount', 'category', 'country'],
-  waypoints: ['id', 'name', 'type', 'country', 'arrive', 'depart', 'note'],
+  waypoints: ['id', 'name', 'type', 'country', 'arrive', 'depart', 'note', 'airport'],
   travel: ['id', 'type', 'option', 'main', 'date', 'from', 'to', 'mode', 'vehicle', 'km',
            'occ_max', 'occ_obs', 'fuel_l', 'note'],
 };

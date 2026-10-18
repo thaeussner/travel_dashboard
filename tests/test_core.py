@@ -6,13 +6,14 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from travel_dashboard import trip as trip_mod
+from travel_dashboard import geo, trip as trip_mod
 from travel_dashboard.model import kg
 from travel_dashboard.profiles import Profiles, Sampler
 from travel_dashboard.tables import Issue, Travel, Waypoint, read_costs, read_travel, read_waypoints
 
 ROOT = Path(__file__).resolve().parent.parent
 PROFILES = Profiles.load(ROOT / "config" / "emissions.toml")
+AIRPORTS = geo.load_airports(ROOT / "data" / "reference" / "airports.csv")
 CENTRAL = Sampler(None)
 
 
@@ -115,7 +116,7 @@ class TestModel(unittest.TestCase):
         t = leg("L", "a", "b", "sail", 5300, occ_obs=5, fuel_l=150)
         p = PROFILES.resolve(t)
         self.assertEqual(p.grade, "A")
-        self.assertAlmostEqual(kg(t, p, CENTRAL, occ="observed"), 150 * 3.29 / 5)
+        self.assertAlmostEqual(kg(t, p, CENTRAL, occ="observed"), 150 * 3.33 / 5)   # marine diesel, no biofuel
 
 
 class TestTrip(unittest.TestCase):
@@ -178,6 +179,40 @@ class TestTrip(unittest.TestCase):
         msgs = " ".join(i.message for i in issues)
         self.assertIn("one chain", msgs)
         self.assertIn("skips a destination", msgs)
+
+
+class TestGeoAndCars(unittest.TestCase):
+    def test_airport_codes(self):
+        self.assertEqual(geo.airport_code("Barcelona (BCN)", {}, AIRPORTS), "BCN")
+        self.assertEqual(geo.airport_code("bcn", {}, AIRPORTS), "BCN")
+        self.assertEqual(geo.airport_code("la-palma", {"la-palma": "SPC"}, AIRPORTS), "SPC")
+        self.assertIsNone(geo.airport_code("Paris Orly", {}, AIRPORTS))
+
+    def test_fill_flight_km_from_codes(self):
+        wps = [Waypoint("zurich", "Zürich", "destination", airport="ZRH"), Waypoint("lp", "La Palma", "destination")]
+        rows = [alt("A1", "o", "zurich", "BCN", km=None), alt("A2", "o", "BCN", "lp", km=None)]
+        issues: list[Issue] = []
+        out = geo.fill_flight_km(rows, wps, AIRPORTS, issues)
+        self.assertEqual([t.id for t in out], ["A1"])               # lp has no airport: reported, skipped
+        self.assertAlmostEqual(out[0].km, 850, delta=15)
+        self.assertEqual(out[0].km_note, "great circle ZRH–BCN")
+        self.assertEqual([i.id for i in issues], ["A2"])
+
+    def test_car_class_from_vehicle_text(self):
+        self.assertEqual(PROFILES.car_class("Citroën C1 (95)"), ("small", "petrol"))
+        self.assertEqual(PROFILES.car_class("VW Golf TDI"), ("average", "diesel"))
+        self.assertEqual(PROFILES.car_class("Toyota Yaris Hybrid"), ("small", "hybrid"))
+        self.assertEqual(PROFILES.car_class("rental car"), ("average", "petrol"))
+
+    def test_small_petrol_car_and_logged_litres(self):
+        t = leg("C", "lp", "lp", "car", 300, occ_obs=2, vehicle="Citroën C1 (95)")
+        p = PROFILES.resolve(t)
+        self.assertEqual((p.label, p.grade), ("small petrol car", "C"))
+        self.assertAlmostEqual(kg(t, p, CENTRAL, occ="observed"), 300 * 0.183 / 2, places=2)
+        t2 = leg("C", "lp", "lp", "car", 300, occ_obs=2, vehicle="Citroën C1 (95)", fuel_l=18)
+        p2 = PROFILES.resolve(t2)
+        self.assertEqual(p2.grade, "A")
+        self.assertAlmostEqual(kg(t2, p2, CENTRAL, occ="observed"), 18 * 2.90 / 2, places=2)
 
 
 if __name__ == "__main__":

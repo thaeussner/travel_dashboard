@@ -82,6 +82,9 @@ class Profiles:
         self._veh = [(v, [_word(p) for p in v.get("match", [])]) for v in self.vehicles]
         self._fc = {k: [_word(p) for p in v.get("match", [])]
                     for k, v in self.flight.items() if isinstance(v, dict)}
+        self.cars: dict = cfg.get("cars", {})
+        self._car_sizes = [(n, [_word(p) for p in pats]) for n, pats in self.cars.get("sizes", {}).items()]
+        self._car_fuels = [(n, [_word(p) for p in pats]) for n, pats in self.cars.get("fuels", {}).items()]
 
     @classmethod
     def load(cls, path: Path) -> Profiles:
@@ -100,6 +103,14 @@ class Profiles:
             if any(p.search(text) for p in pats):
                 return v
         return None
+
+    def car_class(self, text: str) -> tuple[str, str]:
+        """(size, fuel) read from a car's vehicle text, e.g. 'Citroën C1 (95)' → ('small', 'petrol')."""
+        size = next((n for n, pats in self._car_sizes if any(p.search(text) for p in pats)),
+                    self.cars.get("size_default", "average"))
+        fuel = next((n for n, pats in self._car_fuels if any(p.search(text) for p in pats)),
+                    self.cars.get("fuel_default", "petrol"))
+        return size, fuel
 
     def flight_class(self, t: Travel) -> str:
         for cls in ("turboprop", "wide", "narrow"):
@@ -123,6 +134,15 @@ class Profiles:
             fuel = veh.get("fuel", fuel)
             if veh.get("source"):
                 sources.insert(0, veh["source"])
+        if t.mode == "car" and not veh and self.cars.get("g_vkm"):
+            size, kind_ = self.car_class(t.vehicle)
+            table = self.cars["g_vkm"]
+            key = next(k for k in (f"{size}_{kind_}", f"average_{kind_}", "average_petrol") if k in table)
+            params["g_vkm"] = (("cars", key), table[key])
+            label, grade = f"{key.replace('_', ' ')} car", "C"
+            fuel = {"diesel": "diesel", "electric": None}.get(kind_, "petrol")   # factor for logged litres
+            if self.cars.get("source"):
+                sources.insert(0, self.cars["source"])
         fclass = None
         if kind == "flight":
             fclass = self.flight_class(t)
@@ -146,7 +166,7 @@ class Profiles:
                     params[k] = (("allocation", k), v)
             if self.alloc.get("source"):
                 sources.append(self.alloc["source"])
-        if kind in ("fuel", "vehicle") and t.fuel_l:
+        if kind in ("fuel", "vehicle") and t.fuel_l and "fuel_factor" in params:
             grade = "A"
         return Profile(t.mode, kind, label, grade, params, sources, veh["name"] if veh else None, fclass)
 

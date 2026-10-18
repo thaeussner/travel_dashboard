@@ -84,7 +84,8 @@ def kg(t: Travel, p: Profile, s: Sampler, alloc: str = "iso", occ: str = "typica
             return per_pax * typical_pax / t.occ_obs
         return per_pax
     if k == "vehicle":
-        e = t.fuel_l * g("fuel_factor") if t.fuel_l else g("g_vkm") / 1000 * t.km
+        logged = bool(t.fuel_l) and p.has("fuel_factor")   # litres beat any factor (not for electric cars)
+        e = t.fuel_l * g("fuel_factor") if logged else g("g_vkm") / 1000 * t.km
         return e / (t.occ_obs if observed else g("occupancy"))
     if k == "fuel":
         litres = t.fuel_l if t.fuel_l else g("l_per_100km") * t.km / 100
@@ -124,7 +125,7 @@ def trace(t: Travel, p: Profile, alloc: str, occ: str, nonco2: str) -> str:
             line += (f"\n× typical load {seats * g('lf'):.0f} of {seats:.0f} seats ÷ {t.occ_obs:.0f} observed")
         return f"{line}\n= {v:.1f} kg"
     if k == "vehicle":
-        if t.fuel_l:
+        if t.fuel_l and p.has("fuel_factor"):
             e_txt = f"{_n(t.fuel_l, 1)} L × {g('fuel_factor'):.2f} kg CO₂e/L"
         else:
             e_txt = f"{_n(t.km)} km × {g('g_vkm'):.0f} g CO₂e per vehicle-km"
@@ -161,7 +162,8 @@ def trace(t: Travel, p: Profile, alloc: str, occ: str, nonco2: str) -> str:
         per_pax = fuel_total / (seats * lf)
         m = g("nonco2") if nonco2 == "full" else 1.0
         cargo = f" × {1 - g('cargo'):.0%} passenger share" if g("cargo") else ""
-        return (f"{p.label}: {_n(t.km)} km great circle + {g('uplift'):.0%} routing = {_n(flown)} km\n"
+        src = f" ({t.km_note})" if t.km_note else ""
+        return (f"{p.label}: {_n(t.km)} km great circle{src} + {g('uplift'):.0%} routing = {_n(flown)} km\n"
                 f"fuel ({g('lto_kg'):.0f} kg take-off/landing + {g('cruise_kg_km'):.2f} kg/km × {_n(flown)} km){cargo}"
                 f" = {_n(fuel_total)} kg\n"
                 f"÷ ({seats:.0f} seats × {lf:.0%} {'observed' if observed else 'typical'} load) = {per_pax:.1f} kg fuel per passenger\n"

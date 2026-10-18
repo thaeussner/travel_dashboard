@@ -19,8 +19,9 @@ version = "2026-10-18"
 [fuels]
 mgo = [3.80, 3.88, 3.95]        # per kg marine gas oil: IMO 4th GHG Study 3.206 + FuelEU Maritime upstream 14.4 g/MJ
 hfo = [3.55, 3.68, 3.88]        # per kg residual fuel / VLSFO: IMO 3.114 + upstream
-diesel = [3.25, 3.29, 3.40]     # per litre: DESNZ 2025 diesel 3.29, marine gas oil 3.40
-petrol = [2.70, 2.80, 2.95]     # per litre: DESNZ 2025 petrol incl. biofuel blend
+diesel = [3.18, 3.22, 3.29]     # per litre road diesel (EU B7): DESNZ 2025 average blend 3.18 … 100 % mineral 3.29
+petrol = [2.65, 2.90, 2.95]     # per litre petrol (EU 95 E5): DESNZ 2025 average blend 2.65 … 100 % mineral 2.95
+marine_diesel = [3.29, 3.33, 3.40]   # per litre, no biofuel: DESNZ 2025 mineral diesel 3.29, marine gas oil 3.40
 jet_wtt = [0.50, 0.54, 0.65]    # upstream per kg jet fuel (myclimate P = 0.538)
 
 [allocation]   # ferries: splitting a sailing between passengers and freight
@@ -107,6 +108,35 @@ occupancy = [1.0, 1.6, 2.2]     # typical occupants (ADEME 1.6)
 grade = "C"
 source = "DESNZ 2025 passenger vehicles"
 
+# Cars: size and fuel are read from the `vehicle` text (e.g. "Citroën C1 (95)" → small petrol).
+# DESNZ 2025, per vehicle-km, well-to-wheel = combustion + fuel supply (g CO2e):
+#   small:   petrol 143.1 + 40.2 = 183 · diesel 143.4 + 34.1 = 177 · hybrid 114.1 + 30.3 = 144
+#   average: petrol 162.7 + 46.0 = 209 · diesel 173.0 + 41.5 = 215 · hybrid 128.3 + 33.2 = 161
+# Fuel type barely changes g/km; it matters for logged litres (diesel ~11 % more CO2e per litre).
+# Electric: ~0.19 kWh/km × the grid where it charges: CH/FR ~0.06, Spanish mainland ~0.15,
+# Canary Islands ~0.6-0.7 kg/kWh (ULPGC; 19 % renewables in 2023, REE), so the range is wide.
+[cars]
+source = "DESNZ 2025 passenger vehicles by size and fuel (well-to-wheel)"
+size_default = "average"
+fuel_default = "petrol"
+sizes.small = ['small', 'kleinwagen', 'citro[eë]n c[1-3]', 'peugeot [12]08', 'fiat (500|panda)', '(vw|volkswagen) (up|polo)',
+               'seat (ibiza|mii)', 'renault (clio|twingo)', 'toyota (aygo|yaris)', 'kia (picanto|rio)', 'hyundai i[12]0',
+               'opel corsa', 'dacia sandero', 'skoda fabia', 'ford fiesta', 'mini']
+fuels.hybrid = ['hybrid', 'h[ií]brido', 'phev']
+fuels.electric = ['electric', 'el[eé]ctrico', 'ev', 'bev', 'tesla', 'zoe']
+fuels.diesel = ['diesel', 'tdi', 'hdi', 'dci', 'gas[oó]leo']
+fuels.petrol = ['petrol', 'benzin', 'gasoline', 'unleaded', 'lead.?free', 'sin plomo', '95', '98', 'e5', 'e10']
+
+[cars.g_vkm]
+small_petrol = [170, 183, 200]
+small_diesel = [165, 177, 195]
+small_hybrid = [130, 144, 160]
+small_electric = [15, 70, 150]
+average_petrol = [190, 209, 230]
+average_diesel = [195, 215, 235]
+average_hybrid = [145, 161, 180]
+average_electric = [15, 75, 160]
+
 [modes.taxi]
 kind = "vehicle"
 label = "taxi"
@@ -148,7 +178,7 @@ grade = "C"
 [modes.sail]
 kind = "fuel"
 label = "sailing yacht"
-fuel = "diesel"
+fuel = "marine_diesel"
 l_per_100km = [1.0, 3.0, 8.0]   # motoring and charging: ~50-400 L per Atlantic crossing (estimate)
 occupancy = [4, 5.5, 7]         # crew; ARC 2025 averaged ~5.5
 grade = "C"

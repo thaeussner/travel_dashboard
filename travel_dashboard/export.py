@@ -7,10 +7,10 @@ import json
 from pathlib import Path
 
 from . import costs as costs_mod
-from . import montecarlo, trip as trip_mod
+from . import geo, montecarlo, trip as trip_mod
 from .model import LENSES, trace
 from .montecarlo import variants
-from .profiles import Profiles
+from .profiles import Profiles, central
 from .tables import COLUMNS, COST_CATEGORIES, MODES, Tables
 
 GRADE_NOTES = {
@@ -56,9 +56,15 @@ def _iso(d: dt.date | None) -> str | None:
 
 
 def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: int, seed: int,
-                   defaults: dict) -> dict:
+                   defaults: dict, airports: dict | None = None) -> dict:
     issues = tables.issues
-    trip = trip_mod.build(tables.waypoints, tables.travel, issues)
+    airports = airports or {}
+    travel = geo.fill_flight_km(tables.travel, tables.waypoints, airports, issues)
+    trip = trip_mod.build(tables.waypoints, travel, issues)
+    wp_air = {w.id.lower(): w.airport for w in tables.waypoints if w.airport}
+
+    def code(text: str, mode: str) -> str | None:
+        return geo.airport_code(text, wp_air, airports) if mode == "plane" else None
     mc = montecarlo.run(trip, profiles, today, draws, seed)
     prof, tdims = mc["profiles"], mc["dims"]
 
@@ -70,6 +76,7 @@ def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: in
             "from": t.from_, "to": t.to, "from_name": trip.name(t.from_), "to_name": trip.name(t.to),
             "mode": t.mode, "vehicle": t.vehicle, "km": t.km, "occ_max": t.occ_max, "occ_obs": t.occ_obs,
             "fuel_l": t.fuel_l, "note": t.note, "planned": planned, "local": t.is_leg and t.from_ == t.to,
+            "km_note": t.km_note, "from_code": code(t.from_, t.mode), "to_code": code(t.to, t.mode),
             "profile": p.label, "grade": p.grade, "grade_note": GRADE_NOTES[p.grade],
             "dims": list(tdims[t.id]), "q": mc["travel"][t.id],
             "trace": {vk: trace(t, p, *combo) for vk, combo in vs},
@@ -103,6 +110,7 @@ def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: in
         "waypoints": [{
             "id": w.id, "name": w.name, "type": w.type, "country": w.country, "arrive": _iso(w.arrive),
             "depart": _iso(w.depart), "note": w.note, "planned": bool(w.arrive and w.arrive > today),
+            "airport": w.airport,
         } for w in trip.waypoints],
         "travels": [travel_out(t, bool(t.date and t.date > today)) for t in trip.legs]
                    + [travel_out(r, option_planned.get(o.id, True)) for o in trip.options for r in o.rows],
@@ -139,6 +147,24 @@ def meta_json(settings: dict, profiles: Profiles | None = None) -> dict:
         "modes": list(MODES),
         "lenses": {k: list(v) for k, v in LENSES.items()},
         "vehicles": [{"name": v["name"], "mode": v.get("mode", "")} for v in (profiles.vehicles if profiles else [])],
+        "profiles": profile_meta(profiles) if profiles else None,
+    }
+
+
+def profile_meta(profiles: Profiles) -> dict:
+    """What the editor needs to show which data a vehicle name will match (display only, no maths)."""
+    cars = profiles.cars
+    return {
+        "modes": {m: {"label": d.get("label", m), "grade": d.get("grade", "D"), "kind": d["kind"]}
+                  for m, d in profiles.modes.items()},
+        "vehicles": [{"name": v["name"], "mode": v.get("mode", ""), "match": v.get("match", []),
+                      "grade": v.get("grade", "D"), "source": v.get("source", "")} for v in profiles.vehicles],
+        "flight": {"classes": {k: {"label": v.get("label", k), "match": v.get("match", [])}
+                               for k, v in profiles.flight.items() if isinstance(v, dict)},
+                   "wide_from_km": profiles.flight.get("wide_from_km", 4000)},
+        "cars": {"sizes": cars.get("sizes", {}), "fuels": cars.get("fuels", {}),
+                 "size_default": cars.get("size_default", "average"), "fuel_default": cars.get("fuel_default", "petrol"),
+                 "g_vkm": {k: central(v) for k, v in cars.get("g_vkm", {}).items()}, "source": cars.get("source", "")},
     }
 
 

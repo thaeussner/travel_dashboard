@@ -8,7 +8,7 @@ const fid = name => `f-${name}-${++uid}`;
  * Open a modal form. fields: [{name, label, type, options, required, hint, show(values), ...}]
  * types: text | number | big-number | date | select | chips | checkbox | password | datalist | row
  */
-export function openForm({ title, intro, fields, values = {}, submitLabel = 'Save', onSave, onDelete, deleteLabel = 'Delete', validate }) {
+export function openForm({ title, intro, fields, values = {}, submitLabel = 'Save', onSave, onDelete, deleteLabel = 'Delete', validate, extra }) {
   const dlg = document.createElement('dialog');
   dlg.className = 'sheet';
   const form = document.createElement('form');
@@ -28,6 +28,11 @@ export function openForm({ title, intro, fields, values = {}, submitLabel = 'Sav
     const id = fid(f.name);
     f._id = id; f._wrap = wrap;
     const v = values[f.name] ?? f.default ?? '';
+    if (f.type === 'info') {   // live text computed from the other fields, e.g. which data a vehicle matches
+      const div = document.createElement('div'); div.className = 'hint'; div.setAttribute('aria-live', 'polite');
+      wrap.appendChild(div); f._info = div;
+      return wrap;
+    }
     if (f.type === 'chips') {
       const lab = document.createElement('div'); lab.className = 'flabel'; lab.textContent = f.label; wrap.appendChild(lab);
       const box = document.createElement('div'); box.className = 'chips'; box.setAttribute('role', 'radiogroup');
@@ -94,6 +99,11 @@ export function openForm({ title, intro, fields, values = {}, submitLabel = 'Sav
     });
     actions.appendChild(del);
   }
+  if (extra) {
+    const ex = document.createElement('button'); ex.type = 'button'; ex.className = 'btn'; ex.textContent = extra.label;
+    ex.addEventListener('click', () => { const vals = read(); dlg.close(); extra.onClick(vals); });
+    actions.appendChild(ex);
+  }
   const right = document.createElement('div'); right.className = 'right';
   const cancel = document.createElement('button'); cancel.type = 'button'; cancel.className = 'btn'; cancel.textContent = 'Cancel';
   cancel.addEventListener('click', () => dlg.close());
@@ -103,6 +113,7 @@ export function openForm({ title, intro, fields, values = {}, submitLabel = 'Sav
   const read = () => {
     const out = {};
     for (const f of flat) {
+      if (f.type === 'info') continue;
       if (f.type === 'chips') {
         const c = f._wrap.querySelector('input:checked'); out[f.name] = c ? c.value : '';
       } else if (f.type === 'checkbox') out[f.name] = document.getElementById(f._id).checked ? '1' : '';
@@ -113,6 +124,7 @@ export function openForm({ title, intro, fields, values = {}, submitLabel = 'Sav
   const refreshVisibility = () => {
     const vals = read();
     for (const f of flat) if (f.show) f._wrap.hidden = !f.show(vals);
+    for (const f of flat) if (f.type === 'info') f._info.textContent = f.text(vals) || '';
     for (const row of form.querySelectorAll('.row2')) row.hidden = [...row.children].every(c => c.hidden);
   };
   form.addEventListener('input', refreshVisibility);
@@ -126,7 +138,8 @@ export function openForm({ title, intro, fields, values = {}, submitLabel = 'Sav
     for (const f of flat) {
       f._wrap.classList.remove('invalid');
       if (f._wrap.hidden) continue;
-      const missing = f.required && !vals[f.name];
+      const required = typeof f.required === 'function' ? f.required(vals) : f.required;
+      const missing = required && !vals[f.name];
       const badNum = (f.type === 'number' || f.type === 'big-number') && vals[f.name] && !isFinite(Number(vals[f.name].replace(',', '.')));
       if (missing || badNum) { f._wrap.classList.add('invalid'); problem ||= `${f.label}: ${missing ? 'required' : 'not a number'}`; }
     }

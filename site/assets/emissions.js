@@ -33,20 +33,31 @@ const journeys = () => (DATA?.journeys?.[S.level] || []).filter(inScope);
 const opt = (dim, id) => DATA.lenses[dim].options.find(o => o.id === id);
 const lensText = (s = S) => DIMS.map(d => opt(d, s[d]).label).join(' · ');
 const legLabel = t => t.vehicle || MODE_LABEL[t.mode] || t.mode;
+const placeName = p => shortName(WP.has(p) ? wpName(p) : p);
+/** A row's end as shown: the airport code for flights (resolved by the build), else the place name. */
+const pointOf = (r, end) => (r.mode === 'plane' && r[`${end}_code`]) || placeName(r[end]);
 function optionPoints(o) {
   const rows = o.rows.map(id => TR.get(id)).filter(Boolean);
   if (!rows.length) return [];
-  return [rows[0].from, ...rows.map(r => r.to)].map(p => (WP.has(p) ? shortName(wpName(p)) : p));
+  return [pointOf(rows[0], 'from'), ...rows.map(r => pointOf(r, 'to'))];
 }
-function optionSummary(o) {
+function optionSummary(o) {   // e.g. "flight via BCN"
   const rows = o.rows.map(id => TR.get(id)).filter(Boolean);
   const modes = [...new Set(rows.map(r => MODE_LABEL[r.mode] || r.mode))].join(' + ');
   const via = optionPoints(o).slice(1, -1);
   return via.length ? `${modes} via ${via.join(', ')}` : modes;
 }
+function optionRoute(o) {     // e.g. "ZRH via BCN to SPC"
+  const p = optionPoints(o);
+  if (p.length < 2) return '';
+  return p.length > 2 ? `${p[0]} via ${p.slice(1, -1).join(', ')} to ${p.at(-1)}` : `${p[0]} to ${p[1]}`;
+}
 const optionKm = o => o.rows.reduce((s, id) => s + (TR.get(id)?.km || 0), 0);
-const placeName = p => shortName(WP.has(p) ? wpName(p) : p);
-const routeLabel = t => (t.local ? `around ${placeName(t.from)}` : `${placeName(t.from)} → ${placeName(t.to)}`);
+const routeLabel = t => (t.local ? `around ${placeName(t.from)}` : `${pointOf(t, 'from')} → ${pointOf(t, 'to')}`);
+function dateSpan(a, d) {    // same-day stops show one date
+  if (a && d) return a === d ? fmtDate(a) : `${fmtDate(a)} – ${fmtDate(d)}`;
+  return a ? `from ${fmtDate(a)}` : d ? `until ${fmtDate(d)}` : '';
+}
 /** Local travel at one waypoint (counted the same in both worlds), for the current lens and scope. */
 function localOf(wid) {
   const e = (DATA?.local || []).find(l => l.waypoint === wid);
@@ -210,7 +221,7 @@ function renderRoute() {
     svg.append('text').attr('class', 'lbl-strong').attr('x', mx).attr('y', top - 22).attr('text-anchor', 'middle').text(summary);
     svg.append('text').attr('class', 'lbl').attr('x', mx).attr('y', top - 8).attr('text-anchor', 'middle').text(mass(q[1]));
     const hit = svg.append('path').attr('d', path).attr('fill', 'none').attr('stroke', 'transparent').attr('stroke-width', 16).datum(j);
-    bindTip(hit, d => ({ head: `${d.title}: ${optionPoints(OPT.get(d.option)).join(' → ')}`, rows: [
+    bindTip(hit, d => ({ head: `${d.title}: ${optionRoute(OPT.get(d.option))}`, rows: [
       { value: mass(d.q[kFull()].flying[1]), label: `alternative, ${range(d.q[kFull()].flying)}`, color: css('--flying') },
       { value: mass(d.q[kFull()].actual[1]), label: `travelled, ${range(d.q[kFull()].actual)}`, color: css('--actual') },
       { value: `${kmFmt(optionKm(OPT.get(d.option)))} km`, label: 'alternative distance' }] }));
@@ -221,7 +232,7 @@ function renderRoute() {
       .attr('fill', dest ? css('--ink') : css('--surface')).attr('stroke', dest ? css('--surface') : css('--ink-2')).attr('stroke-width', 2);
     const lines = wrapWords(shortName(w.name), Math.max(9, Math.floor(step / 7.6)));
     lines.forEach((ln, i) => svg.append('text').attr('class', 'lbl-strong').attr('x', x(w.id)).attr('y', y0 + 58 + i * 15).attr('text-anchor', 'middle').text(ln));
-    const cap = w.arrive && w.depart ? `${fmtDate(w.arrive)} – ${fmtDate(w.depart)}` : w.arrive ? `from ${fmtDate(w.arrive)}` : w.depart ? `until ${fmtDate(w.depart)}` : '';
+    const cap = dateSpan(w.arrive, w.depart);
     const yy = y0 + 58 + lines.length * 15;
     svg.append('text').attr('class', 'lbl-muted').attr('x', x(w.id)).attr('y', yy + 2).attr('text-anchor', 'middle').text(cap);
     svg.append('text').attr('class', 'lbl-muted').attr('x', x(w.id)).attr('y', yy + 16).attr('text-anchor', 'middle').text(w.planned ? `${w.type} · planned` : w.type);
@@ -550,6 +561,42 @@ function renderDash() {
 
 // ================================================================= owner: trip editor
 const today = todayISO();
+
+// Which data a vehicle name will pick up. Mirrors travel_dashboard/profiles.py for display only:
+// the numbers themselves are always computed in Python.
+const PROF = META?.profiles;
+const reCache = new Map();
+function matchesAny(patterns, text) {
+  return (patterns || []).some((pat) => {
+    let re = reCache.get(pat);
+    if (!re) {
+      try { re = new RegExp(`(?<![a-z0-9])${pat}(?![a-z0-9])`, 'i'); } catch { re = /(?!)/; }
+      reCache.set(pat, re);
+    }
+    return re.test(text);
+  });
+}
+function describeProfile(mode, vehicle, km, fuelL) {
+  if (!PROF || !PROF.modes[mode]) return '';
+  const base = PROF.modes[mode], text = vehicle || '';
+  const hit = text && PROF.vehicles.find(v => (v.mode || mode) === mode && matchesAny(v.match, text));
+  if (hit) return `Data: ${hit.name} · grade ${hit.grade}${hit.source ? ` · ${hit.source}` : ''}`;
+  if (base.kind === 'flight') {
+    const named = ['turboprop', 'wide', 'narrow'].find(c => matchesAny(PROF.flight.classes[c]?.match, text));
+    const cls = named || (Number(km) >= PROF.flight.wide_from_km ? 'wide' : 'narrow');
+    return `Data: ${PROF.flight.classes[cls].label} (${named ? 'from the aircraft name' : 'by distance; add the aircraft, e.g. A320'}) · per-flight fuel model · grade C`;
+  }
+  const logged = (base.kind === 'fuel' || base.kind === 'vehicle') && Number(fuelL) > 0;
+  if (mode === 'car' && PROF.cars?.g_vkm) {
+    const size = Object.entries(PROF.cars.sizes).find(([, p]) => matchesAny(p, text))?.[0] || PROF.cars.size_default;
+    const fuel = Object.entries(PROF.cars.fuels).find(([, p]) => matchesAny(p, text))?.[0] || PROF.cars.fuel_default;
+    const key = [`${size}_${fuel}`, `average_${fuel}`, 'average_petrol'].find(k => k in PROF.cars.g_vkm);
+    return `Data: ${key.replace('_', ' ')} car · ${PROF.cars.g_vkm[key]} g CO₂e per km${logged && fuel !== 'electric' ? ' · litres logged: grade A' : ' · grade C'}`;
+  }
+  if (logged) return `Data: ${base.label} · litres logged: grade A`;
+  return `Data: ${base.label} · grade ${base.grade}${base.grade === 'D' ? ' · nothing specific for this name yet: ask Claude to add it' : ''}`;
+}
+const kmText = t => (Number(t.km) ? `${kmFmt(Number(t.km))} km` : t.mode === 'plane' ? 'km from airports' : '– km');
 function orderWaypoints(wps, legs) {
   const inc = new Map(), out = new Map();
   for (const l of legs) {
@@ -600,10 +647,13 @@ function waypointForm(existing, ed = editorData()) {
         { name: 'arrive', label: 'Arrive', type: 'date' },
         { name: 'depart', label: 'Depart', type: 'date' },
       ] },
+      { name: 'airport', label: 'Airport (IATA code, optional)', type: 'text', placeholder: 'e.g. SPC',
+        hint: 'Flights to or from here use this airport; their distance is then computed for you.' },
       { name: 'note', label: 'Note', type: 'text' },
     ],
     values: existing || { type: 'destination' },
-    validate: v => (v.arrive && v.depart && v.depart < v.arrive ? 'Depart is before arrive' : ''),
+    validate: v => (v.arrive && v.depart && v.depart < v.arrive ? 'Depart is before arrive'
+      : v.airport && !/^[A-Za-z]{3}$/.test(v.airport) ? 'Airport: use a 3-letter code like SPC' : ''),
     onSave: v => {
       let id = existing?.id;
       if (!id) {
@@ -611,7 +661,7 @@ function waypointForm(existing, ed = editorData()) {
         const base = store.slug(v.name);
         id = base; for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
       }
-      store.upsert('waypoints', { ...v, id });
+      store.upsert('waypoints', { ...v, airport: (v.airport || '').toUpperCase(), id });
       toast(existing ? 'Saved' : `Added ${v.name}`);
     },
     onDelete: existing ? () => {
@@ -650,14 +700,17 @@ function travelForm(existing, preset = {}, ed = editorData()) {
         hint: 'Local travel has no alternative: it counts the same in both worlds.' },
       { type: 'row', fields: [
         { name: 'from_alt', label: 'From', type: 'datalist', datalist: pointList, show: isAlt, required: true },
-        { name: 'to_alt', label: 'To', type: 'datalist', datalist: pointList, show: isAlt, required: true },
+        { name: 'to_alt', label: 'To', type: 'datalist', datalist: pointList, show: isAlt, required: true,
+          hint: 'Flights: write via airports as codes, e.g. BCN' },
       ] },
       { name: 'date', label: 'Date', type: 'date', show: v => !isAlt(v), required: true, default: today },
       { type: 'row', fields: [
         { name: 'mode', label: 'Mode', type: 'select', required: true, options: MODES.map(m => ({ value: m, label: MODE_LABEL[m] || m })) },
-        { name: 'km', label: 'Distance (km)', type: 'number', required: true, hint: 'Flights: great-circle km' },
+        { name: 'km', label: 'Distance (km)', type: 'number', required: v => v.mode !== 'plane',
+          hint: 'Flights: leave empty to compute from airport codes' },
       ] },
-      { name: 'vehicle', label: 'Vehicle, service or vessel', type: 'datalist', datalist: vehicles, placeholder: 'e.g. Bencomo Express, TGV Lyria, A320' },
+      { name: 'vehicle', label: 'Vehicle, service or vessel', type: 'datalist', datalist: vehicles, placeholder: 'e.g. Bencomo Express, TGV Lyria, A320, Citroën C1 (95)' },
+      { name: 'profile_info', type: 'info', text: v => describeProfile(v.mode, v.vehicle, v.km, v.fuel_l) },
       { type: 'row', fields: [
         { name: 'occ_max', label: 'Occupancy max', type: 'number', hint: 'seats, berths' },
         { name: 'occ_obs', label: 'Occupancy observed', type: 'number', hint: 'people aboard' },
@@ -689,6 +742,13 @@ function travelForm(existing, preset = {}, ed = editorData()) {
       if (alt && v.next) setTimeout(() => travelForm(null, { type: 'alt', option: v.option, main: v.main, from: row.to, mode: v.mode }), 50);
     },
     onDelete: existing ? () => { store.remove('travel', existing.id); toast('Deleted'); } : undefined,
+    extra: existing && existing.type === 'leg' && existing.from !== existing.to ? {
+      label: 'Copy as return trip',
+      onClick: () => setTimeout(() => travelForm(null, {
+        type: 'leg', from: existing.to, to: existing.from, mode: existing.mode, vehicle: existing.vehicle,
+        km: existing.km, occ_max: existing.occ_max,
+      }), 50),
+    } : undefined,
   });
 }
 
@@ -725,7 +785,7 @@ function renderEditor() {
     const box = document.createElement('div'); box.className = 'ed-group';
     for (const w of ed.wps) {
       edRow(box, { title: w.name, value: w.type, pending: w._pending,
-        detail: [w.country, w.arrive && `arrive ${fmtDate(w.arrive)}`, w.depart && `depart ${fmtDate(w.depart)}`, w.note].filter(Boolean).join(' · '),
+        detail: [w.country, dateSpan(w.arrive, w.depart), w.airport && `airport ${w.airport}`, w.note].filter(Boolean).join(' · '),
         onClick: () => waypointForm(w, ed) });
     }
     host.appendChild(box);
@@ -782,7 +842,7 @@ function renderEditor() {
       for (const t of list) {
         placed.add(t.id);
         edRow(box, { title: [t.date && fmtDate(t.date), MODE_LABEL[t.mode] || t.mode].filter(Boolean).join(' · '),
-          value: `${kmFmt(Number(t.km) || 0)} km`, pending: t._pending, detail: travelDetail(t), onClick: () => travelForm(t, {}, ed) });
+          value: kmText(t), pending: t._pending, detail: travelDetail(t), onClick: () => travelForm(t, {}, ed) });
       }
       host.appendChild(box);
     }
@@ -796,7 +856,7 @@ function renderEditor() {
     if (legs.length) { const s = document.createElement('div'); s.className = 'ed-sub'; s.textContent = 'Legs'; box.appendChild(s); }
     for (const t of legs) {
       placed.add(t.id);
-      edRow(box, { title: `${shortName(name(t.from))} → ${shortName(name(t.to))}`, value: `${kmFmt(Number(t.km) || 0)} km`, pending: t._pending,
+      edRow(box, { title: `${shortName(name(t.from))} → ${shortName(name(t.to))}`, value: kmText(t), pending: t._pending,
         detail: [t.date && fmtDate(t.date), travelDetail(t)].filter(Boolean).join(' · '), onClick: () => travelForm(t, {}, ed) });
     }
     for (const [optName, rows] of opts) {
@@ -805,7 +865,7 @@ function renderEditor() {
       box.appendChild(s);
       for (const t of rows) {
         placed.add(t.id);
-        edRow(box, { title: `${shortName(name(t.from))} → ${shortName(name(t.to))}`, value: `${kmFmt(Number(t.km) || 0)} km`, pending: t._pending,
+        edRow(box, { title: `${shortName(name(t.from))} → ${shortName(name(t.to))}`, value: kmText(t), pending: t._pending,
           detail: travelDetail(t), onClick: () => travelForm(t, {}, ed) });
       }
     }
@@ -819,7 +879,7 @@ function renderEditor() {
     const box = [...host.querySelectorAll('.ed-sub')].find(s => s.textContent.startsWith(`Alternative: ${t.option}`));
     if (box) {
       const holder = document.createElement('div');
-      edRow(holder, { title: `${shortName(name(t.from))} → ${shortName(name(t.to))}`, value: `${kmFmt(Number(t.km) || 0)} km`, pending: t._pending,
+      edRow(holder, { title: `${shortName(name(t.from))} → ${shortName(name(t.to))}`, value: kmText(t), pending: t._pending,
         detail: travelDetail(t), onClick: () => travelForm(t, {}, ed) });
       let after = box; while (after.nextElementSibling && after.nextElementSibling.classList.contains('ed-row')) after = after.nextElementSibling;
       after.after(holder.firstChild);
@@ -828,7 +888,7 @@ function renderEditor() {
   if (leftover.length) {
     const box = group('Not placed yet', 'Rows whose waypoints are missing or outside two destinations', '', '');
     for (const t of leftover) {
-      edRow(box, { title: `${t.type === 'alt' ? `Alternative ${t.option}: ` : ''}${name(t.from)} → ${name(t.to)}`, value: `${kmFmt(Number(t.km) || 0)} km`,
+      edRow(box, { title: `${t.type === 'alt' ? `Alternative ${t.option}: ` : ''}${name(t.from)} → ${name(t.to)}`, value: kmText(t),
         pending: t._pending, detail: [t.date && fmtDate(t.date), travelDetail(t)].filter(Boolean).join(' · '), onClick: () => travelForm(t, {}, ed) });
     }
   }

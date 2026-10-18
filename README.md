@@ -36,7 +36,7 @@ later.
 | file | columns |
 |---|---|
 | `data/costs.csv` | `id, date, amount, category, country` |
-| `data/waypoints.csv` | `id, name, type, country, arrive, depart, note` |
+| `data/waypoints.csv` | `id, name, type, country, arrive, depart, note, airport` |
 | `data/travel.csv` | `id, type, option, main, date, from, to, mode, vehicle, km, occ_max, occ_obs, fuel_l, note` |
 
 **Costs:**
@@ -58,9 +58,13 @@ later.
 - A leg with the same `from` and `to` is a local trip, e.g. driving around La Palma. It has no
   alternative and counts the same in both worlds. In the form, tick "Local trip".
 - `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text.
-- `km` is entered by hand. For flights, use the great-circle distance; the model adds routing.
+- `km` is entered by hand. For flights, either enter the great-circle distance or leave `km`
+  empty: the build then computes it from airport codes, i.e. the waypoint's `airport` or a code in
+  a via point such as `BCN` or `Barcelona (BCN)`.
 - `occ_max` and `occ_obs` are capacity and observed head count.
 - `fuel_l` is litres burnt by the whole vehicle (sailing, car).
+- `vehicle` picks the data. Use a ship or train name ("Marie Curie", "TGV Lyria"), an aircraft
+  ("A320") or a car with its fuel ("Citroën C1 (95)"). The form shows what it matched.
 
 **Emission factors and vessels** live in `config/emissions.toml`, each with its source. The
 reasoning is in `docs/METHODOLOGY.md`.

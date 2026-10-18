@@ -23,7 +23,7 @@ MODES = (
 
 COLUMNS = {
     "costs": ["id", "date", "amount", "category", "country"],
-    "waypoints": ["id", "name", "type", "country", "arrive", "depart", "note"],
+    "waypoints": ["id", "name", "type", "country", "arrive", "depart", "note", "airport"],
     "travel": ["id", "type", "option", "main", "date", "from", "to", "mode", "vehicle", "km",
                "occ_max", "occ_obs", "fuel_l", "note"],
 }
@@ -58,6 +58,7 @@ class Waypoint:
     arrive: dt.date | None = None
     depart: dt.date | None = None
     note: str = ""
+    airport: str = ""     # IATA code of the airport a flight to or from here would use
 
 
 @dataclass
@@ -67,7 +68,7 @@ class Travel:
     from_: str
     to: str
     mode: str
-    km: float
+    km: float | None      # None only for flights, filled from airport codes (geo.fill_flight_km)
     option: str = ""
     main: bool = False
     date: dt.date | None = None
@@ -76,6 +77,7 @@ class Travel:
     occ_obs: float | None = None
     fuel_l: float | None = None
     note: str = ""
+    km_note: str = ""     # where a computed distance came from, e.g. "great circle ZRH–BCN"
 
     @property
     def is_leg(self) -> bool:
@@ -198,8 +200,12 @@ def read_waypoints(path: Path, issues: list[Issue]) -> list[Waypoint]:
             continue
         if arrive and depart and depart < arrive:
             issues.append(Issue("waypoints", rid, "depart is before arrive"))
+        airport = row.get("airport", "").strip().upper()
+        if airport and not (len(airport) == 3 and airport.isalpha()):
+            issues.append(Issue("waypoints", rid, f"airport {airport!r} is not a 3-letter IATA code; ignored"))
+            airport = ""
         seen.add(rid)
-        out.append(Waypoint(rid, name, wtype, row.get("country", ""), arrive, depart, row.get("note", "")))
+        out.append(Waypoint(rid, name, wtype, row.get("country", ""), arrive, depart, row.get("note", ""), airport))
     return out
 
 
@@ -228,7 +234,7 @@ def read_travel(path: Path, issues: list[Issue]) -> list[Travel]:
         except ValueError as e:
             issues.append(Issue("travel", rid, f"{e}; row skipped", "error"))
             continue
-        if km is None or km <= 0:
+        if (km is None and mode != "plane") or (km is not None and km <= 0):
             issues.append(Issue("travel", rid, "needs a distance in km; row skipped", "error"))
             continue
         frm, to = row.get("from", ""), row.get("to", "")

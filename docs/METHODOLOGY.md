@@ -95,6 +95,10 @@ Distances are entered by hand:
 - **Trains, buses and ships:** route km, e.g. the operator's figure (68 nm = 126 km for Los
   Cristianos–La Palma).
 - **Flights:** great-circle km. The model adds 8 % for routing (range 4–12 %).
+  - Leave `km` empty and the build computes the great-circle distance between the airports at both
+    ends: the waypoint's `airport`, or a code in a via point (`BCN`, `Barcelona (BCN)`).
+  - Airports come from `data/reference/airports.csv`: 4,008 airports with scheduled service, from
+    OurAirports (public domain). Refresh it with `python -m travel_dashboard airports`.
 
 When estimating rail or road km from a map's straight line, multiply by the network circuity:
 about 1.45 for rail and 1.25 for road in France, Spain and Switzerland (Heinold & Makowski 2026).
@@ -149,9 +153,58 @@ lifecycle) times typical energy use. Renfe's 3.6 is the low end.
 | Coach | DESNZ 2026 ✓ | 39.5 TTW | method changed (National Express data), so pick the vintage deliberately |
 | Coach | FlixBus 2025 ✓ | Iberia 27.2 · France 25.5 | actual passenger-km |
 | Local bus | DESNZ 2025 ✓ | outside London 157 WTW | assumes 11 passengers. Island buses (TITSA) sit somewhere in 60–160 depending on load. |
-| Car | DESNZ 2025 ✓ | petrol 209 · diesel 215 · EV 51 g per vehicle-km (WTW) | divide by occupants. The page shows 209 (alone) and 52 (four aboard) as references. |
+| Car | DESNZ 2025 ✓ | g per vehicle-km, WTW, read from the vehicle text (see below) | divided by occupants. The page shows 209 (alone) and 52 (four aboard) as references. |
 
-### 4.3 Sailing
+**Cars by size and fuel** (DESNZ 2025 ✓, g CO₂e per vehicle-km, combustion + fuel supply):
+
+| size | petrol | diesel | hybrid |
+|---|---|---|---|
+| small | 183 | 177 | 144 |
+| average | 209 | 215 | 161 |
+
+- **What decides the class:** size and fuel are read from the vehicle text. "Citroën C1 (95)" is a
+  small petrol car; "Golf TDI" is an average diesel.
+- **Per km, the fuel type hardly matters** (about ±3 %). Size does: a small car is about 12 % below
+  the average.
+- **Per litre, the fuel type does matter.** If you log litres refuelled, petrol (EU 95 E5) is 2.90
+  and diesel (EU B7) 3.22 kg CO₂e/L, so diesel is about 11 % more per litre. Logged litres beat any
+  factor (grade A).
+- **Electric cars:** about 0.19 kWh/km times the grid where they charge.
+  - Switzerland and France: about 0.06 kg/kWh.
+  - Spanish mainland: about 0.15.
+  - Canary Islands: 0.58–0.69 (ULPGC). Renewables were only 19 % of Canary generation in 2023 (REE).
+  - So an electric car on La Palma is only 20–30 % below a small petrol car. The range is set at
+    15–150 g/km.
+
+### 4.3 How a travel row finds its data
+
+The mode is only the starting point. Each row gets the most specific data available, in this order:
+
+1. **Mode defaults:** `[modes.<mode>]` in `config/emissions.toml`, e.g. a generic ro-pax ferry
+   (grade D).
+2. **A named vehicle:** the `vehicle` text is matched against the `[[vehicles]]` entries.
+   - **How the match works:** whole words, case-insensitive. The first match wins, and the entry's
+     mode must agree with the row's.
+   - **What it brings:** that service's or ship's own data. For "Balearia / Fred Olsen: Marie Curie"
+     that is the Marie Curie's fuel per nautical mile from EU MRV, its 880 places and its typical
+     load (grade B).
+3. **Cars and planes:**
+   - Cars get size and fuel from words in the text (§4.2).
+   - Planes get an aircraft class from the aircraft name: A320 is narrow-body, A350 wide-body, ATR a
+     turboprop. Without a name, the class is chosen by distance.
+4. **Your observations** override typical values:
+   - observed and maximum occupancy, used by the "As observed" lens
+   - logged litres, which make the row grade A
+
+The trip editor shows the match live under the vehicle field ("Data: Marie Curie · grade B"). The
+page's trace names the profile and its sources. To cover a new ship, train or bus, add a
+`[[vehicles]]` entry with sources:
+
+- **Ships:** EU MRV publishes fuel, distance and passengers for every ship over 5,000 GT that calls
+  at EU ports.
+- **Trains and buses:** operators often publish g/pkm.
+
+### 4.4 Sailing
 
 - **Method:** fuel-based. Litres used for motoring and charging × 3.29 kg CO₂e/L ÷ crew.
   - Fuel factors (DESNZ 2025 ✓): fossil diesel 3.29, marine gas oil 3.40 kg CO₂e/L WTW.

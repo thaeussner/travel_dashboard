@@ -65,15 +65,16 @@ Plain Python ≥ 3.12, standard library only. CI uses 3.14.
 python -m travel_dashboard build [--data examples/trip] [--today YYYY-MM-DD] [--draws N]
 python -m travel_dashboard check            # validate data, list issues (exit 1 on errors)
 python -m travel_dashboard serve            # http://localhost:8000 (build first)
-python -m unittest discover -s tests        # 19 tests; test_build uses examples/trip
+python -m travel_dashboard airports         # refresh data/reference/airports.csv (OurAirports, 4,008 airports)
+python -m unittest discover -s tests        # test_build uses examples/trip
 ```
 
 ## Layout
 
 ```
 config/            emissions.toml (all factors, vessels, flight classes), settings.toml (repo, draws, default lens)
-data/              the owner's CSVs (start empty); examples/trip/ is an illustrative trip for demos and tests
-travel_dashboard/  tables.py (parse/validate), profiles.py (config → per-travel parameters, shared sampling),
+data/              the owner's CSVs; reference/airports.csv (IATA → coordinates); examples/trip/ for demos and tests
+travel_dashboard/  tables.py (parse/validate), geo.py (airports, km from codes), profiles.py (config → per-travel parameters, shared sampling),
                    model.py (per-passenger kg, traces), trip.py (ordering, options, journeys per level),
                    montecarlo.py (24 lens combos × draws), costs.py, export.py (JSON contract), cli.py
 site/              index.html, costs/, emissions/, assets/ (app.css, common.js, store.js, editor.js, costs.js,
@@ -89,6 +90,8 @@ tests/             test_core.py (parsing, model, trip), test_build.py (contract 
    them itself so new entries show at once, and there are no assumptions in them to own.
 2. **Factors only in `config/emissions.toml`,** each with a source. No magic numbers in code.
    Vehicles match by whole-word regex, first match wins, so keep specific entries above generic ones.
+   Cars get size and fuel from words in the vehicle text (`[cars]`). `describeProfile` in
+   `emissions.js` mirrors this matching only to show a hint in the form, so keep both in sync.
 3. **Lenses are not uncertainty.** Level, ferry share, occupancy and non-CO₂ are precomputed
    scenarios. Monte Carlo ranges apply within one scenario. Parameters are shared within a draw. Each
    lens applies to legs and alternatives alike.
