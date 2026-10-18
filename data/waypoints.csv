@@ -2,3 +2,4 @@ id,name,type,country,arrive,depart,note
 zurich,Zurich,destination,Switzerland,2026-10-04,2026-10-04,Start of the trip
 paris,Paris,stop,France,2026-10-04,2026-10-04,
 hendaye,Hendaye,stop,France,2026-10-04,2026-10-05,
+irun,Irun,stop,Spain,2026-10-05,2026-10-05,
