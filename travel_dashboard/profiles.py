@@ -18,6 +18,17 @@ from .tables import Travel
 
 META_KEYS = {"kind", "label", "grade", "source", "match", "name", "mode", "fuel", "note"}
 Spec = float | int | list
+LINK = re.compile(r"\[([^\]]+)\]\((https?://[^)\s]+)\)")   # [label](url) in a `source` text
+
+
+def links(text: str) -> list[tuple[str, str]]:
+    """The (label, url) pairs linked in a source text."""
+    return LINK.findall(text or "")
+
+
+def plain(text: str) -> str:
+    """A source text without its link markup, for places that show plain text."""
+    return LINK.sub(r"\1", text or "")
 
 
 def central(spec: Spec) -> float:
@@ -93,6 +104,16 @@ class Profiles:
     @property
     def version(self) -> str:
         return str(self.cfg.get("meta", {}).get("version", ""))
+
+    def source_links(self) -> list[dict]:
+        """Every source linked anywhere in the config, once per URL, sorted by label."""
+        texts = [self.alloc.get("source", ""), self.flight.get("source", ""), self.cars.get("source", "")]
+        texts += [m.get("source", "") for m in self.modes.values()] + [v.get("source", "") for v in self.vehicles]
+        seen: dict[str, str] = {}
+        for text in texts:
+            for label, url in links(text):
+                seen.setdefault(url, label)
+        return sorted(({"label": label, "url": url} for url, label in seen.items()), key=lambda d: d["label"].lower())
 
     def match_vehicle(self, mode: str, text: str) -> dict | None:
         if not text:

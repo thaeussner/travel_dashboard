@@ -121,4 +121,4 @@ def table(profiles: Profiles, defaults: dict, draws: int = 2000, seed: int = 1) 
         rows.append(row(group="named", title=f"Turboprop, {TURBOPROP_KM:,} km", mode="plane", km=TURBOPROP_KM,
                         text="turboprop", prefix="Plane · "))
     return {"alloc": defaults.get("alloc", "iso"), "nonco2": defaults.get("nonco2", "full"), "draws": draws,
-            "rows": rows}
+            "rows": rows, "links": profiles.source_links()}

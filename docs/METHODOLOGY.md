@@ -139,7 +139,7 @@ about 1.45 for rail and 1.25 for road in France, Spain and Switzerland (Heinold 
 | mode | method | central (g CO₂e/pkm) | range | grade |
 |---|---|---|---|---|
 | TGV / TGV Lyria | factor × timetable km | 2.3 / 2.5 | 1.4–6 | C |
-| Spanish rail (AVE, Alvia) | factor × km | 8 / 11 | 3.6 (Renfe, market-based) – 25 | C |
+| Spanish rail (AVE, Alvia) | factor × km | 8 / 11 | 3.8 (Renfe, certificates) – 25 | C |
 | Coach | factor × road km | 34 | 25–48 | C/D |
 | Local bus | factor × km | ~130–157 | wide; depends on load | D |
 | Car / taxi | 209 g per vehicle-km (petrol, WTW) ÷ occupants | — | — | C/D |
@@ -170,12 +170,12 @@ reference distance (400, 1,000, 2,500 and 7,000 km), since take-off and landing 
 | SNCF Info GES (2025 data) ✓ | TGV 2.1 (INOUI 2.3, OUIGO 1.4) · Lyria 2.5 · Intercités 4.8 · TER 19 · France–Spain 5.5 | WTW, location-based French mix (51.9 g/kWh) |
 | SNCF incl. rolling stock ✓ | TGV 3.0 · Intercités 6.1 · TER 23.7 | + maintenance and manufacture |
 | ADEME Base Carbone (2022 data) ✓ | TGV 2.93 · Intercités 7.5 · TER 27.7 | incl. train manufacture |
-| Renfe (2025) ✓ | 3.58, company-wide | market-based (100 % renewable certificates) |
+| Renfe (2024) ✓ | 3.79 per transport unit, group-wide | with renewable certificates (market-based) |
 | EEA / CE Delft (2018 data) ✓ | high-speed 15.8 · conventional 41.2 · all 33.4 | location-based, EU grids |
 | mobitool v3.1 ✓ | Swiss train 7.0 (4.8 of it infrastructure) · TGV 12.5 | full lifecycle |
 
 The Spanish values (AVE 8, Alvia 11) are location-based estimates: about 150 g/kWh grid (Ember, 2025
-lifecycle) times typical energy use. Renfe's 3.6 is the low end.
+lifecycle) times typical energy use. Renfe's own 3.8 is the low end.
 
 ### 4.2 Road
 
@@ -559,36 +559,42 @@ Methodological questions for you:
 
 **Ferries and shipping:**
 
-- **ISO 14083:2023**, Annex G passenger equivalents, via the CLECAT guide. https://www.clecat.org/media/clecat-guide-to-iso-14083---greenhouse-gas-emissions-in-the-transport-sector.pdf
-- **GLEC Framework v3.1 (2024).** https://knowledgeplatform.ecta.com/wp-content/uploads/2024/10/GLEC_FRAMEWORK_v3_23_10_24_B.pdf
-- **EU MRV public emission reports (EMSA THETIS-MRV), 2024–2025.** https://mrv.emsa.europa.eu/
-- **DESNZ 2026 methodology report**, ferries §7.5–7.10. https://assets.publishing.service.gov.uk/media/6a2940543b15d05a7ce3202e/2026-GHG-conversion-factors-methodology-report.pdf
-- **IVL / Lighthouse (Fridell et al. 2018):** allocation on ro-pax. https://lighthouse.nu/images/pdf/mrv_webb.pdf
-- **IMO Fourth GHG Study 2020:** SFOC and carbon factors.
-- **FuelEU Maritime**, Regulation (EU) 2023/1805, Annex II.
-- **Fred. Olsen Express**, Bencomo Express fleet page. https://www.fredolsen.es/en/during-your-trip/fleet/bencomo-express
+- [**ISO 14083:2023**](https://www.iso.org/standard/78864.html), Annex G passenger equivalents, via the
+  [CLECAT guide to ISO 14083](https://www.clecat.org/media/clecat-guide-to-iso-14083---greenhouse-gas-emissions-in-the-transport-sector.pdf).
+- [**GLEC Framework v3.1 (2024)**](https://knowledgeplatform.ecta.com/wp-content/uploads/2024/10/GLEC_FRAMEWORK_v3_23_10_24_B.pdf).
+- [**EU MRV public emission reports (EMSA THETIS-MRV), 2024–2025**](https://mrv.emsa.europa.eu/).
+- [**DESNZ 2026 methodology report**](https://assets.publishing.service.gov.uk/media/6a2940543b15d05a7ce3202e/2026-GHG-conversion-factors-methodology-report.pdf), ferries §7.5–7.10.
+- [**IVL / Lighthouse (Fridell et al. 2018)**](https://lighthouse.nu/images/pdf/mrv_webb.pdf): allocation on ro-pax.
+- [**IMO Fourth GHG Study 2020**](https://www.imo.org/en/ourwork/Environment/Pages/Fourth-IMO-Greenhouse-Gas-Study-2020.aspx): SFOC and carbon factors.
+- [**FuelEU Maritime**, Regulation (EU) 2023/1805](https://eur-lex.europa.eu/eli/reg/2023/1805/oj), Annex II.
+- **Fred. Olsen Express** fleet pages: [Bencomo Express](https://www.fredolsen.es/en/during-your-trip/fleet/bencomo-express),
+  [Marie Curie](https://www.fredolsen.es/en/during-your-trip/fleet/marie-curie) (880 passengers).
 
 **Flights:**
 
-- **DESNZ 2026** conversion factors. https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2026
-- **ICAO Carbon Emissions Calculator Methodology v13.1 (2024).**
-- **myclimate flight calculator.** https://www.myclimate.org/en/information/about-myclimate/downloads/flight-emission-calculator/
-- **atmosfair** method documentation (2021).
-- **Lee et al. (2021)**, *Atmospheric Environment* 244:117834. https://doi.org/10.1016/j.atmosenv.2020.117834
-- **Teoh et al. (2024)**, *ACP* 24:6071. https://acp.copernicus.org/articles/24/6071/2024/
-- **UBA TEXTE 153/2024**, cluster model for aviation non-CO₂. https://www.umweltbundesamt.de/system/files/medien/11850/publikationen/153_2024_texte_clustermodell_flugverkehr.pdf
-- **Nordic harmonised guide on flight emissions (2026).** https://exponentialroadmap.org/wp-content/uploads/2026/01/Harmonised-guide-on-quantifying-GHG-emissions-from-flights.pdf
-- **IATA load factors 2025.** https://www.iata.org/en/pressroom/2026-releases/2026-01-29-02/
+- [**DESNZ 2026** conversion factors](https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2026).
+- [**ICAO Carbon Emissions Calculator Methodology v13.1 (2024)**](https://icec.icao.int/Methodology%20ICAO%20Carbon%20Emissions%20Calculator_v13_Final.pdf).
+- [**myclimate flight calculator**](https://www.myclimate.org/en/information/about-myclimate/downloads/flight-emission-calculator/).
+- [**atmosfair** method documentation (2023)](https://www.atmosfair.de/wp-content/uploads/flight-emissionscalculator-documentation-calculationmethodology.pdf).
+- [**Lee et al. (2021)**, *Atmospheric Environment* 244:117834](https://doi.org/10.1016/j.atmosenv.2020.117834).
+- [**Teoh et al. (2024)**, *ACP* 24:6071](https://acp.copernicus.org/articles/24/6071/2024/).
+- [**UBA TEXTE 153/2024**, cluster model for aviation non-CO₂](https://www.umweltbundesamt.de/system/files/medien/11850/publikationen/153_2024_texte_clustermodell_flugverkehr.pdf).
+- [**Nordic harmonised guide on flight emissions (2026)**](https://exponentialroadmap.org/wp-content/uploads/2026/01/Harmonised-guide-on-quantifying-GHG-emissions-from-flights.pdf).
+- [**IATA load factors 2025**](https://www.iata.org/en/pressroom/2026-releases/2026-01-29-02/).
 
 **Land, sailing, general:**
 
-- **DESNZ 2025 and 2026:** GHG conversion factors. https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025
-- **SNCF:** Info GES general methodology. https://www.groupe-sncf.com/medias-publics/2024-04/methodologie-generale-infoges.pdf
-- **ADEME Base Carbone.** https://data.ademe.fr/datasets/base-carboner
-- **CE Delft for EEA (2021):** Methodology for GHG efficiency of transport modes. https://cedelft.eu/wp-content/uploads/sites/2/2021/05/CE_Delft_200258_Methodology_GHG_Efficiency_Transport_Modes.pdf
-- **FlixBus (2026):** Avoided emissions methodology. https://corporate.flix.com/wp-content/uploads/2026/03/2025-Avoided-Emissions-Methodology-Document.pdf
-- **mobitool v3.1 / Umweltrechner Verkehr.** https://www.energieschweiz.ch/programme/umweltrechner-verkehr/
-- **Chalmers, Travel & Climate methodology v5.1 (2026).** https://research.chalmers.se/publication/552384/file/552384_Fulltext.pdf
-- **Heinold & Makowski (2026):** circuity of road and rail networks in Europe. *Networks and Spatial Economics* 26(2), doi:10.1007/s11067-026-09729-y
-- **Yachting World (2025):** ARC skipper energy survey. https://www.yachtingworld.com/arc/battery-power-onboard-hundreds-of-ocean-crossing-skippers-share-their-secrets-158731
-- **searoute (PyPI).** https://pypi.org/project/searoute/
+- [**DESNZ 2025**](https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2025) and
+  [**2026**](https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2026): GHG conversion factors.
+- [**SNCF Info GES** general methodology](https://www.groupe-sncf.com/medias-publics/2024-04/methodologie-generale-infoges.pdf).
+- [**Renfe (2024)**: 3.79 g CO₂ per transport unit](https://www.energias-renovables.com/movilidad/renfe-impulsa-la-movilidad-sostenible-con-el-20260504), via Energías Renovables, May 2026.
+- [**Ember: Spain**](https://ember-energy.org/countries-and-regions/spain/), power sector data.
+- [**ADEME Base Carbone**](https://data.ademe.fr/datasets/base-carboner).
+- [**CE Delft for EEA (2021)**: Methodology for GHG efficiency of transport modes](https://cedelft.eu/wp-content/uploads/sites/2/2021/05/CE_Delft_200258_Methodology_GHG_Efficiency_Transport_Modes.pdf).
+- [**FlixBus (2026)**: Avoided emissions methodology](https://corporate.flix.com/wp-content/uploads/2026/03/2025-Avoided-Emissions-Methodology-Document.pdf).
+- [**mobitool v3.1 / Umweltrechner Verkehr**](https://www.energieschweiz.ch/programme/umweltrechner-verkehr/).
+- [**Chalmers, Travel & Climate methodology v5.1 (2026)**](https://research.chalmers.se/publication/552384/file/552384_Fulltext.pdf).
+- [**Heinold & Makowski (2026)**: circuity of road and rail networks in Europe](https://doi.org/10.1007/s11067-026-09729-y),
+  *Networks and Spatial Economics* 26(2).
+- [**Yachting World (2025)**: ARC skipper energy survey](https://www.yachtingworld.com/arc/battery-power-onboard-hundreds-of-ocean-crossing-skippers-share-their-secrets-158731).
+- [**searoute (PyPI)**](https://pypi.org/project/searoute/).

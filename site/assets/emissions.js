@@ -3,7 +3,7 @@ import * as store from './store.js';
 import { openForm } from './editor.js';
 import {
   $, $$, nf, sig, neg, mass, range, tonnes, kmFmt, gpkm, fmtDate, todayISO, loadJSON, initChrome,
-  showTip, hideTip, bindTip, css, svgIn, logTicks, logMinor, minorMarks, tickKg, intervalMark, makeTable, wireTableToggles,
+  showTip, hideTip, bindTip, css, svgIn, logTicks, logMinor, minorMarks, tickKg, intervalMark, makeTable, wireTableToggles, appendLinked,
   onResize, onThemeChange, toast,
 } from './common.js';
 
@@ -564,7 +564,9 @@ function traceRow(tb, cols, t) {
   const td = trow.insertCell(); td.colSpan = cols;
   const pre = document.createElement('p'); pre.className = 'trace'; pre.textContent = t.trace[tKey(t)];
   const src = document.createElement('span'); src.className = 'src';
-  src.textContent = `\nCentral values shown; the table's median includes the uncertainty ranges.\nSources: ${t.sources.join(' · ') || 'none recorded'}`;
+  src.textContent = `\nCentral values shown; the table's median includes the uncertainty ranges.\nSources: `;
+  if (!t.sources.length) src.append('none recorded');
+  t.sources.forEach((s, i) => { if (i) src.append(' · '); appendLinked(src, s); });
   pre.appendChild(src); td.appendChild(pre);
   return trow;
 }

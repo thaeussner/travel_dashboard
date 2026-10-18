@@ -8,7 +8,7 @@ from pathlib import Path
 
 from travel_dashboard import factors, geo, montecarlo, trip as trip_mod
 from travel_dashboard.model import kg
-from travel_dashboard.profiles import Profiles, Sampler
+from travel_dashboard.profiles import Profiles, Sampler, links, plain
 from travel_dashboard.tables import Issue, Travel, Waypoint, read_costs, read_travel, read_waypoints
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -314,6 +314,23 @@ class TestGeoAndCars(unittest.TestCase):
         p2 = PROFILES.resolve(t2)
         self.assertEqual(p2.grade, "A")
         self.assertAlmostEqual(kg(t2, p2, CENTRAL, occ="observed"), 18 * 2.90 / 2, places=2)
+
+
+class TestSources(unittest.TestCase):
+    def test_links_and_plain_text(self):
+        text = "[Fred. Olsen fleet page](https://example.org/a) (880 passengers); [EU MRV](https://example.org/b) 2024"
+        self.assertEqual(links(text), [("Fred. Olsen fleet page", "https://example.org/a"), ("EU MRV", "https://example.org/b")])
+        self.assertEqual(plain(text), "Fred. Olsen fleet page (880 passengers); EU MRV 2024")
+
+    def test_every_config_source_is_linked_once(self):
+        found = PROFILES.source_links()
+        self.assertEqual(len({d["url"] for d in found}), len(found))
+        self.assertIn("ISO 14083:2023", [d["label"] for d in found])
+        for m in PROFILES.modes.values():         # every mode default with a source cites a link
+            if m.get("source") and not m["source"].startswith("Placeholder"):
+                self.assertTrue(links(m["source"]), m["label"])
+        for v in PROFILES.vehicles:
+            self.assertTrue(links(v["source"]), v["name"])
 
 
 class TestFactors(unittest.TestCase):

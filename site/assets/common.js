@@ -130,6 +130,20 @@ export function wireTableToggles(root = document) {
 }
 
 // ---------------------------------------------------------------- misc UI
+/** Append a source text to el, its [label](https://…) parts as links. Builds nodes, never HTML. */
+export function appendLinked(el, text) {
+  const re = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+  let last = 0, m;
+  while ((m = re.exec(text))) {
+    if (m.index > last) el.append(text.slice(last, m.index));
+    const a = document.createElement('a');
+    a.href = m[2]; a.textContent = m[1]; a.target = '_blank'; a.rel = 'noopener';
+    el.appendChild(a);
+    last = re.lastIndex;
+  }
+  if (last < text.length) el.append(text.slice(last));
+  return el;
+}
 let toastTimer;
 export function toast(msg) {
   let el = document.getElementById('toast');

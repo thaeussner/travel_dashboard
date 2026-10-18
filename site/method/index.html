@@ -59,7 +59,7 @@
     <div id="factors-table"></div>
     <ul class="fnotes">
       <li><b>Scope:</b> producing the fuel or electricity plus burning it. Building vehicles and infrastructure is left out.</li>
-      <li><b>Trains:</b> each country's grid mix, not green certificates. Renfe's certificates would give 3.6, the low end of its range.</li>
+      <li><b>Trains:</b> each country's grid mix, not green certificates. Renfe's certificates would give 3.8, the low end of its range.</li>
       <li><b>Flights:</b> fuel per flight for the aircraft class. With “+ non-CO₂” the CO₂ is multiplied by about 1.7 (1.2–3) for contrails and NOx. Only flights get this.</li>
       <li><b>Ships:</b> the ship's own fuel per nautical mile from EU reports, split by the ferry share below. Soot and sulphate effects are left out, as in ISO 14083.</li>
       <li><b>Cars and sailing:</b> litres you log beat any factor (grade A). A yacht's engine hours count 1.2–4 L/h (grade B); add half an hour per hour of dinghy use.</li>
@@ -104,14 +104,7 @@
   <section class="block" id="sources">
     <h2>Sources</h2>
     <p class="lede">Every factor and its source: <a href="https://github.com/thaeussner/travel_dashboard/blob/main/config/emissions.toml">config/emissions.toml</a>. The research behind them: <a href="https://github.com/thaeussner/travel_dashboard/blob/main/docs/METHODOLOGY.md">docs/METHODOLOGY.md</a>.</p>
-    <ul class="sources">
-      <li>ISO 14083:2023 and the GLEC Framework (ferry allocation)</li>
-      <li>EU MRV ship emission reports (ferry fuel and passengers)</li>
-      <li>UK DESNZ 2025/26 conversion factors (cars, coaches, fuels)</li>
-      <li>SNCF and Renfe (trains)</li>
-      <li>Lee et al. 2021 (aviation non-CO₂)</li>
-      <li>ICAO and myclimate (flight model checks)</li>
-    </ul>
+    <ul class="sources" id="source-list"></ul>
   </section>
 
   <footer class="end"><span id="foot"></span><a href="#" data-owner-link>Owner</a></footer>

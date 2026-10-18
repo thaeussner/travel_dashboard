@@ -10,7 +10,7 @@ from . import costs as costs_mod
 from . import factors, geo, montecarlo, trip as trip_mod
 from .model import LENSES, ship_breakdown, trace
 from .montecarlo import variants
-from .profiles import Profiles, central
+from .profiles import Profiles, central, plain
 from .tables import COLUMNS, COST_CATEGORIES, MODES, Tables
 
 GRADE_NOTES = {
@@ -162,13 +162,13 @@ def profile_meta(profiles: Profiles) -> dict:
         "modes": {m: {"label": d.get("label", m), "grade": d.get("grade", "D"), "kind": d["kind"]}
                   for m, d in profiles.modes.items()},
         "vehicles": [{"name": v["name"], "mode": v.get("mode", ""), "match": v.get("match", []),
-                      "grade": v.get("grade", "D"), "source": v.get("source", "")} for v in profiles.vehicles],
+                      "grade": v.get("grade", "D"), "source": plain(v.get("source", ""))} for v in profiles.vehicles],
         "flight": {"classes": {k: {"label": v.get("label", k), "match": v.get("match", [])}
                                for k, v in profiles.flight.items() if isinstance(v, dict)},
                    "wide_from_km": profiles.flight.get("wide_from_km", 4000)},
         "cars": {"sizes": cars.get("sizes", {}), "fuels": cars.get("fuels", {}),
                  "size_default": cars.get("size_default", "average"), "fuel_default": cars.get("fuel_default", "petrol"),
-                 "g_vkm": {k: central(v) for k, v in cars.get("g_vkm", {}).items()}, "source": cars.get("source", "")},
+                 "g_vkm": {k: central(v) for k, v in cars.get("g_vkm", {}).items()}, "source": plain(cars.get("source", ""))},
     }
 
 

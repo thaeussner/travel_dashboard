@@ -1,6 +1,6 @@
 // Method page: the emission factors per passenger-km, and the trip's own ferries split three ways.
 // Both are computed in Python (factors.py, model.ship_breakdown); this page only draws them.
-import { $, loadJSON, initChrome, svgIn, css, bindTip, fmtDate, mass, nf, sig, onResize, onThemeChange } from './common.js';
+import { $, loadJSON, initChrome, svgIn, css, bindTip, fmtDate, mass, nf, sig, onResize, onThemeChange, appendLinked } from './common.js';
 
 const [META, DATA] = await Promise.all([loadJSON('../data/meta.json'), loadJSON('../data/emissions.json')]);
 const METHODS = [['passenger', 'Per passenger'], ['iso', 'ISO 14083'], ['mass', 'By mass']];
@@ -105,9 +105,10 @@ function renderFactors() {
     badge.title = `Data quality ${r.grade}`;
     name.append(el('b', null, r.title), badge);
     const other = r.other.map(o => `${o.label} ${sig(o.g, 3)}`).join(' · ');
-    for (const line of [r.basis, other && `Other switches: ${other}`, r.source && `Source: ${r.source}`]) {
+    for (const line of [r.basis, other && `Other switches: ${other}`]) {
       if (line) name.appendChild(el('span', 'sm', line));
     }
+    if (r.source) name.appendChild(appendLinked(el('span', 'sm', 'Source: '), r.source));
     const val = row.insertCell();
     val.className = 'num';
     val.appendChild(el('b', null, sig(r.g, 3)));
@@ -117,7 +118,18 @@ function renderFactors() {
   wrap.appendChild(table);
   host.replaceChildren(wrap);
 }
-function render() { renderShips(); renderOccupancy(); renderFactors(); }
+/** Every source linked in the config, collected in Python (Profiles.source_links). */
+function renderSources() {
+  const host = $('#source-list');
+  host.replaceChildren();
+  for (const s of DATA?.factors?.links || []) {
+    const li = el('li'), a = el('a', null, s.label);
+    a.href = s.url; a.target = '_blank'; a.rel = 'noopener';
+    li.appendChild(a); host.appendChild(li);
+  }
+}
+
+function render() { renderShips(); renderOccupancy(); renderFactors(); renderSources(); }
 
 initChrome(META);
 render();
