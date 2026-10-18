@@ -25,7 +25,7 @@ COLUMNS = {
     "costs": ["id", "date", "amount", "category", "country"],
     "waypoints": ["id", "name", "type", "country", "arrive", "depart", "note", "airport"],
     "travel": ["id", "type", "option", "main", "date", "from", "to", "mode", "vehicle", "km",
-               "occ_max", "occ_obs", "fuel_l", "note"],
+               "occ_max", "occ_obs", "fuel_l", "engine_h", "note"],
 }
 
 
@@ -76,6 +76,7 @@ class Travel:
     occ_max: float | None = None
     occ_obs: float | None = None
     fuel_l: float | None = None
+    engine_h: float | None = None   # engine and generator hours (sailing yachts)
     note: str = ""
     km_note: str = ""     # where a computed distance came from, e.g. "great circle ZRH–BCN"
 
@@ -140,8 +141,8 @@ def slug(text: str) -> str:
 
 def _normalise_mode(text: str) -> str:
     m = text.strip().lower().replace(" ", "_").replace("-", "_")
-    return {"fastferry": "fast_ferry", "hsc": "fast_ferry", "flight": "plane", "boat": "sail",
-            "sailing": "sail", "ship": "ferry"}.get(m, m)
+    return {"fastferry": "fast_ferry", "hsc": "fast_ferry", "flight": "plane", "sailing": "sail",
+            "yacht": "sail", "ship": "ferry"}.get(m, m)
 
 
 # ------------------------------------------------------------------ table readers
@@ -231,11 +232,14 @@ def read_travel(path: Path, issues: list[Issue]) -> list[Travel]:
             occ_max = parse_number(row.get("occ_max", ""))
             occ_obs = parse_number(row.get("occ_obs", ""))
             fuel_l = parse_number(row.get("fuel_l", ""))
+            engine_h = parse_number(row.get("engine_h", ""))
         except ValueError as e:
             issues.append(Issue("travel", rid, f"{e}; row skipped", "error"))
             continue
-        if (km is None and mode != "plane") or (km is not None and km <= 0):
-            issues.append(Issue("travel", rid, "needs a distance in km; row skipped", "error"))
+        fuel_based = bool(fuel_l) or bool(engine_h)   # litres or engine hours make km optional
+        if (km is None and mode != "plane" and not fuel_based) or (km is not None and km <= 0):
+            issues.append(Issue("travel", rid, "needs a distance in km (or the fuel used or engine hours); row skipped",
+                                "error"))
             continue
         frm, to = row.get("from", ""), row.get("to", "")
         if not frm or not to:
@@ -260,7 +264,7 @@ def read_travel(path: Path, issues: list[Issue]) -> list[Travel]:
         out.append(Travel(
             id=rid, type=ttype, from_=frm, to=to, mode=mode, km=km, option=option,
             main=parse_bool(row.get("main", "")), date=date, vehicle=row.get("vehicle", ""),
-            occ_max=occ_max, occ_obs=occ_obs, fuel_l=fuel_l, note=row.get("note", ""),
+            occ_max=occ_max, occ_obs=occ_obs, fuel_l=fuel_l, engine_h=engine_h, note=row.get("note", ""),
         ))
     return out
 

@@ -180,9 +180,12 @@ kind = "fuel"
 label = "sailing yacht"
 fuel = "marine_diesel"
 l_per_100km = [1.0, 3.0, 8.0]   # motoring and charging: ~50-400 L per Atlantic crossing (estimate)
+l_per_engine_h = [1.2, 2.5, 4.0]   # 40-50 ft yacht: ~1.2-1.5 L/h charging at fast idle, ~3-4 L/h motoring; generators ~1-2 L/h
 occupancy = [4, 5.5, 7]         # crew; ARC 2025 averaged ~5.5
 grade = "C"
-source = "Estimate from the ARC 2024 skipper survey (~3 h/day charging); DESNZ 2025 diesel"
+source = "Estimate from the ARC 2024 skipper survey (~3 h/day charging) and typical engine curves; DESNZ 2025 fuels"
+# The dinghy is not transport here: add its outboard use to the leg's engine hours
+# (~1-2 L/h against ~2.5 L/h, so about half an engine hour per hour of dinghy use).
 
 [modes.bike]
 kind = "zero"

@@ -37,7 +37,7 @@ later.
 |---|---|
 | `data/costs.csv` | `id, date, amount, category, country` |
 | `data/waypoints.csv` | `id, name, type, country, arrive, depart, note, airport` |
-| `data/travel.csv` | `id, type, option, main, date, from, to, mode, vehicle, km, occ_max, occ_obs, fuel_l, note` |
+| `data/travel.csv` | `id, type, option, main, date, from, to, mode, vehicle, km, occ_max, occ_obs, fuel_l, engine_h, note` |
 
 **Costs:**
 
@@ -60,14 +60,18 @@ later.
 - `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text.
 - `km` is entered by hand. For flights, either enter the great-circle distance or leave `km`
   empty: the build then computes it from airport codes, i.e. the waypoint's `airport` or a code in
-  a via point such as `BCN` or `Barcelona (BCN)`.
+  a via point such as `BCN` or `Barcelona (BCN)`. It is also optional when `fuel_l` or `engine_h`
+  is given.
 - `occ_max` and `occ_obs` are capacity and observed head count.
 - `fuel_l` is litres burnt by the whole vehicle (sailing, car).
+- `engine_h` is engine and generator hours on a sailing yacht, used when the litres are unknown.
+  Add about half an hour per hour of dinghy use: the dinghy is not a mode of its own.
 - `vehicle` picks the data. Use a ship or train name ("Marie Curie", "TGV Lyria"), an aircraft
   ("A320") or a car with its fuel ("Citroën C1 (95)"). The form shows what it matched.
 
 **Emission factors and vessels** live in `config/emissions.toml`, each with its source. The
-reasoning is in `docs/METHODOLOGY.md`.
+reasoning is in `docs/METHODOLOGY.md`. The site's Method page explains it in plain language, with
+the trip's own ferries as examples and a table of the default factor of every mode.
 
 ## Local preview
 

@@ -204,10 +204,10 @@ function renderRoute() {
     const mx = (x(sg.from) + x(sg.to)) / 2;
     const lab = fit(sg.label, Math.abs(x(sg.to) - x(sg.from)) - 8);
     svg.append('text').attr('class', 'lbl').attr('x', mx).attr('y', y0 + 19).attr('text-anchor', 'middle').text(lab);
-    svg.append('text').attr('class', 'lbl-muted').attr('x', mx).attr('y', y0 + 33).attr('text-anchor', 'middle').text(`${kmFmt(sg.km)} km`);
+    svg.append('text').attr('class', 'lbl-muted').attr('x', mx).attr('y', y0 + 33).attr('text-anchor', 'middle').text(sg.km ? `${kmFmt(sg.km)} km` : '');
     const hit = svg.append('line').attr('x1', x(sg.from)).attr('x2', x(sg.to)).attr('y1', y0).attr('y2', y0).attr('stroke', 'transparent').attr('stroke-width', 18).datum(sg);
     bindTip(hit, d => ({ head: `${shortName(wpName(d.from))} → ${shortName(wpName(d.to))}`,
-      rows: d.legs.map(t => ({ value: mass(tq(t)[1]), label: `${legLabel(t)}, ${kmFmt(t.km)} km`, color: css('--actual') })) }));
+      rows: d.legs.map(t => ({ value: mass(tq(t)[1]), label: `${legLabel(t)}${t.km ? `, ${kmFmt(t.km)} km` : ''}`, color: css('--actual') })) }));
   }
   for (const j of js) {
     const o = OPT.get(j.option);
@@ -470,6 +470,7 @@ function renderIntensity() {
     if (j.option) for (const id of OPT.get(j.option).rows) { const t = TR.get(id); if (t) items.push({ t, alt: true }); }
   }
   for (const t of DATA.travels) if (t.type === 'leg' && inScope(t) && !seen.has(t.id)) items.push({ t, alt: false });
+  for (let i = items.length - 1; i >= 0; i--) if (!(items[i].t.km > 0)) items.splice(i, 1);   // g/pkm needs a distance
   if (!items.length) { host.replaceChildren(); return; }
   const W = Math.max(host.clientWidth, 280), narrow = W < 600;
   const labelW = narrow ? 0 : 250, rowH = narrow ? 46 : 40, top = 16, axisH = 26;
@@ -539,9 +540,9 @@ function travelTable(table, list, { showOption = false } = {}) {
     if (t.planned) { const p = document.createElement('span'); p.className = 'pill'; p.textContent = 'planned'; route.appendChild(p); }
     const occ = t.occ_obs ? `${nf.format(t.occ_obs)}${t.occ_max ? ` of ${nf.format(t.occ_max)}` : ''} aboard` : '';
     cell(MODE_LABEL[t.mode] || t.mode, null, [t.profile, occ].filter(Boolean).join(' · '));
-    cell(kmFmt(t.km), 'num');
+    cell(t.km ? kmFmt(t.km) : '–', 'num');
     cell(mass(q[1]), 'num', range(q));
-    cell(gpkm(q[1] / t.km * 1000), 'num');
+    cell(t.km ? gpkm(q[1] / t.km * 1000) : '–', 'num');
     const gtd = row.insertCell(); const badge = document.createElement('span'); badge.className = 'badge'; badge.textContent = t.grade; badge.title = t.grade_note; gtd.appendChild(badge);
     const btd = row.insertCell(); const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'how'; btn.textContent = 'How'; btn.setAttribute('aria-expanded', 'false'); btd.appendChild(btn);
     const trow = traceRow(tb, cols.length, t);
@@ -576,7 +577,7 @@ function matchesAny(patterns, text) {
     return re.test(text);
   });
 }
-function describeProfile(mode, vehicle, km, fuelL) {
+function describeProfile(mode, vehicle, km, fuelL, engineH) {
   if (!PROF || !PROF.modes[mode]) return '';
   const base = PROF.modes[mode], text = vehicle || '';
   const hit = text && PROF.vehicles.find(v => (v.mode || mode) === mode && matchesAny(v.match, text));
@@ -594,6 +595,7 @@ function describeProfile(mode, vehicle, km, fuelL) {
     return `Data: ${key.replace('_', ' ')} car · ${PROF.cars.g_vkm[key]} g CO₂e per km${logged && fuel !== 'electric' ? ' · litres logged: grade A' : ' · grade C'}`;
   }
   if (logged) return `Data: ${base.label} · litres logged: grade A`;
+  if (base.kind === 'fuel' && Number(engineH) > 0) return `Data: ${base.label} · engine hours: grade B`;
   return `Data: ${base.label} · grade ${base.grade}${base.grade === 'D' ? ' · nothing specific for this name yet: ask Claude to add it' : ''}`;
 }
 const kmText = t => (Number(t.km) ? `${kmFmt(Number(t.km))} km` : t.mode === 'plane' ? 'km from airports' : '– km');
@@ -706,16 +708,19 @@ function travelForm(existing, preset = {}, ed = editorData()) {
       { name: 'date', label: 'Date', type: 'date', show: v => !isAlt(v), required: true, default: today },
       { type: 'row', fields: [
         { name: 'mode', label: 'Mode', type: 'select', required: true, options: MODES.map(m => ({ value: m, label: MODE_LABEL[m] || m })) },
-        { name: 'km', label: 'Distance (km)', type: 'number', required: v => v.mode !== 'plane',
-          hint: 'Flights: leave empty to compute from airport codes' },
+        { name: 'km', label: 'Distance (km)', type: 'number',
+          required: v => v.mode !== 'plane' && !(Number(v.fuel_l) > 0) && !(Number(v.engine_h) > 0),
+          hint: 'Flights: leave empty to compute from airport codes. Optional with litres or engine hours.' },
       ] },
       { name: 'vehicle', label: 'Vehicle, service or vessel', type: 'datalist', datalist: vehicles, placeholder: 'e.g. Bencomo Express, TGV Lyria, A320, Citroën C1 (95)' },
-      { name: 'profile_info', type: 'info', text: v => describeProfile(v.mode, v.vehicle, v.km, v.fuel_l) },
+      { name: 'profile_info', type: 'info', text: v => describeProfile(v.mode, v.vehicle, v.km, v.fuel_l, v.engine_h) },
       { type: 'row', fields: [
         { name: 'occ_max', label: 'Occupancy max', type: 'number', hint: 'seats, berths' },
         { name: 'occ_obs', label: 'Occupancy observed', type: 'number', hint: 'people aboard' },
       ] },
       { name: 'fuel_l', label: 'Fuel used (litres, whole vehicle)', type: 'number', show: v => ['sail', 'car', 'taxi'].includes(v.mode) },
+      { name: 'engine_h', label: 'Engine hours, incl. generator', type: 'number', show: v => v.mode === 'sail',
+        hint: 'Used when litres are unknown (about 1.2–4 L/h). Add about half an hour per hour of dinghy use.' },
       { name: 'note', label: 'Note', type: 'text' },
       { name: 'next', label: 'Add a connecting segment after saving', type: 'checkbox', show: v => isAlt(v) && !existing },
     ],
@@ -731,7 +736,7 @@ function travelForm(existing, preset = {}, ed = editorData()) {
         id: existing?.id || `${alt ? 'A' : 'L'}${store.rand(4)}`, type: v.type, option: alt ? v.option : '',
         main: alt && v.main ? '1' : '', date: alt ? (existing?.date || '') : v.date,
         from: alt ? v.from_alt : v.from_leg, to: alt ? v.to_alt : (v.local ? v.from_leg : v.to_leg), mode: v.mode, vehicle: v.vehicle,
-        km: v.km, occ_max: v.occ_max, occ_obs: v.occ_obs, fuel_l: v.fuel_l, note: v.note,
+        km: v.km, occ_max: v.occ_max, occ_obs: v.occ_obs, fuel_l: v.fuel_l, engine_h: v.engine_h, note: v.note,
       };
       store.upsert('travel', row);
       if (alt) {

@@ -5,12 +5,13 @@
 
 ## 1. What it is
 
-A static site on GitHub Pages with two separate pages, each with its own input:
+A static site on GitHub Pages with two separate pages, each with its own input, plus a Method page:
 
 | page | shows | input (owner only) |
 |---|---|---|
 | **Costs** | totals and averages per day, week, month; by category; per day per country; entries | amount (CHF), date, category, country |
 | **Emissions** | avoided emissions with ranges, every lens combination, route with alternative arcs, cumulative chart, journeys, method check, g/pkm, every leg with its arithmetic | waypoints (stop/destination), legs, alternatives |
+| **Method** | the emissions method in plain language: what counts, the switches, ferries under ISO 14083 with the trip's own ships, non-CO₂, grades, a toggleable table of default factors per mode and named vehicle | none |
 
 Friends open the site and read it. Only the owner can edit, because edits need a GitHub token that
 lives in the owner's browser. The edit UI is hidden everywhere else.

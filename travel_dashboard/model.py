@@ -71,6 +71,49 @@ def allocate(e_ship: float, pax: float, veh_peq: float, veh_t: float, pax_t: flo
     return e_ship * pax_t / (pax * pax_t + veh_t)   # by mass
 
 
+def boat_litres(t: Travel, p: Profile, s: Sampler) -> float:
+    """Litres for a boat: logged litres, else engine hours × consumption, else a default per km."""
+    if t.fuel_l:
+        return t.fuel_l
+    if t.engine_h and p.has("l_per_engine_h"):
+        return t.engine_h * p.get("l_per_engine_h", s)
+    return p.get("l_per_100km", s) * (t.km or 0) / 100
+
+
+def ship_breakdown(t: Travel, p: Profile, occ: str) -> dict | None:
+    """How one sailing's emissions are split under each allocation method (central values).
+
+    Used by the Method page to show what the ferry-share switch does with real numbers."""
+    if p.kind != "ship":
+        return None
+    s = Sampler(None)
+    g = lambda k: p.get(k, s)  # noqa: E731
+    fuel_kg = g("kg_fuel_nm") * t.km / NM_KM
+    e = fuel_kg * g("fuel_factor")
+    pax = ship_passengers(t, p, s, occ)
+    if p.has("trailers"):
+        groups = [("cars", g("cars"), g("car_peq"), g("car_t")),
+                  ("trucks and trailers", g("trailers"), g("trailer_peq"), g("trailer_t"))]
+    elif p.has("vehicles"):
+        n, ts = g("vehicles"), g("truck_share")
+        groups = [("cars", n * (1 - ts), g("car_peq"), g("car_t")), ("trucks", n * ts, g("truck_peq"), g("truck_t"))]
+    else:
+        groups = []
+    rows = [{"label": "passengers", "count": pax, "peq": pax, "t": pax * g("pax_t")}]
+    rows += [{"label": lab, "count": c, "peq": c * pe, "t": c * tt} for lab, c, pe, tt in groups]
+    tot_peq, tot_t = sum(r["peq"] for r in rows), sum(r["t"] for r in rows)
+    shares = {"passenger": [1.0] + [0.0] * len(groups),
+              "iso": [r["peq"] / tot_peq for r in rows],
+              "mass": [r["t"] / tot_t for r in rows]}
+    return {
+        "fuel_t": round(fuel_kg / 1000, 2), "e_kg": round(e), "observed": occ == "observed" and bool(t.occ_obs),
+        "groups": [{"label": r["label"], "count": round(r["count"], 1), "peq": round(r["peq"], 1), "t": round(r["t"], 1)}
+                   for r in rows],
+        "methods": {m: {"shares": [round(x, 4) for x in sh], "kg": round(e * sh[0] / pax, 1)}
+                    for m, sh in shares.items()},
+    }
+
+
 def kg(t: Travel, p: Profile, s: Sampler, alloc: str = "iso", occ: str = "typical", nonco2: str = "full") -> float:
     g = lambda k: p.get(k, s)  # noqa: E731
     observed = occ == "observed" and bool(t.occ_obs)
@@ -88,8 +131,7 @@ def kg(t: Travel, p: Profile, s: Sampler, alloc: str = "iso", occ: str = "typica
         e = t.fuel_l * g("fuel_factor") if logged else g("g_vkm") / 1000 * t.km
         return e / (t.occ_obs if observed else g("occupancy"))
     if k == "fuel":
-        litres = t.fuel_l if t.fuel_l else g("l_per_100km") * t.km / 100
-        return litres * g("fuel_factor") / (t.occ_obs if observed else g("occupancy"))
+        return boat_litres(t, p, s) * g("fuel_factor") / (t.occ_obs if observed else g("occupancy"))
     if k == "ship":
         e = g("kg_fuel_nm") * t.km / NM_KM * g("fuel_factor")
         veh_peq, veh_t = ship_freight(p, s)
@@ -132,11 +174,16 @@ def trace(t: Travel, p: Profile, alloc: str, occ: str, nonco2: str) -> str:
         pax = t.occ_obs if observed else g("occupancy")
         return f"{e_txt}\n÷ {pax:.1f} {'people aboard (observed)' if observed else 'people (typical)'}\n= {v:.1f} kg"
     if k == "fuel":
-        litres = t.fuel_l if t.fuel_l else g("l_per_100km") * t.km / 100
-        src = "logged" if t.fuel_l else f"estimated at {g('l_per_100km'):.1f} L/100 km"
+        litres = boat_litres(t, p, s)
+        if t.fuel_l:
+            src = "logged"
+        elif t.engine_h and p.has("l_per_engine_h"):
+            src = f"{_n(t.engine_h, 1)} engine hours × {g('l_per_engine_h'):.1f} L/h"
+        else:
+            src = f"estimated at {g('l_per_100km'):.1f} L/100 km"
         crew = t.occ_obs if observed else g("occupancy")
-        return (f"{_n(litres)} L diesel ({src}) × {g('fuel_factor'):.2f} kg CO₂e/L\n"
-                f"÷ {crew:.1f} {'crew (observed)' if observed else 'crew (typical)'}\n= {v:.0f} kg")
+        return (f"{_n(litres)} L fuel ({src}) × {g('fuel_factor'):.2f} kg CO₂e/L\n"
+                f"÷ {crew:.1f} {'people aboard (observed)' if observed else 'people aboard (typical)'}\n= {v:.0f} kg")
     if k == "ship":
         fuel_kg = g("kg_fuel_nm") * t.km / NM_KM
         e = fuel_kg * g("fuel_factor")

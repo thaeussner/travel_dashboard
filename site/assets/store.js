@@ -7,7 +7,7 @@ export const COLUMNS = {
   costs: ['id', 'date', 'amount', 'category', 'country'],
   waypoints: ['id', 'name', 'type', 'country', 'arrive', 'depart', 'note', 'airport'],
   travel: ['id', 'type', 'option', 'main', 'date', 'from', 'to', 'mode', 'vehicle', 'km',
-           'occ_max', 'occ_obs', 'fuel_l', 'note'],
+           'occ_max', 'occ_obs', 'fuel_l', 'engine_h', 'note'],
 };
 const API = 'https://api.github.com';
 const K = { settings: 'td:settings', table: n => `td:table:${n}`, queue: n => `td:queue:${n}` };

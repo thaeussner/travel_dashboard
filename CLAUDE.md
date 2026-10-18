@@ -11,6 +11,10 @@ There are two separate pages, each with its own input:
 2. **Emissions** (`site/emissions/`): legs that happened against hand-picked realistic alternatives,
    with method switches (lenses), Monte Carlo ranges and per-leg arithmetic.
 
+A third page, **Method** (`site/method/`), explains the emissions method in plain language for
+friends: the trip's own ferries split three ways (`ship_breakdown` in `model.py`) and a table of
+default factors per mode and named vehicle (`factors.py`), both computed in Python.
+
 Docs:
 
 - `docs/METHODOLOGY.md`: the emissions method, defaults and sources. It is the site's reference;
@@ -54,6 +58,9 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
     destination-level option is the fallback (`travel_dashboard/trip.py`).
 - **Ferries:** use the vessel's typical freight from config. There is no freight input, by the
   owner's choice.
+- **Sailing:** litres (`fuel_l`, grade A), else engine hours (`engine_h` × L/h, grade B), else a
+  default per km. The dinghy is not a mode: its outboard use goes into the engine hours, by the
+  owner's choice. `km` is optional when litres or engine hours are given.
 - **Owner-only editing:** the edit UI is hidden unless a token is stored in that browser
   (`body.owner`). The token is the actual protection.
 
@@ -75,11 +82,12 @@ python -m unittest discover -s tests        # test_build uses examples/trip
 config/            emissions.toml (all factors, vessels, flight classes), settings.toml (repo, draws, default lens)
 data/              the owner's CSVs; reference/airports.csv (IATA → coordinates); examples/trip/ for demos and tests
 travel_dashboard/  tables.py (parse/validate), geo.py (airports, km from codes), profiles.py (config → per-travel parameters, shared sampling),
-                   model.py (per-passenger kg, traces), trip.py (ordering, options, journeys per level),
-                   montecarlo.py (24 lens combos × draws), costs.py, export.py (JSON contract), cli.py
-site/              index.html, costs/, emissions/, assets/ (app.css, common.js, store.js, editor.js, costs.js,
-                   emissions.js, home.js), vendor/d3.v7.9.0.min.js, sw.js, manifest.webmanifest, icons/,
-                   data/ (generated, gitignored)
+                   model.py (per-passenger kg, traces, ship breakdown), trip.py (ordering, options, journeys per level),
+                   montecarlo.py (24 lens combos × draws), factors.py (default factor table), costs.py,
+                   export.py (JSON contract), cli.py
+site/              index.html, costs/, emissions/, method/, assets/ (app.css, common.js, store.js, editor.js,
+                   costs.js, emissions.js, home.js, method.js), vendor/d3.v7.9.0.min.js, sw.js,
+                   manifest.webmanifest, icons/, data/ (generated, gitignored)
 tests/             test_core.py (parsing, model, trip), test_build.py (contract and invariants)
 ```
 
@@ -119,6 +127,8 @@ tests/             test_core.py (parsing, model, trip), test_build.py (contract 
 - **Changing the JSON contract:**
   - update `export.py` and the JS reading it in the same change
   - keep `tests/test_build.py` passing
+- **Adding a page or asset:** add it to `SHELL` in `site/sw.js` and bump `CACHE`, so phones that
+  have the app installed pick it up.
 
 ## Environment
 

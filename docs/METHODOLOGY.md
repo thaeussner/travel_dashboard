@@ -29,14 +29,14 @@ The central design idea. Two different things make an emissions number uncertain
 | what | defensible ways of counting that disagree | values we don't know precisely |
 | examples | comparison grain · ferry passenger/freight allocation · typical vs. observed occupancy · aviation non-CO₂ in or out | emission factors · distances · engine load · fuel use · size of the non-CO₂ effect |
 | shown as | switches that change every number on the page | 90 % intervals (p5–p95) within the selected lens |
-| combined how | never: each combination is a separate scenario | Monte Carlo, 4,000 draws |
+| combined how | never: each combination is a separate scenario | Monte Carlo, 2,000 draws |
 
 Two rules follow:
 
 - **Lenses are symmetric.** A lens applies to actual and counterfactual travel alike. The one asymmetry
   is unavoidable: you can only observe occupancy on vehicles you actually used, so flights you didn't
   take always get typical load factors.
-- **Robustness is shown, not claimed.** The headline is computed under all 36 lens combinations, and
+- **Robustness is shown, not claimed.** The headline is computed under all 24 lens combinations, and
   the page shows that spread next to the selected value.
 
 ## 3. The comparison: your legs against your alternatives
@@ -114,11 +114,11 @@ about 1.45 for rail and 1.25 for road in France, Spain and Switzerland (Heinold 
 |---|---|---|---|---|
 | TGV / TGV Lyria | factor × timetable km | 2.3 / 2.5 | 1.4–6 | C |
 | Spanish rail (AVE, Alvia) | factor × km | 8 / 11 | 3.6 (Renfe, market-based) – 25 | C |
-| Coach | factor × road km | 32 | 25–48 | C/D |
+| Coach | factor × road km | 34 | 25–48 | C/D |
 | Local bus | factor × km | ~130–157 | wide; depends on load | D |
 | Car / taxi | 209 g per vehicle-km (petrol, WTW) ÷ occupants | — | — | C/D |
 | Ferry | ship model × allocation lens × occupancy lens (§5) | — | — | B–D |
-| Sailing yacht | litres of diesel × 3.29 ÷ crew | — | 50–400 L per crossing | A when logged |
+| Sailing yacht | litres of diesel × 3.33 ÷ crew (logged, or engine hours × 1.2–4 L/h) | 18 | 50–400 L per crossing | A logged, B hours |
 | Flight (counterfactual, or actual if you ever fly) | per-flight fuel model + non-CO₂ lens (§6) | — | — | C |
 
 **Occupancy.** Every mode is modelled per vehicle, then divided by the people on board:
@@ -130,6 +130,12 @@ So a near-empty bus or ferry counts against you under "As observed". Rows withou
 the same under both settings.
 
 **Distances** are entered by hand (§3.5).
+
+**The full table** of default factors per mode, and of every named vehicle and car class, is on the
+site's Method page ("Default factors", behind a toggle). `travel_dashboard/factors.py` computes it at
+build time with the same model as the dashboard: central value from the config and the middle 90 % of
+the draws, per passenger-km at typical load under the default switches. Flights get one row per
+reference distance (400, 1,000, 2,500 and 7,000 km), since take-off and landing are a fixed cost.
 
 ### 4.1 Rail
 
@@ -195,6 +201,7 @@ The mode is only the starting point. Each row gets the most specific data availa
 4. **Your observations** override typical values:
    - observed and maximum occupancy, used by the "As observed" lens
    - logged litres, which make the row grade A
+   - engine hours on a sailing yacht, which make it grade B (§4.4)
 
 The trip editor shows the match live under the vehicle field ("Data: Marie Curie · grade B"). The
 page's trace names the profile and its sources. To cover a new ship, train or bus, add a
@@ -206,10 +213,25 @@ page's trace names the profile and its sources. To cover a new ship, train or bu
 
 ### 4.4 Sailing
 
-- **Method:** fuel-based. Litres used for motoring and charging × 3.29 kg CO₂e/L ÷ crew.
-  - Fuel factors (DESNZ 2025 ✓): fossil diesel 3.29, marine gas oil 3.40 kg CO₂e/L WTW.
-  - Log the actual litres and crew size on arrival (grade A).
-- **Default when not logged:** 50–400 L per Atlantic crossing.
+- **Method:** fuel-based. Litres used for motoring and charging × 3.33 kg CO₂e/L ÷ crew.
+  - Fuel factor: 3.29–3.40 kg CO₂e/L WTW, between fossil diesel (3.29) and marine gas oil (3.40)
+    (DESNZ 2025 ✓). Marine diesel has no biofuel blend, unlike road diesel.
+  - The crew goes in as observed occupancy (`occ_obs`). Under "Typical" the model uses 4–7 crew
+    (ARC 2025 average 5.5) instead.
+- **What to enter, best first:**
+  1. **Litres** used (`fuel_l`), from the tank or refuelling (grade A).
+  2. **Engine hours** (`engine_h`), including the generator, × 1.2–4 L/h (central 2.5) (grade B).
+     A 40–50 ft yacht burns about 1.2–1.5 L/h charging at fast idle and 3–4 L/h motoring;
+     generators burn about 1–2 L/h. Hours are easier to know than litres: the engine has an hour
+     meter.
+  3. Neither: 1–8 L per 100 km (grade C), below.
+
+  `km` is optional when litres or engine hours are given; it then only feeds the distance totals.
+- **The dinghy** is not a separate mode: it never replaces a leg, it is how you get ashore. Its
+  outboard burns about 1–2 L/h against about 2.5 L/h for the main engine, so add about half an
+  engine hour per hour of dinghy use to the leg it belongs to. It is stowed during an ocean
+  crossing, so there is usually nothing to add there.
+- **Default when not logged:** 1–8 L per 100 km, i.e. 50–400 L per Atlantic crossing.
   - No published average exists; the range is an estimate.
   - An ARC skipper survey (2024 rallies, 234 boats) reports a median of about 3 h/day of engine or
     generator charging.
@@ -440,6 +462,13 @@ The lens has two settings:
 Including non-CO₂ is the default because climate impact is the point. Its large uncertainty is shown
 as a range, not hidden.
 
+**Only flights get a multiplier.** The other modes are already in CO₂e: methane and nitrous oxide
+from burning the fuel are included through GWP100. Ships have short-lived effects of their own:
+black carbon (soot) warms, especially over snow and ice, while sulphate aerosols from their exhaust
+cool, a cooling that has shrunk since sulphur limits tightened in 2020. These partly cancel, their net
+size per voyage is very uncertain, and neither ISO 14083 nor DESNZ counts them. Neither does this
+model. Trains, buses and cars emit near the ground, where nothing like contrails forms.
+
 ### 6.3 Realistic routings (checked October 2026)
 
 - **ZRH–TFS:** Edelweiss, daily A320, about 4h35. easyJet flies from Geneva and Basel.
@@ -469,10 +498,15 @@ as a range, not hidden.
 
 | grade | meaning | typical case |
 |---|---|---|
-| A | measured fuel or operator data for that trip | yacht litres logged, ferry operator's per-sailing figure |
-| B | vessel- or service-specific model | Bencomo Express from engine power, speed and crossing time |
-| C | operator or country-specific factor | SNCF TGV factor, Renfe |
-| D | generic factor and/or estimated distance | generic ro-pax, coach without operator data |
+| A | fuel measured for this trip | litres refuelled for a car, litres logged on a yacht |
+| B | specific to this vessel, service or trip | a ferry's own fuel per nautical mile from EU MRV (Bencomo Express, Marie Curie); a yacht's engine hours |
+| C | operator, model or country-specific factor | SNCF TGV factor, Renfe, a small petrol car, an aircraft class |
+| D | generic factor for the mode | generic ro-pax, local bus |
+
+Grade A is only realistic where you buy or read the fuel yourself: a hire car you refuel, a yacht's
+tank. Nobody publishes the fuel burnt on one particular ferry sailing or train, so for public
+transport B is the best available. The grade is set in `profiles.resolve`, which also lists the
+trip's own data (litres, engine hours) that raise it.
 
 ## 9. Proposed defaults (to confirm)
 

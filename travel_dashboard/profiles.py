@@ -118,14 +118,15 @@ class Profiles:
                 return cls
         return "wide" if t.km >= self.flight["wide_from_km"] else "narrow"
 
-    def resolve(self, t: Travel) -> Profile:
+    def resolve(self, t: Travel, vehicle: dict | None = None) -> Profile:
+        """The row's profile; `vehicle` forces a [[vehicles]] entry instead of matching the name."""
         base = self.modes[t.mode]
         kind = base["kind"]
         params: dict[str, tuple[tuple, Spec]] = {
             k: (("modes", t.mode, k), v) for k, v in base.items() if k not in META_KEYS}
         sources = [base["source"]] if base.get("source") else []
         label, grade, fuel = base.get("label", t.mode), base.get("grade", "D"), base.get("fuel")
-        veh = self.match_vehicle(t.mode, t.vehicle)
+        veh = vehicle or self.match_vehicle(t.mode, t.vehicle)
         if veh:
             for k, v in veh.items():
                 if k not in META_KEYS:
@@ -167,7 +168,9 @@ class Profiles:
             if self.alloc.get("source"):
                 sources.append(self.alloc["source"])
         if kind in ("fuel", "vehicle") and t.fuel_l and "fuel_factor" in params:
-            grade = "A"
+            grade = "A"         # fuel measured for this trip
+        elif kind == "fuel" and t.engine_h and "l_per_engine_h" in params:
+            grade = "B"         # trip-specific estimate from engine hours
         return Profile(t.mode, kind, label, grade, params, sources, veh["name"] if veh else None, fclass)
 
 

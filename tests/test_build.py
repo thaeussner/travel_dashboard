@@ -34,6 +34,13 @@ class TestBuild(unittest.TestCase):
                 self.assertLessEqual(q[0], q[1], (key, series))
                 self.assertLessEqual(q[1], q[2], (key, series))
 
+    def test_factor_table_in_contract(self):
+        rows = self.data["factors"]["rows"]
+        self.assertEqual({r["group"] for r in rows}, {"default", "named"})
+        for r in rows:
+            self.assertTrue({"title", "basis", "g", "range", "other", "grade", "source"} <= r.keys(), r["title"])
+        self.assertEqual(sum(r["group"] == "default" and r["mode"] == "plane" for r in rows), 4)
+
     def test_all_lens_combinations_present(self):
         self.assertEqual(len(self.data["totals"]), 2 * 3 * 2 * 2 * 2)
         self.assertEqual(len(self.data["cumulative"]), 2 * 3 * 2 * 2)

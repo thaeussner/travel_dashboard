@@ -6,7 +6,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from travel_dashboard import geo, trip as trip_mod
+from travel_dashboard import factors, geo, trip as trip_mod
 from travel_dashboard.model import kg
 from travel_dashboard.profiles import Profiles, Sampler
 from travel_dashboard.tables import Issue, Travel, Waypoint, read_costs, read_travel, read_waypoints
@@ -105,6 +105,21 @@ class TestModel(unittest.TestCase):
         self.assertEqual(PROFILES.resolve(guess).flight_class, "wide")
         p = PROFILES.resolve(wide)
         self.assertGreater(kg(wide, p, CENTRAL, nonco2="full"), kg(wide, p, CENTRAL, nonco2="co2"))
+
+    def test_sail_engine_hours(self):
+        t = leg("S", "a", "b", "sail", 5300, occ_obs=5, engine_h=40)
+        p = PROFILES.resolve(t)
+        self.assertEqual(p.grade, "B")
+        self.assertAlmostEqual(kg(t, p, CENTRAL, occ="observed"), 40 * 2.5 * 3.33 / 5)
+
+    def test_ship_breakdown_matches_model(self):
+        from travel_dashboard.model import ship_breakdown
+        t = leg("F", "a", "b", "ferry", 1300, vehicle="Marie Curie", occ_max=880, occ_obs=200)
+        p = PROFILES.resolve(t)
+        b = ship_breakdown(t, p, "observed")
+        for alloc in ("passenger", "iso", "mass"):
+            self.assertAlmostEqual(b["methods"][alloc]["kg"], kg(t, p, CENTRAL, alloc=alloc, occ="observed"), delta=0.1)
+        self.assertAlmostEqual(sum(b["methods"]["iso"]["shares"]), 1, places=3)
 
     def test_word_matching(self):
         # 'ter' (French regional trains) must not match 'Tenerife'
@@ -213,6 +228,39 @@ class TestGeoAndCars(unittest.TestCase):
         p2 = PROFILES.resolve(t2)
         self.assertEqual(p2.grade, "A")
         self.assertAlmostEqual(kg(t2, p2, CENTRAL, occ="observed"), 18 * 2.90 / 2, places=2)
+
+
+class TestFactors(unittest.TestCase):
+    TABLE = factors.table(PROFILES, {"alloc": "iso", "nonco2": "full"}, draws=300, seed=1)
+
+    def row(self, title):
+        return next(r for r in self.TABLE["rows"] if r["title"] == title)
+
+    def test_defaults_come_from_the_config(self):
+        self.assertEqual(self.row("Train")["g"], 15)
+        self.assertAlmostEqual(self.row("Car")["g"], 209 / 1.6, places=1)          # average petrol car
+        self.assertAlmostEqual(self.row("Sailing yacht")["g"], 3 / 100 * 3.33 / 5.5 * 1000, places=1)
+        self.assertEqual(self.row("Walk")["g"], 0)
+        for r in self.TABLE["rows"]:
+            self.assertLessEqual(r["range"][0], r["range"][1], r["title"])
+
+    def test_flights_and_ferries_match_the_model(self):
+        t = leg("F", "a", "b", "plane", 1000)
+        p = PROFILES.resolve(t)
+        r = self.row("Plane, 1,000 km")
+        self.assertAlmostEqual(r["g"], kg(t, p, CENTRAL, nonco2="full"), places=1)   # kg per 1000 km = g/km
+        self.assertEqual([o["label"] for o in r["other"]], ["CO₂ only"])
+        self.assertIn("Wide-body", self.row("Plane, 7,000 km")["basis"])
+        f = self.row("Ferry")
+        self.assertEqual([o["label"] for o in f["other"]], ["per passenger", "by mass"])
+        self.assertTrue(f["other"][1]["g"] < f["g"] < f["other"][0]["g"])
+
+    def test_every_named_vehicle_is_listed(self):
+        named = [r["title"] for r in self.TABLE["rows"] if r["group"] == "named"]
+        for v in PROFILES.vehicles:
+            self.assertIn(v["name"], named)
+        self.assertIn("Small petrol car", named)
+        self.assertEqual(self.row("Huelva–Canarias ro-pax")["profile"], "Huelva–Canarias ro-pax")   # forced, not matched
 
 
 if __name__ == "__main__":

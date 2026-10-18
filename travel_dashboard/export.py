@@ -7,16 +7,16 @@ import json
 from pathlib import Path
 
 from . import costs as costs_mod
-from . import geo, montecarlo, trip as trip_mod
-from .model import LENSES, trace
+from . import factors, geo, montecarlo, trip as trip_mod
+from .model import LENSES, ship_breakdown, trace
 from .montecarlo import variants
 from .profiles import Profiles, central
 from .tables import COLUMNS, COST_CATEGORIES, MODES, Tables
 
 GRADE_NOTES = {
-    "A": "Measured fuel or operator data for this trip",
-    "B": "Vessel- or service-specific data",
-    "C": "Operator or country-specific factor",
+    "A": "Fuel measured for this trip (litres you logged)",
+    "B": "Specific to this vessel, service or trip (ship data, engine hours)",
+    "C": "Operator, model or country-specific factor",
     "D": "Generic factor for the mode",
 }
 
@@ -77,6 +77,8 @@ def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: in
             "mode": t.mode, "vehicle": t.vehicle, "km": t.km, "occ_max": t.occ_max, "occ_obs": t.occ_obs,
             "fuel_l": t.fuel_l, "note": t.note, "planned": planned, "local": t.is_leg and t.from_ == t.to,
             "km_note": t.km_note, "from_code": code(t.from_, t.mode), "to_code": code(t.to, t.mode),
+            "engine_h": t.engine_h,
+            "ship": {o: ship_breakdown(t, p, o) for o in ("observed", "typical")} if p.kind == "ship" else None,
             "profile": p.label, "grade": p.grade, "grade_note": GRADE_NOTES[p.grade],
             "dims": list(tdims[t.id]), "q": mc["travel"][t.id],
             "trace": {vk: trace(t, p, *combo) for vk, combo in vs},
@@ -125,6 +127,7 @@ def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: in
         "totals": mc["totals"],
         "cumulative": mc["cumulative"],
         "issues": [i.as_dict() for i in issues if i.table != "costs"],
+        "factors": factors.table(profiles, defaults, draws, seed),
     }
 
 
