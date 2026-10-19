@@ -6,7 +6,7 @@ import textwrap
 import unittest
 from pathlib import Path
 
-from travel_dashboard import factors, geo, montecarlo, trip as trip_mod
+from travel_dashboard import factors, geo, montecarlo, places as places_mod, trip as trip_mod
 from travel_dashboard.model import kg
 from travel_dashboard.profiles import Profiles, Sampler, links, plain
 from travel_dashboard.tables import Issue, Travel, Waypoint, read_costs, read_travel, read_waypoints
@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PROFILES = Profiles.load(ROOT / "config" / "emissions.toml")
 AIRPORTS = geo.load_airports(ROOT / "data" / "reference" / "airports.csv")
 CENTRAL = Sampler(None)
+DETOUR = PROFILES.cfg["distance"]
 
 
 def write(tmp: str, name: str, text: str) -> Path:
@@ -252,7 +253,7 @@ class TestTrip(unittest.TestCase):
         alts = [alt("F1", "fly", "TFN", "BCN", km=None, main=True), alt("F2", "fly", "BCN", "CDG", km=None),
                 alt("F3", "fly", "CDG", "FDF", km=None)]
         issues: list[Issue] = []
-        travel = geo.fill_flight_km(legs + alts, wps, AIRPORTS, issues)
+        travel = geo.fill_km(legs + alts, wps, AIRPORTS, DETOUR, issues)
         t = trip_mod.build(wps, travel, issues)
         self.assertEqual(issues, [])
         (o,) = t.options
@@ -279,11 +280,11 @@ class TestGeoAndCars(unittest.TestCase):
         self.assertEqual(geo.airport_code("la-palma", {"la-palma": "SPC"}, AIRPORTS), "SPC")
         self.assertIsNone(geo.airport_code("Paris Orly", {}, AIRPORTS))
 
-    def test_fill_flight_km_from_codes(self):
+    def test_fill_km_from_codes(self):
         wps = [Waypoint("zurich", "Zürich", "destination", airport="ZRH"), Waypoint("lp", "La Palma", "destination")]
         rows = [alt("A1", "o", "zurich", "BCN", km=None), alt("A2", "o", "BCN", "lp", km=None)]
         issues: list[Issue] = []
-        out = geo.fill_flight_km(rows, wps, AIRPORTS, issues)
+        out = geo.fill_km(rows, wps, AIRPORTS, DETOUR, issues)
         self.assertEqual([t.id for t in out], ["A1"])               # lp has no airport: reported, skipped
         self.assertAlmostEqual(out[0].km, 850, delta=15)
         self.assertEqual(out[0].km_note, "great circle ZRH–BCN")
@@ -303,9 +304,24 @@ class TestGeoAndCars(unittest.TestCase):
             issues: list[Issue] = []
             wps, travel = read_waypoints(w, issues), read_travel(t, issues)
         self.assertEqual((wps[0].airport, wps[0].airports), ("TFS TFN", ["TFS", "TFN"]))
-        self.assertEqual([x.id for x in travel], ["S1"])          # litres don't replace km on a train
-        self.assertEqual(geo.fill_flight_km(travel, wps, AIRPORTS, issues)[0].km, None)   # a yacht keeps no km
+        out = geo.fill_km(travel, wps, AIRPORTS, DETOUR, issues)
+        self.assertEqual([(x.id, x.km) for x in out], [("S1", None)])   # a yacht needs no km; a train does
         self.assertEqual(sorted(i.id for i in issues), ["T1", "tf"])
+
+    def test_km_from_coordinates(self):
+        wps = [Waypoint("lc", "Los Cristianos", "stop", lat=28.0501, lon=-16.7201),
+               Waypoint("em", "El Medano", "destination", lat=28.0462, lon=-16.5363)]
+        bus = leg("B", "lc", "em", "bus", None, "2026-10-17")
+        issues: list[Issue] = []
+        (out,) = geo.fill_km([bus], wps, AIRPORTS, DETOUR, issues)
+        line = geo.great_circle_km((28.0501, -16.7201), (28.0462, -16.5363))
+        self.assertEqual(out.km, round(line * 1.25))
+        self.assertIn("straight line × 1.25", out.km_note)
+        self.assertEqual(issues, [])
+        # without coordinates the leg still needs its km
+        lost = leg("X", "lc", "nowhere", "bus", None, "2026-10-18")
+        self.assertEqual(geo.fill_km([lost], wps, AIRPORTS, DETOUR, issues), [])
+        self.assertEqual([i.id for i in issues], ["X"])
 
     def test_airport_list_for_the_waypoint_form(self):
         data = geo.airports_json(ROOT / "data" / "reference" / "airports.csv")
@@ -313,6 +329,36 @@ class TestGeoAndCars(unittest.TestCase):
         rows = {r[0]: r for r in data["airports"]}
         self.assertEqual(rows["CDG"][3:], ["FR", 0])          # country code, size (0 = large)
         self.assertEqual(len(rows), len(AIRPORTS))
+
+    def test_nearest_airports_stay_on_their_side_of_the_sea(self):
+        index = places_mod.airport_index(ROOT / "data" / "reference" / "airports.csv")
+        self.assertEqual(places_mod.nearest_airports(43.3584, -1.7744, "FR", index)[:2], ["EAS", "BIQ"])  # Hendaye
+        self.assertEqual(places_mod.nearest_airports(14.4697, -60.8653, "MQ", index), ["FDF"])            # Le Marin
+        self.assertEqual(places_mod.nearest_airports(28.4636, -16.2518, "ES", index)[0], "TFN")            # Santa Cruz
+
+    def test_waypoints_found_in_the_place_lists(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            d = Path(tmp)
+            write(tmp, "countries.csv", """
+                code,name,continent,places
+                ES,Spain,EU,3
+            """)
+            write(tmp, "ES.csv", """
+                name,region,lat,lon,kind,population,airports,alt
+                El Médano,Canary Islands,28.0462,-16.5363,P,1000,TFS TFN,
+                La Palma,Canary Islands,28.695,-17.853,I,,SPC,
+                La Palma,Murcia,37.6957,-0.9672,P,2500,RMU,
+            """)
+            places = places_mod.Places(d)
+            wps = [Waypoint("em", "El Medano", "destination", country="Spain"),
+                   Waypoint("lp", "La Palma", "destination", country="Spain", airport="SPC"),
+                   Waypoint("xx", "Atlantis", "stop", country="Spain")]
+            issues: list[Issue] = []
+            places_mod.locate(wps, places, issues)
+        self.assertEqual((wps[0].lat, wps[0].lon, wps[0].airport), (28.0462, -16.5363, "TFS TFN"))
+        self.assertEqual((wps[1].lat, wps[1].airport), (28.695, "SPC"))     # the island, before the village
+        self.assertIsNone(wps[2].lat)
+        self.assertEqual([i.id for i in issues], ["xx"])
 
     def test_car_class_from_vehicle_text(self):
         self.assertEqual(PROFILES.car_class("Citroën C1 (95)"), ("small", "petrol"))

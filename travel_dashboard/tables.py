@@ -24,7 +24,7 @@ FUEL_MODES = ("sail", "car", "taxi")   # litres (or a yacht's engine hours) repl
 
 COLUMNS = {
     "costs": ["id", "date", "amount", "category", "country"],
-    "waypoints": ["id", "name", "type", "country", "arrive", "depart", "note", "airport"],
+    "waypoints": ["id", "name", "type", "country", "arrive", "depart", "note", "airport", "lat", "lon"],
     "travel": ["id", "type", "option", "main", "date", "from", "to", "mode", "vehicle", "km",
                "occ_max", "occ_obs", "fuel_l", "engine_h", "note"],
 }
@@ -60,6 +60,8 @@ class Waypoint:
     depart: dt.date | None = None
     note: str = ""
     airport: str = ""     # IATA codes of airports a flight here would use, e.g. "TFS TFN"; the first is the default
+    lat: float | None = None   # from the place picked in the form, or found by places.locate
+    lon: float | None = None
 
     @property
     def airports(self) -> list[str]:
@@ -73,7 +75,7 @@ class Travel:
     from_: str
     to: str
     mode: str
-    km: float | None      # None only for flights, filled from airport codes (geo.fill_flight_km)
+    km: float | None      # None until geo.fill_km: flights from airports, the rest from coordinates
     option: str = ""
     main: bool = False
     date: dt.date | None = None
@@ -84,7 +86,7 @@ class Travel:
     engine_h: float | None = None   # engine and generator hours (sailing yachts)
     note: str = ""
     km_note: str = ""     # where a computed distance came from, e.g. "great circle ZRH–BCN"
-    from_code: str = ""   # airport codes at both ends of a flight (geo.fill_flight_km)
+    from_code: str = ""   # airport codes at both ends of a flight (geo.fill_km)
     to_code: str = ""
 
     @property
@@ -213,8 +215,17 @@ def read_waypoints(path: Path, issues: list[Issue]) -> list[Waypoint]:
         if bad:
             issues.append(Issue("waypoints", rid, f"airport {', '.join(bad)} is not a 3-letter IATA code; ignored"))
         airport = " ".join(dict.fromkeys(c for c in codes if c not in bad))
+        try:
+            lat, lon = parse_number(row.get("lat", "")), parse_number(row.get("lon", ""))
+        except ValueError:
+            lat = lon = None
+        if lat is None or lon is None or not (-90 <= lat <= 90 and -180 <= lon <= 180):
+            if row.get("lat") or row.get("lon"):
+                issues.append(Issue("waypoints", rid, "lat/lon is not a valid position; ignored"))
+            lat = lon = None
         seen.add(rid)
-        out.append(Waypoint(rid, name, wtype, row.get("country", ""), arrive, depart, row.get("note", ""), airport))
+        out.append(Waypoint(rid, name, wtype, row.get("country", ""), arrive, depart, row.get("note", ""), airport,
+                            lat, lon))
     return out
 
 
@@ -244,10 +255,8 @@ def read_travel(path: Path, issues: list[Issue]) -> list[Travel]:
         except ValueError as e:
             issues.append(Issue("travel", rid, f"{e}; row skipped", "error"))
             continue
-        fuel_based = mode in FUEL_MODES and (bool(fuel_l) or bool(engine_h))   # litres or engine hours make km optional
-        if (km is None and mode != "plane" and not fuel_based) or (km is not None and km <= 0):
-            issues.append(Issue("travel", rid, "needs a distance in km (or the fuel used or engine hours); row skipped",
-                                "error"))
+        if km is not None and km <= 0:      # an empty km is filled in later (geo.fill_km) or reported there
+            issues.append(Issue("travel", rid, "km must be positive; row skipped", "error"))
             continue
         frm, to = row.get("from", ""), row.get("to", "")
         if not frm or not to:

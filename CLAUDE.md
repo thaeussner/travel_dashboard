@@ -55,11 +55,15 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
   - A chain starts and ends at waypoints: an id, a name, or an airport code that a waypoint lists
     (`airport` may hold several, e.g. `TFS TFN`). When several waypoints fit, a reading that stays
     between two destinations wins, then destination ends, then the shortest span. `trip.Resolver` and `trip.build` do this; `pointTargets` and
-    `chainEnds` in `emissions.js` mirror it for the editor only. `geo.fill_flight_km` keeps the
+    `chainEnds` in `emissions.js` mirror it for the editor only. `geo.fill_km` keeps the
     code written (`from_code`/`to_code`), because the build then replaces the ends with waypoint ids.
-  - Every waypoint lists its airports. The waypoint form fills them in from the place name
-    (`airportsFor` over `site/data/airports.json`, written by the build from
-    `data/reference/airports.csv`); this is input help only, the CSV holds the codes.
+  - Every waypoint lists its airports and has coordinates (`lat`, `lon`). The forms search the
+    place lists (`data/reference/places/<CC>.csv`, GeoNames, Europe and the Americas; Russia and
+    Turkey left out) and fill both in; a new place picked in the leg form becomes a stop, by the
+    owner's choice. The build fills in waypoints without coordinates by name and country
+    (`places.locate`, warns when ambiguous) and estimates missing km from coordinates × the
+    mode's detour (`geo.fill_km`, config `[distance]`). The forms' search and suggestions are input
+    help only; the CSV holds what is saved.
   - An option replaces every leg between its first and last waypoint. `main = 1` picks it when
     several options share a span.
   - A leg with `from == to` is a local trip at that waypoint (e.g. driving around an island). It is
@@ -94,6 +98,7 @@ python -m travel_dashboard build [--data examples/trip] [--today YYYY-MM-DD] [--
 python -m travel_dashboard check            # validate data, list issues (exit 1 on errors)
 python -m travel_dashboard serve            # http://localhost:8000 (build first)
 python -m travel_dashboard airports         # refresh data/reference/airports.csv (OurAirports, 4,008 airports)
+python -m travel_dashboard places [CC ...]  # refresh data/reference/places/ from GeoNames (default: Europe, Americas)
 python -m unittest discover -s tests        # test_build uses examples/trip
 ```
 
@@ -101,8 +106,10 @@ python -m unittest discover -s tests        # test_build uses examples/trip
 
 ```
 config/            emissions.toml (all factors, vessels, flight classes), settings.toml (repo, draws, default lens)
-data/              the owner's CSVs; reference/airports.csv (IATA → coordinates); examples/trip/ for demos and tests
-travel_dashboard/  tables.py (parse/validate), geo.py (airports, km from codes), profiles.py (config → per-travel parameters, shared sampling),
+data/              the owner's CSVs; reference/airports.csv (IATA → coordinates), reference/places/ (GeoNames places
+                   with nearest airports, one CSV per country); examples/trip/ for demos and tests
+travel_dashboard/  tables.py (parse/validate), geo.py (airports, km from codes or coordinates), places.py (place lists,
+                   nearest airports, locate), profiles.py (config → per-travel parameters, shared sampling),
                    model.py (per-passenger kg, traces, ship breakdown), trip.py (ordering, options, journeys per level),
                    montecarlo.py (36 lens combos × draws), factors.py (default factor table), costs.py,
                    export.py (JSON contract), cli.py

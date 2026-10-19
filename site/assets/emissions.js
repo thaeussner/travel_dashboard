@@ -281,6 +281,97 @@ function renderRoute() {
   $('#level-explain').textContent = opt('level', S.level).explain;
 }
 
+// ---------------------------------------------------------------- map
+let LAND = null;
+async function landShape() {   // Natural Earth 1:50m land, vendored so the map works offline
+  if (!LAND) {
+    const topo = await loadJSON('../vendor/land-50m.v2.0.2.json');
+    LAND = topo && window.topojson ? topojson.feature(topo, topo.objects.land) : { type: 'FeatureCollection', features: [] };
+  }
+  return LAND;
+}
+const lonLat = w => (w && w.lat != null && w.lon != null ? [w.lon, w.lat] : null);
+/** Where a travel row starts or ends on the map: flights at their airports, the rest at their places. */
+function mapEnd(t, end) {
+  const code = t.mode === 'plane' && t[`${end}_code`], ap = code && DATA.airport_pos?.[code];
+  return ap ? [ap[1], ap[0]] : lonLat(WP.get(t[end]));
+}
+async function renderMap() {
+  const host = $('#map-chart');
+  const land = await landShape();
+  const wps = DATA.waypoints.filter(w => (S.scope === 'all' || !w.planned) && lonLat(w));
+  const hint = $('#map-hint');
+  const missing = DATA.waypoints.filter(w => !lonLat(w)).map(w => shortName(w.name));
+  hint.textContent = missing.length ? `Not on the map yet (no location): ${missing.join(', ')}` : '';
+  if (!wps.length) { host.replaceChildren(); return; }
+  const ids = new Set(wps.map(w => w.id));
+  const line = (a, b) => ({ type: 'LineString', coordinates: [a, b] });
+  const legs = DATA.travels.filter(t => t.type === 'leg' && !t.local && inScope(t) && ids.has(t.from) && ids.has(t.to))
+    .map(t => ({ t, g: line(mapEnd(t, 'from'), mapEnd(t, 'to')), planned: t.planned }))
+    .filter(l => l.g.coordinates.every(Boolean));
+  const alts = journeys().filter(j => j.option).flatMap(j => OPT.get(j.option).rows.map(id => TR.get(id)).filter(Boolean)
+    .map(t => ({ t, j, g: line(mapEnd(t, 'from'), mapEnd(t, 'to')), planned: j.planned })))
+    .filter(a => a.g.coordinates.every(Boolean));
+  const W = Math.max(host.clientWidth, 280), H = W < 600 ? 380 : 500;
+  const everything = { type: 'GeometryCollection', geometries: [...legs, ...alts].map(x => x.g)
+    .concat(wps.map(w => ({ type: 'Point', coordinates: lonLat(w) }))) };
+  const projection = d3.geoMercator().fitExtent([[30, 30], [W - 30, H - 30]], everything);
+  if (projection.scale() > 4000) projection.scale(4000);   // a single place: don't zoom in to the street
+  const path = d3.geoPath(projection);
+  const svg = svgIn(host, W, H, 'Map of the legs travelled and the main alternatives');
+  svg.append('rect').attr('width', W).attr('height', H).attr('fill', css('--surface-2'));
+  const g = svg.append('g');
+  g.append('path').attr('class', 'land').attr('d', path(land));
+  const draw = (list, color, width, tip) => {
+    for (const x of list) {
+      g.append('path').attr('class', 'route').attr('d', path(x.g)).attr('stroke', color).attr('stroke-width', width)
+        .attr('stroke-dasharray', x.planned ? '6 5' : null);
+      bindTip(g.append('path').attr('class', 'hit').attr('d', path(x.g)).datum(x), tip);
+    }
+  };
+  draw(alts, css('--flying'), 2, d => ({ head: `${d.j.title}: ${optionSummary(OPT.get(d.j.option))}`, rows: [
+    { value: mass(tq(d.t)[1]), label: `${pointOf(d.t, 'from')} → ${pointOf(d.t, 'to')}${d.t.km ? `, ${kmFmt(d.t.km)} km` : ''}`, color: css('--flying') },
+    { value: mass(d.j.q[kFull()].flying[1]), label: 'whole alternative' }] }));
+  draw(legs, css('--actual'), 2.6, d => ({ head: `${shortName(wpName(d.t.from))} → ${shortName(wpName(d.t.to))}`, rows: [
+    { value: mass(tq(d.t)[1]), label: `${legLabel(d.t)}${d.t.km ? `, ${kmFmt(d.t.km)} km` : ''}`, color: css('--actual') }] }));
+  const pts = wps.map(w => {
+    const [x, y] = projection(lonLat(w));
+    return { w, x, y, dest: w.type === 'destination' };
+  });
+  const dots = g.selectAll('circle.place').data(pts).join('circle').attr('class', 'place')
+    .attr('cx', d => d.x).attr('cy', d => d.y)
+    .attr('fill', d => (d.dest ? css('--ink') : css('--surface'))).attr('stroke', d => (d.dest ? css('--surface') : css('--ink-2')));
+  bindTip(dots, d => ({ head: d.w.name, rows: [{ value: d.w.type, label: [dateSpan(d.w.arrive, d.w.depart), d.w.airport].filter(Boolean).join(' · ') }] }));
+  const labels = g.selectAll('text.place-label').data(pts).join('text').attr('class', 'place-label')
+    .attr('x', d => d.x).attr('y', d => d.y).text(d => shortName(d.w.name));
+  // keep everything the same size on screen while zooming; labels only where they don't collide
+  const restyle = t => {
+    const k = t.k;
+    dots.attr('r', d => (d.dest ? 5 : 3.8) / k).attr('stroke-width', 1.6 / k);
+    labels.style('font-size', `${12 / k}px`).style('stroke-width', `${3 / k}px`).attr('dy', 4 / k);   // styles: CSS would win over attributes
+    const placed = [];
+    labels.each(function (d) {
+      const w = 8 + 6.6 * shortName(d.w.name).length, sx = t.applyX(d.x), sy = t.applyY(d.y);
+      const left = sx + w > W - 4;   // near the right edge the label goes to the left of its dot
+      const box = left ? [sx - w, sy - 10, sx, sy + 4] : [sx, sy - 10, sx + w, sy + 4];
+      const free = (d.dest || k >= 3) && !placed.some(b => box[0] < b[2] && b[0] < box[2] && box[1] < b[3] && b[1] < box[3]);
+      d3.select(this).attr('visibility', free ? 'visible' : 'hidden').attr('text-anchor', left ? 'end' : 'start')
+        .attr('dx', (left ? -7 : 7) / k);
+      if (free) placed.push(box);
+    });
+  };
+  labels.sort((a, b) => b.dest - a.dest);
+  restyle(d3.zoomIdentity);
+  const zoom = d3.zoom().scaleExtent([1, 120])
+    .filter(e => (e.type === 'wheel' ? e.ctrlKey || e.metaKey : e.type.startsWith('touch') ? e.touches.length > 1 : !e.button))
+    .on('zoom', e => { g.attr('transform', e.transform); restyle(e.transform); });
+  svg.call(zoom).on('dblclick.zoom', null);
+  const by = f => () => svg.call(zoom.scaleBy, f);
+  $('#map-in').onclick = by(2);
+  $('#map-out').onclick = by(0.5);
+  $('#map-fit').onclick = () => svg.call(zoom.transform, d3.zoomIdentity);
+}
+
 // ---------------------------------------------------------------- cumulative
 function renderCumulative() {
   const host = $('#cum-chart');
@@ -610,7 +701,7 @@ function renderTables() {
 function renderDash() {
   if (!levelUsed(S.level)) S.level = 'destination';
   syncInputs();
-  renderHero(); renderStrip(); renderRoute(); renderCumulative(); renderJourneys(); renderMethodCheck(); renderIntensity(); renderTables();
+  renderHero(); renderStrip(); renderMap(); renderRoute(); renderCumulative(); renderJourneys(); renderMethodCheck(); renderIntensity(); renderTables();
 }
 
 // ================================================================= owner: trip editor
@@ -687,7 +778,102 @@ function editorData() {
   return { wps: ordered, pos, travel, legs, alts: travel.filter(t => t.type === 'alt') };
 }
 
-const wpOption = w => ({ value: w.id, label: `${w.name}${w.arrive ? ` · ${fmtDate(w.arrive)}` : ''}` });
+
+// Place lists (owner only): every populated place, island and harbour of Europe and the Americas,
+// one file per country (written by the build from data/reference/places). Input help: the picked
+// place brings its coordinates and airports; Python fills in waypoints entered without them.
+let COUNTRIES = null;
+const PLACE_FILES = new Map();
+const KIND_ORDER = { C: 0, A: 1, I: 2, P: 3, H: 4 };
+const KIND_LABEL = { I: 'island', H: 'harbour or bay' };
+async function countryList() {
+  if (!COUNTRIES) COUNTRIES = (await loadJSON('../data/places/countries.json'))?.countries || [];
+  return COUNTRIES;
+}
+function placesIn(cc) {
+  if (!PLACE_FILES.has(cc)) {
+    PLACE_FILES.set(cc, loadJSON(`../data/places/${cc}.json`).then(d => (d?.places || []).map(r => ({
+      name: r[0], region: d.regions[r[1]] || '', lat: r[2], lon: r[3], kind: r[4], pop: r[5], airport: r[6], cc,
+      key: fold(r[0]), alts: String(r[7] || '').split('|').filter(Boolean).map(fold),
+    }))));
+  }
+  return PLACE_FILES.get(cc);
+}
+const countryOf = (text, countries) => {
+  const k = fold(text);
+  return k ? countries.find(c => fold(c.name) === k || c.code.toLowerCase() === k) : null;
+};
+/** Places for "El Médano" or "El Médano, Spain": in the country named after the comma, else in the
+ *  countries the trip has been to, latest first. Exact names first, then capitals, seats, islands. */
+async function searchPlaces(text, ed) {
+  const countries = await countryList();
+  const parts = text.split(',').map(x => x.trim());
+  let q = text.trim(), named = null;
+  if (parts.length > 1) {
+    const last = fold(parts[parts.length - 1]);
+    named = countryOf(parts[parts.length - 1], countries) || (last.length >= 3 && countries.find(c => fold(c.name).startsWith(last)));
+    if (named) q = parts.slice(0, -1).join(', ');
+  }
+  const known = ed.wps.length ? ed.wps : DATA?.waypoints || [];   // the published trip until the editor has loaded
+  const trip = [...new Set(known.map(w => countryOf(w.country, countries)?.code).filter(Boolean))].reverse();
+  const scope = named ? [named.code] : trip;
+  const key = fold(q);
+  if (key.length < 2) return { hits: [], scope, countries };
+  const found = [];
+  for (const cc of scope) {
+    for (const pl of await placesIn(cc)) {
+      const sc = pl.key === key || pl.alts.includes(key) ? 0 : pl.key.startsWith(key) ? 1 : pl.key.includes(` ${key}`) ? 2 : 9;
+      if (sc < 9) found.push({ pl, sc });
+    }
+  }
+  found.sort((a, b) => a.sc - b.sc || (KIND_ORDER[a.pl.kind] ?? 5) - (KIND_ORDER[b.pl.kind] ?? 5) || b.pl.pop - a.pl.pop);
+  return { hits: found.slice(0, 8).map(x => x.pl), scope, countries };
+}
+const placeValue = (pl, countries) => `@${JSON.stringify({ name: pl.name, country: countries.find(c => c.code === pl.cc)?.name || pl.cc,
+  region: pl.region, lat: pl.lat, lon: pl.lon, airport: pl.airport })}`;
+const decodePlace = v => (String(v || '').startsWith('@') ? JSON.parse(String(v).slice(1)) : null);
+/** List entries for the place search: places from the lists, with a note when nothing matches. */
+async function placeHits(text, ed) {
+  const { hits, scope, countries } = await searchPlaces(text, ed);
+  const out = hits.map(pl => ({
+    text: pl.name, value: placeValue(pl, countries),
+    sub: [KIND_LABEL[pl.kind], pl.region, countries.find(c => c.code === pl.cc)?.name, pl.airport.split(' ')[0]].filter(Boolean).join(' · '),
+  }));
+  if (!out.length) {
+    const where = scope.map(cc => countries.find(c => c.code === cc)?.name || cc).join(', ');
+    out.push({ note: where ? `Nothing in ${where}. Add the country after a comma, e.g. “Lima, Peru”.`
+      : 'Add the country after a comma, e.g. “Lima, Peru”.' });
+  }
+  return out;
+}
+/** From/To of a leg: the trip's waypoints first, then new places from the lists. */
+async function legPoints(text, ed) {
+  const key = fold(text.split(',')[0]);
+  const wps = (ed.wps.length ? ed.wps : DATA?.waypoints || []).filter(w => fold(w.name).includes(key)).slice(0, 4)
+    .map(w => ({ text: w.name, sub: ['waypoint', dateSpan(w.arrive, w.depart)].filter(Boolean).join(' · '), value: w.id }));
+  const places = (await placeHits(text, ed)).filter(h => h.note === undefined || !wps.length);
+  return [...wps, ...places].slice(0, 9);
+}
+const pointLabel = (v, ed) => decodePlace(v)?.name || ed.wps.find(w => w.id === v)?.name || v;
+function pointCoords(v, ed) {
+  const pl = decodePlace(v);
+  if (pl) return [pl.lat, pl.lon];
+  const w = ed.wps.find(x => x.id === v), built = WP.get(v);
+  if (w && w.lat !== '' && w.lat != null && w.lon !== '' && w.lon != null) return [Number(w.lat), Number(w.lon)];
+  return built && built.lat != null ? [built.lat, built.lon] : null;
+}
+function gcKm([la1, lo1], [la2, lo2]) {
+  const r = Math.PI / 180, h = Math.sin((la2 - la1) * r / 2) ** 2 + Math.cos(la1 * r) * Math.cos(la2 * r) * Math.sin((lo2 - lo1) * r / 2) ** 2;
+  return 2 * 6371.0088 * Math.asin(Math.sqrt(h));
+}
+/** A distance suggestion: straight line between the places × the mode's detour (config [distance]). */
+function kmSuggest(v, ed) {
+  if (v.type === 'alt' || v.mode === 'plane' || v.local) return null;
+  const a = pointCoords(v.from_leg, ed), b = pointCoords(v.to_leg, ed), f = META?.distance?.[v.mode];
+  if (!a || !b || !f) return null;
+  const line = gcKm(a, b);
+  return { km: String(Math.round(line * f)), text: `Suggested: ${kmFmt(line)} km straight line × ${f} for ${MODE_LABEL[v.mode] || v.mode}` };
+}
 const airportsOf = w => String(w?.airport || '').split(/\s+/).filter(Boolean);
 const airportList = text => [...new Set(String(text || '').toUpperCase().split(/[\s,;/]+/).filter(Boolean))].join(' ');
 const norm = text => String(text || '').toLowerCase().split(/\s+/).filter(Boolean).join(' ');
@@ -777,22 +963,32 @@ function altEnds(v, ed, existing) {
 function waypointForm(existing, ed = editorData()) {
   loadAirports();
   const countries = [...new Set(ed.wps.map(w => w.country).filter(Boolean))];
+  countryList().then(list => { countries.push(...list.map(c => c.name).filter(n => !countries.includes(n))); });
   openForm({
     title: existing ? 'Edit waypoint' : 'Add waypoint',
     intro: 'A destination is a place that would have been visited anyway. A stop exists only because of the way of travelling.',
     fields: [
-      { name: 'name', label: 'Place', type: 'text', required: true, placeholder: 'e.g. Santa Cruz de La Palma' },
+      { name: 'place', label: 'Find place', type: 'place', placeholder: 'e.g. El Médano, Spain', search: q => placeHits(q, ed),
+        hint: 'Picks the location and airports. The name below can differ, e.g. the island instead of its main town.' },
+      { name: 'name', label: 'Name', type: 'text', required: true, placeholder: 'e.g. Santa Cruz de La Palma',
+        suggest: v => decodePlace(v.place)?.name || '' },
       { name: 'type', label: 'Type', type: 'chips', required: true, options: [{ value: 'destination', label: 'Destination' }, { value: 'stop', label: 'Stop' }] },
-      { name: 'country', label: 'Country', type: 'datalist', datalist: countries },
+      { name: 'country', label: 'Country', type: 'datalist', datalist: countries, suggest: v => decodePlace(v.place)?.country || '' },
       { type: 'row', fields: [
         { name: 'arrive', label: 'Arrive', type: 'date' },
         { name: 'depart', label: 'Depart', type: 'date' },
       ] },
       { name: 'airport', label: 'Airports (IATA codes, optional)', type: 'text', placeholder: 'e.g. SPC, or TFS TFN',
-        suggest: v => airportsFor(v.name, v.country).map(a => a.code).join(' '),
+        suggest: v => decodePlace(v.place)?.airport || airportsFor(v.name, v.country).map(a => a.code).join(' '),
         hint: 'Filled in from the place name. Flights from here use the first; an alternative can also start or end at another one, e.g. TFN.' },
       { name: 'airport_info', type: 'info', text: v => (v.airport ? airportNames(v.airport)
         : AIRPORTS && fold(v.name).length >= 3 ? 'No airport is named after this place: add the nearest one\'s code if a flight could start here.' : '') },
+      { name: 'where', type: 'info', text: v => {
+        const pl = decodePlace(v.place);
+        if (pl) return `Location: ${[pl.name, pl.region, pl.country].filter(Boolean).join(', ')} (${pl.lat.toFixed(3)}, ${pl.lon.toFixed(3)})`;
+        return existing?.lat ? `Location: ${Number(existing.lat).toFixed(3)}, ${Number(existing.lon).toFixed(3)}`
+          : 'No location yet: find the place above to put it on the map.';
+      } },
       { name: 'note', label: 'Note', type: 'text' },
     ],
     values: existing || { type: 'destination' },
@@ -805,7 +1001,9 @@ function waypointForm(existing, ed = editorData()) {
         const base = store.slug(v.name);
         id = base; for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
       }
-      store.upsert('waypoints', { ...v, airport: airportList(v.airport), id });
+      const pl = decodePlace(v.place);
+      const lat = pl ? pl.lat : existing?.lat ?? '', lon = pl ? pl.lon : existing?.lon ?? '';
+      store.upsert('waypoints', { ...v, airport: airportList(v.airport), lat, lon, id });
       toast(existing ? 'Saved' : `Added ${v.name}`);
     },
     onDelete: existing ? () => {
@@ -817,7 +1015,6 @@ function waypointForm(existing, ed = editorData()) {
 }
 
 function travelForm(existing, preset = {}, ed = editorData()) {
-  const wpOpts = [{ value: '', label: 'Choose…' }, ...ed.wps.map(wpOption)];
   const optionNames = [...new Set(ed.alts.map(a => a.option).filter(Boolean))];
   const codes = new Set(ed.wps.flatMap(airportsOf));
   const pointList = [...ed.wps.map(w => ({ value: w.id, label: w.name })),
@@ -838,10 +1035,11 @@ function travelForm(existing, preset = {}, ed = editorData()) {
       { name: 'option', label: 'Alternative name', type: 'datalist', datalist: optionNames, show: isAlt, required: true,
         hint: 'Segments with the same name form one alternative (e.g. a connection via Paris).' },
       { name: 'main', label: 'Main alternative for this journey', type: 'checkbox', show: isAlt },
-      { type: 'row', fields: [
-        { name: 'from_leg', label: 'From', type: 'select', options: wpOpts, show: v => !isAlt(v), required: true },
-        { name: 'to_leg', label: 'To', type: 'select', options: wpOpts, show: v => !isAlt(v) && !v.local, required: true },
-      ] },
+      { name: 'from_leg', label: 'From', type: 'place', show: v => !isAlt(v), required: true, placeholder: 'e.g. Cali, Colombia',
+        search: q => legPoints(q, ed), display: v => pointLabel(v, ed) },
+      { name: 'to_leg', label: 'To', type: 'place', show: v => !isAlt(v) && !v.local, required: true, placeholder: 'e.g. Lima, Peru',
+        search: q => legPoints(q, ed), display: v => pointLabel(v, ed),
+        hint: 'A waypoint of the trip, or any place: a new place becomes a stop on saving.' },
       { name: 'local', label: 'Local trip: starts and ends here (e.g. driving around the island)', type: 'checkbox', show: v => !isAlt(v),
         hint: 'Local travel has no alternative of its own: it counts the same in both worlds, unless an alternative skips this place.' },
       { type: 'row', fields: [
@@ -855,8 +1053,10 @@ function travelForm(existing, preset = {}, ed = editorData()) {
         { name: 'mode', label: 'Mode', type: 'select', required: true, options: MODES.map(m => ({ value: m, label: MODE_LABEL[m] || m })) },
         { name: 'km', label: 'Distance (km)', type: 'number',
           required: v => v.mode !== 'plane' && !(Number(v.fuel_l) > 0) && !(Number(v.engine_h) > 0),
+          suggest: v => kmSuggest(v, ed)?.km || '',
           hint: 'Flights: leave empty to compute from airport codes. Optional with litres or engine hours.' },
       ] },
+      { name: 'km_info', type: 'info', text: v => kmSuggest(v, ed)?.text || '' },
       { name: 'vehicle', label: 'Vehicle, service or vessel', type: 'datalist', datalist: vehicles, placeholder: 'e.g. Bencomo Express, TGV Lyria, A320, Citroën C1 (95)' },
       { name: 'profile_info', type: 'info', text: v => describeProfile(v.mode, v.vehicle, v.km, v.fuel_l, v.engine_h) },
       { type: 'row', fields: [
@@ -877,10 +1077,23 @@ function travelForm(existing, preset = {}, ed = editorData()) {
     },
     onSave: v => {
       const alt = isAlt(v);
+      // a place picked from the lists becomes a new stop, dated by the leg (its type can be changed later)
+      const ensure = (val, role) => {
+        const pl = decodePlace(val);
+        if (!pl) return val;
+        const taken = new Set(store.rows('waypoints').map(w => w.id));
+        const base = store.slug(pl.name);
+        let id = base; for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
+        store.upsert('waypoints', { id, name: pl.name, type: 'stop', country: pl.country, arrive: v.date,
+          depart: role === 'from' ? v.date : '', note: '', airport: pl.airport, lat: pl.lat, lon: pl.lon });
+        return id;
+      };
+      const from = alt ? v.from_alt : ensure(v.from_leg, 'from');
+      const to = alt ? v.to_alt : v.local ? from : ensure(v.to_leg, 'to');
       const row = {
         id: existing?.id || `${alt ? 'A' : 'L'}${store.rand(4)}`, type: v.type, option: alt ? v.option : '',
         main: alt && v.main ? '1' : '', date: alt ? (existing?.date || '') : v.date,
-        from: alt ? v.from_alt : v.from_leg, to: alt ? v.to_alt : (v.local ? v.from_leg : v.to_leg), mode: v.mode, vehicle: v.vehicle,
+        from, to, mode: v.mode, vehicle: v.vehicle,
         km: v.km, occ_max: v.occ_max, occ_obs: v.occ_obs, fuel_l: v.fuel_l, engine_h: v.engine_h, note: v.note,
       };
       store.upsert('travel', row);
@@ -1087,7 +1300,7 @@ const hasDash = DATA && DATA.waypoints?.length && DATA.travels?.length;
 if (hasDash) {
   buildLensBar();
   renderDash();
-  onResize(() => { renderStrip(); renderRoute(); renderCumulative(); renderJourneys(); renderMethodCheck(); renderIntensity(); });
+  onResize(() => { renderStrip(); renderMap(); renderRoute(); renderCumulative(); renderJourneys(); renderMethodCheck(); renderIntensity(); });
   onThemeChange(renderDash);
   $('#mc-select').addEventListener('change', e => { mcSel = e.target.value; renderMethodCheck(); });
 } else {

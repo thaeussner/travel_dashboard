@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="../assets/app.css">
 <script src="../vendor/d3.v7.9.0.min.js"></script>
+<script src="../vendor/topojson-client.v3.1.0.min.js"></script>
 <script type="module" src="../assets/emissions.js"></script>
 </head>
 <body>
@@ -71,6 +72,33 @@
           <p>The big number is the median of 2,000 Monte Carlo draws with its 90 % interval: the <b>uncertainty</b> of factors, loads and fuel use. The switches are <b>choices</b>. Each tick here is one combination of them; they are never blended into the range.</p>
         </div>
         <div class="ftable" id="strip-table" hidden></div>
+      </figure>
+    </section>
+
+    <section class="block" aria-labelledby="h-map">
+      <h2 id="h-map">Map</h2>
+      <figure class="card">
+        <div class="fig-head">
+          <div class="legend">
+            <span><i class="lkey actual"></i>Legs travelled</span>
+            <span><i class="lkey flying"></i>Main alternative</span>
+            <span><i class="dotkey"></i>Destination</span>
+            <span><i class="dotkey hollow"></i>Stop</span>
+            <span><i class="lkey planned"></i>Planned</span>
+          </div>
+          <div class="fig-tools">
+            <button class="tbtn" type="button" id="map-in" aria-label="Zoom in">+</button>
+            <button class="tbtn" type="button" id="map-out" aria-label="Zoom out">−</button>
+            <button class="tbtn" type="button" id="map-fit">Fit</button>
+            <button class="tbtn" type="button" data-toggle="map-method" aria-pressed="false">Method</button>
+          </div>
+        </div>
+        <div class="chart map" id="map-chart"></div>
+        <p class="explain" id="map-hint"></p>
+        <div class="method-note" id="map-method" hidden>
+          <p>Legs run between the places entered; alternatives follow their real route, flights through their airports, for the comparison selected above. Flights are drawn along the great circle.</p>
+          <p>Places come from <a href="https://www.geonames.org/">GeoNames</a> (CC BY 4.0), coastlines from <a href="https://www.naturalearthdata.com/">Natural Earth</a> (public domain). The map works offline.</p>
+        </div>
       </figure>
     </section>
 

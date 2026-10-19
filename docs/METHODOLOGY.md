@@ -100,7 +100,7 @@ travel" adds the prefilled future.
 
 ### 3.5 Distances
 
-Distances are entered by hand:
+Distances are entered by hand, with a suggestion from the map:
 
 - **Trains, buses and ships:** route km, e.g. the operator's figure (68 nm = 126 km for Los
   Cristianos–La Palma).
@@ -126,8 +126,11 @@ Distances are entered by hand:
   - Airports come from `data/reference/airports.csv`: 4,008 airports with scheduled service, from
     OurAirports (public domain). Refresh it with `python -m travel_dashboard airports`.
 
-When estimating rail or road km from a map's straight line, multiply by the network circuity:
-about 1.45 for rail and 1.25 for road in France, Spain and Switzerland (Heinold & Makowski 2026).
+- **From the map:** every waypoint has coordinates, from the place lists (GeoNames, CC BY 4.0) or
+  looked up by name and country. The leg form suggests, and the build fills in when `km` is left
+  empty, the straight line between the two places × the network's detour: 1.45 for rail and 1.25
+  for road in France, Spain and Switzerland (Heinold & Makowski 2026), 1.1 for ferries and 1.2
+  for sailing (estimates). The trace says when a distance was estimated this way.
 
 ### 3.6 Left out on purpose
 

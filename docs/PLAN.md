@@ -10,7 +10,7 @@ A static site on GitHub Pages with two separate pages, each with its own input, 
 | page | shows | input (owner only) |
 |---|---|---|
 | **Costs** | totals and averages per day, week, month; by category; per day per country; entries | amount (CHF), date, category, country |
-| **Emissions** | Avoided (headline with range), Robustness (every lens combination), Route (alternative arcs; legs merge to fit the width), Timeline, Journeys, Sensitivity (ferry share × occupancy), Intensity (g/pkm), Legs (arithmetic per leg); each plot has a Method note | waypoints (stop/destination), legs, alternatives |
+| **Emissions** | Avoided (headline with range), Robustness (every lens combination), Map (legs and alternatives on offline coastlines, zoomable), Route (alternative arcs; legs merge to fit the width), Timeline, Journeys, Sensitivity (ferry share × occupancy), Intensity (g/pkm), Legs (arithmetic per leg); each plot has a Method note | waypoints (stop/destination), legs, alternatives |
 | **Method** | Factors (g/pkm per mode default and named vehicle, with ranges and sources), Ferries (the trip's own ships split three ways), Grades, Sources | none |
 
 Friends open the site and read it. Only the owner can edit, because edits need a GitHub token that

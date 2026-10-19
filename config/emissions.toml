@@ -72,6 +72,20 @@ lto_kg = [140, 190, 250]
 cruise_kg_km = [1.25, 1.45, 1.70]
 cargo = 0
 
+[distance]   # legs entered without km: straight line between the two places × the network's detour
+source = "Rail and road: [Heinold & Makowski 2026](https://doi.org/10.1007/s11067-026-09729-y) (France, Spain, Switzerland); sea: estimate"
+train = 1.45
+bus = 1.25
+coach = 1.25
+car = 1.25
+taxi = 1.25
+bike = 1.25
+walk = 1.25
+other = 1.25
+ferry = 1.1         # ferries run close to the straight line, around headlands
+fast_ferry = 1.1
+sail = 1.2          # tacking and weather routing
+
 # ----------------------------------------------------------------------------------- modes
 [modes.train]
 kind = "factor"

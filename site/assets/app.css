@@ -178,6 +178,18 @@ select.plain { border: 1px solid var(--rule); background: var(--surface); border
 .ax .base { stroke: var(--rule); }
 .ax .minor { stroke: var(--rule); }
 .fig-tools { display: flex; gap: 6px; margin-left: auto; }
+.map svg { display: block; overflow: hidden; border-radius: 8px; touch-action: pan-y; cursor: grab; }
+.map svg:active { cursor: grabbing; }
+.map .land { fill: var(--surface); stroke: var(--rule); stroke-width: 0.7; vector-effect: non-scaling-stroke; }
+.map .route { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.map .hit { fill: none; stroke: transparent; stroke-width: 14; vector-effect: non-scaling-stroke; }
+.map .place-label { font-weight: 600; fill: var(--ink); paint-order: stroke; stroke: var(--surface-2); stroke-linejoin: round; pointer-events: none; }
+.place-list { display: grid; margin-top: 4px; border: 1px solid var(--rule); border-radius: 10px; max-height: 280px; overflow-y: auto; background: var(--surface); }
+.place-hit { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; text-align: left; padding: 9px 11px; background: none; border: 0; border-top: 1px solid var(--grid); color: var(--ink); font: inherit; cursor: pointer; }
+.place-hit:first-child { border-top: 0; }
+.place-hit:hover, .place-hit:focus-visible { background: var(--surface-2); outline: none; }
+.place-hit .muted { font-size: 12.5px; text-align: right; }
+.place-note { padding: 9px 11px; font-size: 13px; color: var(--ink-2); }
 .method-note { margin-top: 12px; padding: 10px 12px; border-radius: 10px; background: var(--surface-2); font-size: 14px; color: var(--ink-2); max-width: 80ch; }
 .method-note p + p, .method-note p + ul, .method-note ul + p { margin-top: 6px; }
 .method-note ul { padding-left: 18px; margin: 0; }
@@ -247,7 +259,7 @@ dialog.sheet::backdrop { background: rgba(5, 10, 15, 0.5); }
 .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: 2px solid var(--actual); outline-offset: 1px; border-color: transparent; }
 .field input.big { font-size: 30px; font-weight: 600; padding: 8px 12px; }
 .field.invalid input, .field.invalid select, .field.invalid .chips { outline: 2px solid var(--bad-ink); outline-offset: 1px; }
-.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; border-radius: 10px; }
 .chips input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
 .chips label { border: 1px solid var(--rule); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 14px; user-select: none; }

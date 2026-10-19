@@ -1,4 +1,4 @@
-"""Command line: python -m travel_dashboard [build|check|serve]."""
+"""Command line: python -m travel_dashboard [build|check|serve|airports|places]."""
 
 from __future__ import annotations
 
@@ -11,13 +11,14 @@ import time
 import tomllib
 from pathlib import Path
 
-from . import export, geo
+from . import export, geo, places as places_mod
 from .profiles import Profiles
 from .tables import read_all
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = ROOT / "site"
 AIRPORTS = ROOT / "data" / "reference" / "airports.csv"
+PLACES = ROOT / "data" / "reference" / "places"
 
 
 def load_settings() -> dict:
@@ -41,14 +42,21 @@ def cmd_build(args) -> int:
     profiles = Profiles.load(ROOT / "config" / "emissions.toml")
     defaults = em.get("defaults", {"level": "destination", "alloc": "iso", "occ": "observed", "nonco2": "full",
                                    "scope": "all"})
+    places = places_mod.Places(PLACES)
     em_json = export.emissions_json(tables, profiles, today, draws, em.get("seed", 20261018), defaults,
-                                    geo.load_airports(AIRPORTS))
+                                    geo.load_airports(AIRPORTS), places)
     sizes = {
         "emissions.json": export.write(out / "emissions.json", em_json),
         "costs.json": export.write(out / "costs.json", export.costs_json(tables, today)),
         "meta.json": export.write(out / "meta.json", export.meta_json(settings, profiles)),
         "airports.json": export.write(out / "airports.json", geo.airports_json(AIRPORTS)),
     }
+    # the place lists for the waypoint form, one file per country
+    for cc in places.countries:
+        sizes.setdefault("places/*.json", 0)
+        sizes["places/*.json"] += export.write(out / "places" / f"{cc}.json", places_mod.browser_json(PLACES, cc))
+    sizes["places/countries.json"] = export.write(out / "places" / "countries.json", {"countries": [
+        {"code": c["code"], "name": c["name"]} for c in places.countries.values()]})
     print(f"built {', '.join(f'{k} ({v // 1024} KB)' for k, v in sizes.items())} from {data_dir} "
           f"in {time.perf_counter() - t0:.1f} s")
     print(f"  {len(tables.costs)} costs, {em_json['meta']['counts']}")
@@ -63,7 +71,10 @@ def cmd_check(args) -> int:
 
     data_dir = Path(args.data) if args.data else ROOT / "data"
     tables = read_all(data_dir)
-    travel = geo.fill_flight_km(tables.travel, tables.waypoints, geo.load_airports(AIRPORTS), tables.issues)
+    profiles = Profiles.load(ROOT / "config" / "emissions.toml")
+    places_mod.locate(tables.waypoints, places_mod.Places(PLACES), tables.issues)
+    travel = geo.fill_km(tables.travel, tables.waypoints, geo.load_airports(AIRPORTS), profiles.cfg.get("distance", {}),
+                         tables.issues)
     trip_mod.build(tables.waypoints, travel, tables.issues)
     print(f"{len(tables.costs)} costs, {len(tables.waypoints)} waypoints, {len(tables.travel)} travel rows")
     _print_issues(tables.issues)
@@ -75,6 +86,14 @@ def cmd_check(args) -> int:
 def cmd_airports(args) -> int:
     n = geo.download_airports(AIRPORTS)
     print(f"wrote {n} airports with scheduled service to {AIRPORTS.relative_to(ROOT)}")
+    return 0
+
+
+def cmd_places(args) -> int:
+    countries = [c.upper() for c in args.countries] or places_mod.DEFAULT
+    print(f"downloading the places of {len(countries)} countries from GeoNames …")
+    counts = places_mod.download(PLACES, countries, AIRPORTS)
+    print(f"wrote {sum(counts.values()):,} places to {PLACES.relative_to(ROOT)}")
     return 0
 
 
@@ -100,6 +119,8 @@ def main(argv: list[str] | None = None) -> int:
     c = sub.add_parser("check", help="validate the data and list issues")
     c.add_argument("--data")
     sub.add_parser("airports", help="refresh data/reference/airports.csv from OurAirports")
+    pl = sub.add_parser("places", help="refresh data/reference/places/ from GeoNames (default: Europe and the Americas)")
+    pl.add_argument("countries", nargs="*", help="ISO country codes, e.g. CO PE")
     s = sub.add_parser("serve", help="preview the site locally")
     s.add_argument("--port", type=int, default=8000)
     args = ap.parse_args(argv)
@@ -107,4 +128,4 @@ def main(argv: list[str] | None = None) -> int:
         if args.cmd is None:
             args = ap.parse_args(["build", *(argv or sys.argv[1:])])
         return cmd_build(args)
-    return {"check": cmd_check, "serve": cmd_serve, "airports": cmd_airports}[args.cmd](args)
+    return {"check": cmd_check, "serve": cmd_serve, "airports": cmd_airports, "places": cmd_places}[args.cmd](args)

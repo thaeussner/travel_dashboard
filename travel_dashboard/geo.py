@@ -23,7 +23,7 @@ import re
 import urllib.request
 from pathlib import Path
 
-from .tables import Issue, Travel, Waypoint
+from .tables import FUEL_MODES, Issue, Travel, Waypoint
 
 OURAIRPORTS_URL = "https://davidmegginson.github.io/ourairports-data/airports.csv"
 COUNTRIES_URL = "https://davidmegginson.github.io/ourairports-data/countries.csv"
@@ -109,30 +109,48 @@ def airport_code(text: str, waypoint_airports: dict[str, str], airports: dict[st
     return next((c for c in written_codes(t) if c in airports), None)
 
 
-def fill_flight_km(travel: list[Travel], waypoints: list[Waypoint], airports: dict[str, tuple[float, float]],
-                   issues: list[Issue]) -> list[Travel]:
-    """Give flight rows their airport codes and, when km is empty, the great-circle km between them.
+def fill_km(travel: list[Travel], waypoints: list[Waypoint], airports: dict[str, tuple[float, float]],
+            detour: dict[str, float], issues: list[Issue]) -> list[Travel]:
+    """Give flight rows their airport codes, and every row without km a distance.
 
-    Runs before trip.build, which replaces an alternative's end codes (e.g. "TFN") by waypoint ids."""
+    - Flights: the great-circle km between the airports at both ends.
+    - Everything else: the straight line between the two places × the network's detour for the mode
+      (config [distance]), when both places have coordinates.
+    Rows that still have no km are skipped, except fuel-based ones (a yacht's litres or engine
+    hours), which need no distance. Runs before trip.build, which replaces an alternative's end codes
+    (e.g. "TFN") by waypoint ids."""
     wp_air: dict[str, str] = {}
+    where: dict[str, tuple[float, float]] = {}
     for w in waypoints:
         if w.airports:
             wp_air[w.id.lower()] = w.airports[0]
             wp_air.setdefault(w.name.lower(), w.airports[0])
+        if w.lat is not None and w.lon is not None:
+            where[w.id.lower()] = (w.lat, w.lon)
+            where.setdefault(w.name.lower(), (w.lat, w.lon))
     out: list[Travel] = []
     for t in travel:
-        if t.mode != "plane":       # other rows without km are fuel-based (litres or engine hours)
-            out.append(t)
-            continue
-        a, b = airport_code(t.from_, wp_air, airports), airport_code(t.to, wp_air, airports)
-        t.from_code, t.to_code = a or "", b or ""
-        if t.km is None:
-            if not a or not b:
-                missing = t.from_ if not a else t.to
-                issues.append(Issue("travel", t.id, f"no km and no airport code for {missing!r}: give the waypoint an "
-                                                    "airport or write a code like 'BCN'; row skipped", "error"))
+        if t.mode == "plane":
+            a, b = airport_code(t.from_, wp_air, airports), airport_code(t.to, wp_air, airports)
+            t.from_code, t.to_code = a or "", b or ""
+            if t.km is None:
+                if not a or not b:
+                    missing = t.from_ if not a else t.to
+                    issues.append(Issue("travel", t.id, f"no km and no airport code for {missing!r}: give the waypoint "
+                                                        "an airport or write a code like 'BCN'; row skipped", "error"))
+                    continue
+                t.km = round(great_circle_km(airports[a], airports[b]))
+                t.km_note = f"great circle {a}–{b}"
+        elif t.km is None:
+            a, b = where.get(t.from_.strip().lower()), where.get(t.to.strip().lower())
+            if a and b and a != b:
+                line = great_circle_km(a, b)
+                factor = detour.get(t.mode, 1.0)
+                t.km = round(line * factor)
+                t.km_note = f"estimated: {round(line):,} km straight line × {factor:g}"
+            elif not (t.mode in FUEL_MODES and (t.fuel_l or t.engine_h)):
+                issues.append(Issue("travel", t.id, "needs a distance in km (or places with coordinates, or the fuel "
+                                                    "used); row skipped", "error"))
                 continue
-            t.km = round(great_circle_km(airports[a], airports[b]))
-            t.km_note = f"great circle {a}–{b}"
         out.append(t)
     return out

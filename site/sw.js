@@ -1,10 +1,11 @@
 // Offline support: the app shell is cached, data is fetched fresh when possible.
 // The GitHub API is never cached; unsaved edits live in localStorage (see assets/store.js).
-const CACHE = 'flight-free-v3';
+const CACHE = 'flight-free-v4';
 const SHELL = [
   './', './costs/', './emissions/', './method/', './manifest.webmanifest', './icons/icon.svg',
   './assets/app.css', './assets/common.js', './assets/store.js', './assets/editor.js',
   './assets/costs.js', './assets/emissions.js', './assets/home.js', './assets/method.js', './vendor/d3.v7.9.0.min.js',
+  './vendor/topojson-client.v3.1.0.min.js', './vendor/land-50m.v2.0.2.json',
 ];
 
 self.addEventListener('install', (e) => {

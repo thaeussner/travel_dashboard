@@ -36,7 +36,7 @@ later.
 | file | columns |
 |---|---|
 | `data/costs.csv` | `id, date, amount, category, country` |
-| `data/waypoints.csv` | `id, name, type, country, arrive, depart, note, airport` |
+| `data/waypoints.csv` | `id, name, type, country, arrive, depart, note, airport, lat, lon` |
 | `data/travel.csv` | `id, type, option, main, date, from, to, mode, vehicle, km, occ_max, occ_obs, fuel_l, engine_h, note` |
 
 **Costs:**
@@ -49,8 +49,11 @@ later.
 
 - `type` is `destination` (a place that would have been visited anyway) or `stop`.
 - `airport` lists the IATA codes of the airports a flight from here would use, e.g. `SPC` or
-  `TFS TFN`. The first is the default. The form fills it in from the place name ("Paris" →
-  `CDG ORY`); places without their own airport get the nearest one by hand.
+  `TFS TFN`. The first is the default.
+- `lat`, `lon` put the waypoint on the map. In the form, "Find place" searches every populated
+  place, island and harbour of Europe and the Americas ("El Médano, Spain") and fills in the
+  location and the nearest airports. Waypoints entered without them are looked up by name and
+  country when the site is built.
 
 **Travel:**
 
@@ -64,13 +67,15 @@ later.
 - An alternative that skips destinations, e.g. `CDG → FDF` from Paris to Martinique, is used under
   "Compare: Direct": the trip against flying straight there. Travel before its start (the
   TGV to Paris) counts the same in both worlds.
-- `from` and `to` are waypoint ids. Intermediate points of an alternative can be plain text. A
+- `from` and `to` are waypoint ids. In the leg form they search the trip's waypoints and the place
+  lists: a new place ("Cali, Colombia") becomes a stop on saving, dated by the leg, with its
+  location and airports. Intermediate points of an alternative can be plain text. A
   flight alternative may also start or end at an airport its waypoint lists, e.g. `TFN` for
   El Médano (`TFS TFN`), so the whole connection can be written in codes: `TFN → BCN → CDG → FDF`.
-- `km` is entered by hand. For flights, either enter the great-circle distance or leave `km`
-  empty: the build then computes it from airport codes, i.e. the waypoint's `airport` or a code in
-  a via point such as `BCN` or `Barcelona (BCN)`. It is also optional when `fuel_l` or `engine_h`
-  is given.
+- `km` is entered by hand; the leg form suggests one from the two places (straight line × the
+  mode's detour). Left empty, the build estimates it the same way, or for flights computes the
+  great-circle distance from the airport codes (the waypoint's `airport` or a code in a via point
+  such as `BCN` or `Barcelona (BCN)`). It is optional when `fuel_l` or `engine_h` is given.
 - `occ_max` and `occ_obs` are capacity and observed head count.
 - `fuel_l` is litres burnt by the whole vehicle (sailing, car).
 - `engine_h` is engine and generator hours on a sailing yacht, used when the litres are unknown.
@@ -91,5 +96,6 @@ python -m travel_dashboard build --data examples/trip --today 2026-10-18   # exa
 python -m travel_dashboard build                                           # data/
 python -m travel_dashboard serve                                           # http://localhost:8000
 python -m travel_dashboard check                                           # list data issues
+python -m travel_dashboard places CO PE                                    # add or refresh countries' places
 python -m unittest discover -s tests
 ```

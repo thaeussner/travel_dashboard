@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 from . import costs as costs_mod
-from . import factors, geo, montecarlo, trip as trip_mod
+from . import factors, geo, montecarlo, places as places_mod, trip as trip_mod
 from .model import LENSES, ship_breakdown, trace
 from .montecarlo import variants
 from .profiles import Profiles, central, plain
@@ -61,10 +61,11 @@ def _iso(d: dt.date | None) -> str | None:
 
 
 def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: int, seed: int,
-                   defaults: dict, airports: dict | None = None) -> dict:
+                   defaults: dict, airports: dict | None = None, places: places_mod.Places | None = None) -> dict:
     issues = tables.issues
     airports = airports or {}
-    travel = geo.fill_flight_km(tables.travel, tables.waypoints, airports, issues)
+    places_mod.locate(tables.waypoints, places, issues)
+    travel = geo.fill_km(tables.travel, tables.waypoints, airports, profiles.cfg.get("distance", {}), issues)
     trip = trip_mod.build(tables.waypoints, travel, issues)
     mc = montecarlo.run(trip, profiles, today, draws, seed)
     prof, tdims = mc["profiles"], mc["dims"]
@@ -113,8 +114,9 @@ def emissions_json(tables: Tables, profiles: Profiles, today: dt.date, draws: in
         "waypoints": [{
             "id": w.id, "name": w.name, "type": w.type, "country": w.country, "arrive": _iso(w.arrive),
             "depart": _iso(w.depart), "note": w.note, "planned": bool(w.arrive and w.arrive > today),
-            "airport": w.airport,
+            "airport": w.airport, "lat": w.lat, "lon": w.lon,
         } for w in trip.waypoints],
+        "airport_pos": {c: airports[c] for t in travel for c in (t.from_code, t.to_code) if c in airports},
         "travels": [travel_out(t, bool(t.date and t.date > today)) for t in trip.legs]
                    + [travel_out(r, option_planned.get(o.id, True)) for o in trip.options for r in o.rows],
         "options": [{
@@ -152,6 +154,7 @@ def meta_json(settings: dict, profiles: Profiles | None = None) -> dict:
         "lenses": {k: list(v) for k, v in LENSES.items()},
         "vehicles": [{"name": v["name"], "mode": v.get("mode", "")} for v in (profiles.vehicles if profiles else [])],
         "profiles": profile_meta(profiles) if profiles else None,
+        "distance": {k: v for k, v in (profiles.cfg.get("distance", {}) if profiles else {}).items() if k != "source"},
     }
 
 

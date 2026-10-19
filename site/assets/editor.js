@@ -6,7 +6,9 @@ const fid = name => `f-${name}-${++uid}`;
 
 /**
  * Open a modal form. fields: [{name, label, type, options, required, hint, show(values), ...}]
- * types: text | number | big-number | date | select | chips | checkbox | password | datalist | row | info
+ * types: text | number | big-number | date | select | chips | checkbox | password | datalist | row | info | place
+ * place: search(text, values) lists matches ({text, sub, value} or {note}); the picked value is kept apart
+ *   from the typed text, and display(value) shows a stored value
  * suggest(values): a text field follows this suggestion until the user types in it (empty fields only)
  */
 export function openForm({ title, intro, fields, values = {}, submitLabel = 'Save', onSave, onDelete, deleteLabel = 'Delete', validate, extra }) {
@@ -32,6 +34,37 @@ export function openForm({ title, intro, fields, values = {}, submitLabel = 'Sav
     if (f.type === 'info') {   // live text computed from the other fields, e.g. which data a vehicle matches
       const div = document.createElement('div'); div.className = 'hint'; div.setAttribute('aria-live', 'polite');
       wrap.appendChild(div); f._info = div;
+      return wrap;
+    }
+    if (f.type === 'place') {
+      const lab = document.createElement('label'); lab.htmlFor = id; lab.textContent = f.label;
+      const inp = document.createElement('input'); inp.type = 'text'; inp.id = id; inp.autocomplete = 'off';
+      if (f.placeholder) inp.placeholder = f.placeholder;
+      f._value = String(v || ''); inp.value = f._value && f.display ? f.display(f._value) : f._value;
+      const list = document.createElement('div'); list.className = 'place-list'; list.hidden = true;
+      let seq = 0;
+      inp.addEventListener('input', async () => {
+        f._value = '';
+        const q = inp.value.trim(), mine = ++seq;
+        const hits = q.length >= 2 ? await f.search(q, read()) : [];
+        if (mine !== seq) return;   // a newer keystroke is already searching
+        list.replaceChildren();
+        for (const h of hits) {
+          if (h.note) { const n = document.createElement('div'); n.className = 'place-note'; n.textContent = h.note; list.appendChild(n); continue; }
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'place-hit';
+          const t = document.createElement('span'); t.textContent = h.text;
+          const sub = document.createElement('span'); sub.className = 'muted'; sub.textContent = h.sub || '';
+          b.append(t, sub);
+          b.addEventListener('click', () => {
+            f._value = h.value; inp.value = h.text; list.hidden = true;
+            form.dispatchEvent(new Event('change'));
+          });
+          list.appendChild(b);
+        }
+        list.hidden = !hits.length;
+      });
+      wrap.append(lab, inp, list);
+      if (f.hint) { const hn = document.createElement('div'); hn.className = 'hint'; hn.textContent = f.hint; wrap.appendChild(hn); }
       return wrap;
     }
     if (f.type === 'chips') {
@@ -119,7 +152,8 @@ export function openForm({ title, intro, fields, values = {}, submitLabel = 'Sav
     const out = {};
     for (const f of flat) {
       if (f.type === 'info') continue;
-      if (f.type === 'chips') {
+      if (f.type === 'place') out[f.name] = f._value || '';
+      else if (f.type === 'chips') {
         const c = f._wrap.querySelector('input:checked'); out[f.name] = c ? c.value : '';
       } else if (f.type === 'checkbox') out[f.name] = document.getElementById(f._id).checked ? '1' : '';
       else out[f.name] = document.getElementById(f._id).value.trim();
