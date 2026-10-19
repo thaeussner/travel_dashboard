@@ -53,8 +53,8 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
   - Alternative rows sharing an `option` name form one chain, e.g. via Paris Orly. Intermediate
     points are plain text.
   - A chain starts and ends at waypoints: an id, a name, or an airport code that a waypoint lists
-    (`airport` may hold several, e.g. `TFS TFN`). When several waypoints fit, destinations win,
-    then the shortest span. `trip.Resolver` and `trip.build` do this; `pointTargets` and
+    (`airport` may hold several, e.g. `TFS TFN`). When several waypoints fit, a reading that stays
+    between two destinations wins, then destination ends, then the shortest span. `trip.Resolver` and `trip.build` do this; `pointTargets` and
     `chainEnds` in `emissions.js` mirror it for the editor only. `geo.fill_flight_km` keeps the
     code written (`from_code`/`to_code`), because the build then replaces the ends with waypoint ids.
   - Every waypoint lists its airports. The waypoint form fills them in from the place name

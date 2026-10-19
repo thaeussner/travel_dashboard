@@ -227,15 +227,17 @@ def build(waypoints: list[Waypoint], travel: list[Travel], issues: list[Issue]) 
                                                 "must start and end at waypoints; option skipped", "error"))
             continue
         # a name or airport may fit several waypoints (TFN for every stop on Tenerife, a second visit):
-        # destinations first, then the shortest span
+        # a reading that stays between two destinations first, then destination ends, then the
+        # shortest span. So SVQ → TFN is the ferry Huelva → Santa Cruz, not a flight past La Palma.
         def rank(ab: tuple[str, str]) -> tuple:
-            return (-sum(wtype[x] == "destination" for x in ab), pos[ab[1]] - pos[ab[0]], pos[ab[0]])
+            skips = any(wtype[w.id] == "destination" for w in ordered[pos[ab[0]] + 1:pos[ab[1]]])
+            return (skips, -sum(wtype[x] == "destination" for x in ab), pos[ab[1]] - pos[ab[0]], pos[ab[0]])
         pairs = sorted(((a, b) for a in starts for b in ends if pos[a] < pos[b]), key=rank)
         if not pairs:
             issues.append(Issue("travel", name, "alternative ends before it starts; option skipped", "error"))
             continue
         a, b = pairs[0]
-        if len(pairs) > 1 and rank(pairs[1])[:2] == rank(pairs[0])[:2]:
+        if len(pairs) > 1 and rank(pairs[1])[:3] == rank(pairs[0])[:3]:
             issues.append(Issue("travel", name, f"{chain[0].from_!r} → {chain[-1].to!r} fits several waypoints "
                                                 f"equally well; using {a} → {b}. Write waypoint ids to choose."))
         chain[0].from_, chain[-1].to = a, b
@@ -244,7 +246,7 @@ def build(waypoints: list[Waypoint], travel: list[Travel], issues: list[Issue]) 
                  "destination" if wtype[a] == "destination" and wtype[b] == "destination" else "stop")
         options.append(Option(name, chain, a, b, level, any(r.main for r in rows)))
 
-    journeys = _journeys(ordered, pos, wtype, legs, options, issues)
+    journeys = _journeys(ordered, pos, legs, options, issues)
     return Trip(ordered, pos, legs, options, journeys, issues)
 
 
@@ -283,7 +285,7 @@ def _journey(level: str, a: str, b: str, legs, pos, ordered, picked) -> Journey:
     return Journey(level, a, b, jl, main, extras, _date(jl, main), skipped)
 
 
-def _journeys(ordered, pos, wtype, legs, options, issues) -> dict[str, list[Journey]]:
+def _journeys(ordered, pos, legs, options, issues) -> dict[str, list[Journey]]:
     dests = [w.id for w in ordered if w.type == "destination"]
     spans = list(zip(dests, dests[1:]))
     by_level: dict[str, dict[tuple[str, str], list[Option]]] = {lvl: defaultdict(list) for lvl in LEVELS}

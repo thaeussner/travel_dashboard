@@ -232,6 +232,19 @@ class TestTrip(unittest.TestCase):
         self.assertEqual((t.options[0].start, t.options[0].end), ("lp", "em"))    # not the ferry port
         self.assertEqual(issues, [])
 
+    def test_shared_airports_stay_between_destinations(self):
+        wps = [Waypoint("zh", "Zurich", "destination", arrive=dt.date(2026, 10, 4), airport="ZRH"),
+               Waypoint("hu", "Huelva", "stop", arrive=dt.date(2026, 10, 5), airport="SVQ FAO"),
+               Waypoint("sc", "Santa Cruz", "stop", arrive=dt.date(2026, 10, 7), airport="TFN TFS"),
+               Waypoint("lp", "La Palma", "destination", arrive=dt.date(2026, 10, 8), airport="SPC"),
+               Waypoint("em", "El Medano", "destination", arrive=dt.date(2026, 10, 17), airport="TFS TFN")]
+        legs = [leg("T", "zh", "hu", "train", 2000, "2026-10-05"), leg("F", "hu", "sc", "ferry", 1300, "2026-10-06"),
+                leg("B", "sc", "lp", "fast_ferry", 140, "2026-10-08"), leg("C", "lp", "em", "fast_ferry", 160, "2026-10-17")]
+        issues: list[Issue] = []
+        t = trip_mod.build(wps, legs + [alt("A", "fly", "SVQ", "TFN")], issues)
+        self.assertEqual((t.options[0].start, t.options[0].end, t.options[0].level), ("hu", "sc", "stop"))   # not past La Palma
+        self.assertEqual(issues, [])
+
     def test_alternative_may_start_at_a_waypoints_airport(self):
         wps = [Waypoint("tf", "El Medano", "destination", arrive=dt.date(2026, 10, 17), airport="TFS TFN"),
                Waypoint("mq", "Martinique", "destination", arrive=dt.date(2026, 11, 20), airport="FDF")]

@@ -111,9 +111,14 @@ Distances are entered by hand:
     the first. An alternative can start or end at any of them by writing the code, e.g.
     `TFN → BCN → CDG → FDF`: the build ties `TFN` to El Médano and `FDF` to Martinique, and the
     distance uses the code written.
-  - When a code is listed by several waypoints (TFN by every stop on Tenerife), the build prefers
-    destinations, then the shortest span: `SPC → TFS` replaces La Palma → El Médano, not the ferry
-    to Los Cristianos. Write waypoint ids to choose otherwise.
+  - When a code is listed by several waypoints (TFN by every stop on Tenerife), the build prefers a
+    reading that stays between two destinations, then destination ends, then the shortest span:
+    `SVQ → TFN` replaces the ferry Huelva → Santa Cruz rather than a flight past La Palma, and
+    `SPC → TFS` replaces La Palma → El Médano, not the ferry to Los Cristianos. Write waypoint ids
+    to choose otherwise.
+  - A place without an airport lists its nearest ones: Huelva lists Seville (`SVQ FAO`), so a flight
+    from Seville is an alternative for the ferry from Huelva. The way to the airport is not counted
+    (§3.6).
   - The waypoint form fills in a place's airports from its name, from the airport list's names,
     cities and countries ("Paris" → CDG ORY, "Martinique" → FDF). A place without its own airport
     gets its country's when that has three at most ("Le Marin", Martinique → FDF); otherwise the

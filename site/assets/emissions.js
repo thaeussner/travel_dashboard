@@ -748,13 +748,16 @@ function chainOrder(rows) {
   return out.concat(left);
 }
 /** Where an alternative starts and ends, as trip.build decides: of the waypoints its first and last
- *  points fit, destinations first, then the shortest span (display only). */
+ *  points fit, a reading that stays between two destinations first, then destination ends, then the
+ *  shortest span (display only). */
 function chainEnds(rows, ed) {
   const c = chainOrder(rows), first = c[0].from, last = c[c.length - 1].to;
   const starts = pointTargets(first, ed.wps), ends = pointTargets(last, ed.wps);
   const p = h => ed.pos.get(h.w.id), dest = h => (h.w.type === 'destination' ? 1 : 0);
+  const skips = (st, en) => (ed.wps.some(w => w.type === 'destination' && ed.pos.get(w.id) > p(st) && ed.pos.get(w.id) < p(en)) ? 1 : 0);
   const pairs = starts.flatMap(st => ends.filter(en => p(st) < p(en)).map(en => [st, en]))
-    .sort(([s1, e1], [s2, e2]) => (dest(s2) + dest(e2) - dest(s1) - dest(e1)) || (p(e1) - p(s1) - p(e2) + p(s2)) || (p(s1) - p(s2)));
+    .sort(([s1, e1], [s2, e2]) => (skips(s1, e1) - skips(s2, e2)) || (dest(s2) + dest(e2) - dest(s1) - dest(e1))
+      || (p(e1) - p(s1) - p(e2) + p(s2)) || (p(s1) - p(s2)));
   const lone = hs => hs.slice().sort((x, y) => (dest(y) - dest(x)) || (p(y) - p(x)))[0];   // other end not known yet
   const [st, en] = pairs[0] || [lone(starts), lone(ends)];
   return { start: st?.w.id, end: en?.w.id, startCode: st?.code, endCode: en?.code, first, last };
