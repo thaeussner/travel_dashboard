@@ -16,3 +16,5 @@ Aby5e,alt,Flight TFN-FDF,1,,TFN,BCN,plane,A320 (Vueling),,180,,,,"TFN-BCN, Vueli
 Acdg1,alt,Flight TFN-FDF,1,,BCN,CDG,plane,A320 (Vueling or Air France),,180,,,,"BCN-CDG, Vueling or Air France ~2 h"
 Afdf1,alt,Flight TFN-FDF,1,,CDG,FDF,plane,Boeing 777-300ER (Air France),,472,,,,"CDG-FDF, Air France 2x daily (from CDG since 29 Mar 2026), 472-seat 777 ~8 h 45"
 Adir2,alt,Direct CDG-FDF,1,,CDG,FDF,plane,Boeing 777-300ER (Air France),,472,,,,"CDG-FDF, Air France 2x daily, 472-seat 777 ~8 h 45"
+Aspc1,alt,Fly TFN-SPC,1,,santa-cruz-de-tenerife,la-palma,plane,ATR 72-600 (Binter),,,,,,"TFN-SPC, Binter, several flights a day, ~35 min; replaces coach and Bencomo Express"
+Aspc2,alt,Fly SPC-TFN,1,,la-palma,TFN,plane,ATR 72-600 (Binter),,,,,,"SPC-TFN, Binter, several flights a day, ~35 min; bus from TFN to El Medano not counted"
