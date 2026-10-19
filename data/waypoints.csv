@@ -1,13 +1,13 @@
-id,name,type,country,arrive,depart,note,airport
-zurich,Zurich,destination,Switzerland,2026-10-04,2026-10-04,Start of the trip,ZRH
-paris,Paris,stop,France,2026-10-04,2026-10-04,,CDG ORY
-hendaye,Hendaye,stop,France,2026-10-04,2026-10-05,,EAS BIQ
-irun,Irun,stop,Spain,2026-10-05,2026-10-05,,EAS BIQ
-madrid,Madrid,stop,Spain,2026-10-05,2026-10-05,,MAD
-huelva,Huelva,stop,Spain,2026-10-05,2026-10-06,,SVQ FAO
-santa-cruz-de-tenerife,Santa Cruz de Tenerife,stop,Spain,2026-10-07,2026-10-08,,TFN TFS
-los-cristianos,Los Cristianos,stop,Spain,2026-10-08,2026-10-08,,TFS TFN
-la-palma,La Palma,destination,Spain,2026-10-08,2026-10-17,,SPC
-los-cristianos-2,Los Cristianos,stop,Spain,2026-10-17,2026-10-17,,TFS TFN
-el-medano,El Medano,destination,Spain,2026-10-17,2026-10-25,,TFS TFN
-maritinique,Martinique,destination,France,2026-11-20,,,FDF
+id,name,type,country,arrive,depart,note,airport,lat,lon
+zurich,Zurich,destination,Switzerland,2026-10-04,2026-10-04,Start of the trip,ZRH,47.3667,8.55
+paris,Paris,stop,France,2026-10-04,2026-10-04,,CDG ORY,48.8534,2.3488
+hendaye,Hendaye,stop,France,2026-10-04,2026-10-05,,EAS BIQ,43.3581,-1.7744
+irun,Irun,stop,Spain,2026-10-05,2026-10-05,,EAS BIQ,43.339,-1.7894
+madrid,Madrid,stop,Spain,2026-10-05,2026-10-05,,MAD,40.4165,-3.7026
+huelva,Huelva,stop,Spain,2026-10-05,2026-10-06,,SVQ FAO,37.2664,-6.94
+santa-cruz-de-tenerife,Santa Cruz de Tenerife,stop,Spain,2026-10-07,2026-10-08,,TFN TFS,28.4682,-16.2546
+los-cristianos,Los Cristianos,stop,Spain,2026-10-08,2026-10-08,,TFS TFN,28.0501,-16.7201
+la-palma,La Palma,destination,Spain,2026-10-08,2026-10-17,,SPC,28.695,-17.8529
+los-cristianos-2,Los Cristianos,stop,Spain,2026-10-17,2026-10-17,,TFS TFN,28.0501,-16.7201
+el-medano,El Medano,destination,Spain,2026-10-17,2026-10-25,,TFS TFN,28.0462,-16.5363
+maritinique,Martinique,destination,France,2026-11-20,,,FDF,14.6628,-61.0042
