@@ -1,0 +1,51 @@
+name,region,lat,lon,kind,population,airports,alt
+Allmeina,Triesenberg,47.13,9.5389,P,,ACH FDH ZRH,
+Alpelti,Triesenberg,47.128,9.5584,P,,ACH FDH ZRH,
+Badäl,Gamprin,47.2294,9.5191,P,,ACH FDH ZRH,
+Balzers,Balzers,47.0666,9.5036,A,4628,ACH FDH ZRH,Bal'cers|balajaraza|balajarsa
+Bärg,Triesenberg,47.1395,9.5456,P,,ACH FDH ZRH,
+Bendern,Gamprin,47.212,9.5068,P,1664,ACH FDH ZRH,
+Berg,Eschen,47.2231,9.5387,P,,ACH FDH ZRH,
+Betsche,Mauren,47.2271,9.5481,P,,ACH FDH ZRH,
+Bim Stall,Schaan,47.1398,9.6006,P,,ACH FDH ZRH,
+Böda,Triesenberg,47.1062,9.5432,P,,ACH FDH ZRH,
+Breita,Gamprin,47.226,9.5167,P,,ACH FDH ZRH,
+Eggalti,Triesenberg,47.1246,9.5435,P,,ACH FDH ZRH,
+Erbi,Triesenberg,47.1389,9.5336,P,,ACH FDH ZRH,
+Eschen,Eschen,47.2107,9.5222,A,4459,ACH FDH ZRH,Ehshen|ashn|ayshn
+Foppa,Triesenberg,47.1349,9.5432,P,,ACH FDH ZRH,
+Fromahus,Triesenberg,47.1325,9.5328,P,,ACH FDH ZRH,
+Fura,Triesenberg,47.1047,9.5455,P,,ACH FDH ZRH,
+Gamprin,Gamprin,47.2204,9.5093,A,1663,ACH FDH ZRH,Gambrin|Gamprin-Bendern|gaimprina
+Gnalp,Triesenberg,47.1229,9.5535,P,,ACH FDH ZRH,
+Hof,Triesenberg,47.1266,9.5466,P,,ACH FDH ZRH,
+Lavadina,Triesenberg,47.1146,9.5555,P,,ACH FDH ZRH,
+Loch,Schellenberg,47.2285,9.5341,P,,ACH FDH ZRH,
+Lums,Gamprin,47.2254,9.5261,P,,ACH FDH ZRH,
+Malbun,Triesenberg,47.1014,9.6099,P,50,ACH FDH ZRH,
+Mäls,Balzers,47.0611,9.4957,P,1350,ACH FDH ZRH,
+Masescha,Triesenberg,47.1327,9.5445,P,,ACH FDH ZRH,
+Mauren,Mauren,47.218,9.5442,A,4404,ACH FDH ZRH,Mauern|Mauren FL|marena
+Mitätsch,Triesenberg,47.125,9.5533,P,,ACH FDH ZRH,
+Möliholz,Vaduz,47.1557,9.5111,P,,ACH FDH ZRH,
+Nendeln,Eschen,47.1985,9.543,P,1407,ACH FDH ZRH,
+Neugrütt,Triesen,47.0878,9.5234,P,,ACH FDH ZRH,
+Ober Ställ,Planken,47.177,9.5461,P,,ACH FDH ZRH,
+Oberplanken,Planken,47.1781,9.5458,P,,ACH FDH ZRH,
+Planken,Planken,47.1852,9.5444,A,478,ACH FDH ZRH,Blanken|blankn|palainkena
+Riethof,Schaan,47.1922,9.5235,P,,ACH FDH ZRH,
+Rotenboden,Triesenberg,47.1297,9.538,P,,ACH FDH ZRH,
+Ruggell,Ruggell,47.238,9.5254,A,2295,ACH FDH ZRH,Rugell|rugela|ruggeru
+Rüti,Triesenberg,47.108,9.545,P,,ACH FDH ZRH,
+Schaan,Schaan,47.165,9.5087,A,5998,ACH FDH ZRH,Schan|Shaan|sana
+Schaanwald,Mauren,47.2119,9.5624,P,,ACH FDH ZRH,
+Schellenberg,Schellenberg,47.2312,9.5468,A,1091,ACH FDH ZRH,Shellberg|Shellenbergg|selenabaraga
+Silum,Triesenberg,47.1318,9.5538,P,,ACH FDH ZRH,
+Steg,Triesenberg,47.1127,9.5754,P,50,ACH FDH ZRH,
+Studaberg,Gamprin,47.2218,9.5084,P,,ACH FDH ZRH,
+Triesen,Triesen,47.1075,9.5282,A,5230,ACH FDH ZRH,Trizen|tirizani|torizen
+Triesenberg,Triesenberg,47.1181,9.542,A,2643,ACH FDH ZRH,Trizenberg|torizenberuku|tri'esenabaraga
+Vaduz,Vaduz,47.1415,9.5215,C,5197,ACH FDH ZRH,Bantouz|QVU|Vaduc
+Vorder Prufatscheng,Triesenberg,47.1377,9.5392,P,,ACH FDH ZRH,
+Wangerberg,Triesenberg,47.1059,9.5446,P,,ACH FDH ZRH,
+Welda Bongert,Triesen,47.0863,9.5279,P,,ACH FDH ZRH,

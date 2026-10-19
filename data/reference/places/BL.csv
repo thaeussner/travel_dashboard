@@ -1,0 +1,54 @@
+name,region,lat,lon,kind,population,airports,alt
+Anse à Corossol,,17.9074,-62.8571,H,,SBH,
+Anse de Colombier,,17.9241,-62.87,H,,SBH,
+Anse des Cayes,,17.913,-62.847,P,,SBH,
+Anse des Flamands,,17.9177,-62.8575,P,,SBH,
+Anse des Lézards,,17.9158,-62.8451,P,,SBH,
+Baie de Saint-Jean,,17.9056,-62.8372,H,,SBH,
+Baie des Flamands,,17.9202,-62.8573,H,,SBH,
+Camaruche,,17.9071,-62.8194,P,,SBH,
+Carénage,,17.8976,-62.8379,P,,SBH,
+Caribe Frances,,17.8959,-62.8521,P,,SBH,
+Colombier,,17.9144,-62.8595,P,,SBH,
+Corossol,,17.9086,-62.8556,P,,SBH,
+Devet,,17.9002,-62.8023,P,,SBH,
+Grand Cul-de-Sac,,17.9096,-62.8043,P,,SBH,
+Grand Fond,,17.8952,-62.812,P,,SBH,
+Groupers,,17.9517,-62.9469,I,,SBH,
+Gustavia,,17.8962,-62.8498,C,5988,SBH,Goustavia|Gustaf|Gustavi
+Île Chevreau,,17.9335,-62.8509,I,,SBH,Goat Island|Ile Bonhomme|Ilot du Chevreau
+Île Coco,,17.8743,-62.8127,I,,SBH,
+Île de la Pointe,,17.9203,-62.8761,I,,SBH,Ile Petit Jean
+Île Fourchue,,17.9584,-62.9036,I,,SBH,Fourche|Ile Fourche|Ile Fourchure
+Île Frégate,,17.9395,-62.8336,I,,SBH,Ile Fregatte|Ilet Fregate|Ilot de la Fregate
+Île le Boulanger,,17.9563,-62.8678,I,,SBH,Ilot Boulanger|Le Boulanger
+Île Pelé,,17.9558,-62.8734,I,,SBH,Ilet Naviro|Ilot Navire
+Île Saint-Barthélemy,,17.897,-62.8306,I,,SBH,Isla de San Bartolome|Saint Barthelemy|Saint Bartholomew
+Île Toc Vers,,17.9426,-62.8184,I,,SBH,Ilot Toc Vers|Toc Verte
+Îlet au Vent,,17.957,-62.8967,I,,SBH,
+L'Âne Rouge,,17.9203,-62.878,I,,SBH,
+La Chaloupe,,17.8779,-62.8366,I,,SBH,
+La Grande Saline,,17.8947,-62.827,P,,SBH,
+La Petite Islette,,17.9567,-62.9109,I,,SBH,
+La Petite Saline,,17.9009,-62.8228,P,,SBH,
+La Tortue,,17.9195,-62.7978,I,,SBH,Ile Tortue|Ilet Tortue|Ilot Tortue
+Le Carénage,,17.9,-62.85,H,,SBH,
+Le Gouverneur,,17.8878,-62.8387,P,,SBH,
+Les Gros Îlets,,17.8996,-62.8606,I,,SBH,Gros Ilets|Ilots Syndare|Les Gros Islets
+Les Petits Saints,,17.8949,-62.8564,I,,SBH,Les Saintes
+Lurin,,17.8937,-62.8432,P,,SBH,
+Mancel,,17.952,-62.9469,I,,SBH,La Poule et les Poussins
+Marigot,,17.9098,-62.8147,P,,SBH,
+Merlette,,17.9139,-62.8518,P,,SBH,
+Mont Jean,,17.9139,-62.8098,P,,SBH,
+Pain de Sucre,,17.897,-62.8763,I,,SBH,Le Pain de Sucre|Sugarloaf
+Petit Cul-de-Sac,,17.9026,-62.7964,P,,SBH,
+Pointe Milou,,17.9157,-62.8157,P,,SBH,
+Public,,17.9059,-62.8514,P,,SBH,
+Quartier de Lorient,,17.9052,-62.8226,P,,SBH,
+Quartier du Roi,,17.9095,-62.8458,P,,SBH,
+Roche Plate,,17.9735,-62.926,I,,SBH,Roche Table|Rocher Table|Table
+Saint-Jean,,17.8987,-62.837,P,,SBH,
+Terre Neuve,,17.9154,-62.8552,P,,SBH,
+Toiny,,17.8974,-62.7996,P,,SBH,
+Vitet,,17.9044,-62.8098,P,,SBH,

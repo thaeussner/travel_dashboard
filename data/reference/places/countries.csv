@@ -1,0 +1,108 @@
+code,name,continent,places
+AD,Andorra,EU,60
+AG,Antigua and Barbuda,NA,266
+AI,Anguilla,NA,85
+AL,Albania,EU,4197
+AR,Argentina,SA,15386
+AT,Austria,EU,19656
+AW,Aruba,NA,30
+AX,Aland Islands,EU,1979
+BA,Bosnia and Herzegovina,EU,18962
+BB,Barbados,NA,578
+BE,Belgium,EU,12478
+BG,Bulgaria,EU,6037
+BL,Saint Barthelemy,NA,53
+BM,Bermuda,NA,198
+BO,Bolivia,SA,25594
+BQ,"Bonaire, Saint Eustatius and Saba ",NA,44
+BR,Brazil,SA,5733
+BS,Bahamas,NA,1185
+BY,Belarus,EU,25238
+BZ,Belize,NA,737
+CA,Canada,NA,48632
+CH,Switzerland,EU,7908
+CL,Chile,SA,6252
+CO,Colombia,SA,33124
+CR,Costa Rica,NA,4741
+CU,Cuba,NA,10933
+CW,Curacao,NA,76
+CY,Cyprus,EU,817
+CZ,Czechia,EU,16468
+DE,Germany,EU,11438
+DK,Denmark,EU,7037
+DM,Dominica,NA,160
+DO,Dominican Republic,NA,7981
+EC,Ecuador,SA,10802
+EE,Estonia,EU,7167
+ES,Spain,EU,29585
+FI,Finland,EU,75939
+FK,Falkland Islands,SA,382
+FO,Faroe Islands,EU,237
+FR,France,EU,15209
+GB,United Kingdom,EU,36677
+GD,Grenada,NA,407
+GF,French Guiana,SA,601
+GG,Guernsey,EU,351
+GI,Gibraltar,EU,5
+GL,Greenland,NA,2034
+GP,Guadeloupe,NA,1347
+GR,Greece,EU,16470
+GT,Guatemala,NA,15845
+GY,Guyana,SA,877
+HN,Honduras,NA,12317
+HR,Croatia,EU,11771
+HT,Haiti,NA,10977
+HU,Hungary,EU,10011
+IE,Ireland,EU,9120
+IM,Isle of Man,EU,60
+IS,Iceland,EU,570
+IT,Italy,EU,11699
+JE,Jersey,EU,108
+JM,Jamaica,NA,3379
+KN,Saint Kitts and Nevis,NA,152
+KY,Cayman Islands,NA,152
+LC,Saint Lucia,NA,311
+LI,Liechtenstein,EU,50
+LT,Lithuania,EU,20552
+LU,Luxembourg,EU,573
+LV,Latvia,EU,7675
+MC,Monaco,EU,3
+MD,Moldova,EU,1795
+ME,Montenegro,EU,3579
+MF,Saint Martin,NA,51
+MK,North Macedonia,EU,2376
+MQ,Martinique,NA,1106
+MS,Montserrat,NA,51
+MT,Malta,EU,217
+MX,Mexico,NA,16858
+NI,Nicaragua,NA,2509
+NL,The Netherlands,EU,6913
+NO,Norway,EU,18606
+PA,Panama,NA,13048
+PE,Peru,SA,2286
+PL,Poland,EU,3754
+PM,Saint Pierre and Miquelon,NA,28
+PR,Puerto Rico,NA,2719
+PT,Portugal,EU,16716
+PY,Paraguay,SA,3094
+RO,Romania,EU,15512
+RS,Serbia,EU,8489
+SE,Sweden,EU,34771
+SI,Slovenia,EU,6391
+SJ,Svalbard and Jan Mayen,EU,524
+SK,Slovakia,EU,4956
+SM,San Marino,EU,24
+SR,Suriname,SA,572
+SV,El Salvador,NA,3554
+SX,Sint Maarten,NA,26
+TC,Turks and Caicos Islands,NA,136
+TT,Trinidad and Tobago,NA,672
+UA,Ukraine,EU,32622
+US,United States,NA,21047
+UY,Uruguay,SA,1224
+VA,Vatican,EU,1
+VC,Saint Vincent and the Grenadines,NA,359
+VE,Venezuela,SA,21650
+VG,British Virgin Islands,NA,272
+VI,U.S. Virgin Islands,NA,507
+XK,Kosovo,EU,2255

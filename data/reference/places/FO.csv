@@ -1,0 +1,238 @@
+name,region,lat,lon,kind,population,airports,alt
+Á Dølunum,Streymoy,62.0347,-6.939,H,,FAE,
+Á Steig,Streymoy,62.15,-7.1333,P,,FAE,
+Akraberg,Suðuroy,61.3938,-6.6792,P,,FAE,
+Akrar,Suðuroy,61.4558,-6.7602,P,13,FAE,
+Álakeri,Streymoy,62.005,-6.774,H,,FAE,
+Ánir,Norðoyar,62.256,-6.5752,P,18,FAE,
+Argir,Streymoy,61.996,-6.7715,P,2504,FAE,
+Árnafjørður,Norðoyar,62.2526,-6.5201,P,75,FAE,
+Bøur,Vágar,62.0878,-7.3663,P,74,FAE,
+Biskupsstøð,Norðoyar,62.227,-6.5769,P,,FAE,
+Blankskáli,Norðoyar,62.2319,-6.698,P,,FAE,
+Borðoy,Norðoyar,62.266,-6.5304,I,,FAE,Bordey|Bordhoy|Bordo
+Búgvin,Eysturoy,62.3374,-6.994,I,,FAE,
+Dalur,Sandoy,61.7846,-6.6715,P,45,FAE,
+Depil,Norðoyar,62.2869,-6.5228,P,3,FAE,
+Djúpidalur,Sandoy,61.8,-6.75,P,,FAE,
+Eiði,Eysturoy,62.2993,-7.0925,A,634,FAE,Aji|Eide|Eidhi
+Elduvík,Eysturoy,62.2802,-6.9052,P,23,FAE,
+Eystur,Eysturoy,62.2091,-6.7525,A,,FAE,
+Eysturoy,Eysturoy,62.2158,-6.8775,I,,FAE,Austurey|Ehsturoj|Eisturoja
+Fámjin,Suðuroy,61.5256,-6.8807,P,83,FAE,
+Faroe Islands,Streymoy,61.9828,-6.8829,I,50000,FAE,Die Far Oer|FAE|Faereyjar
+Fodlendi,Norðoyar,62.3629,-6.5359,P,,FAE,
+Froðba,Suðuroy,61.5438,-6.7703,P,290,FAE,
+Froðbiarbotnur,Suðuroy,61.5641,-6.7518,H,,FAE,
+Fuglafjørður,Eysturoy,62.244,-6.814,A,1542,FAE,Fuglaf'jorur|Fuglaf'ordur|Fuglafjoerdur
+Fugloy,Norðoyar,62.3369,-6.3048,I,,FAE,Fuglo|pwglwy
+Funningsfjørður,Eysturoy,62.2366,-6.9253,P,68,FAE,
+Funningur,Eysturoy,62.2871,-6.968,P,47,FAE,
+Gøta,Eysturoy,62.1989,-6.736,P,,FAE,
+Gøtueiði,Eysturoy,62.1833,-6.7667,P,39,FAE,
+Gøtugjógv,Eysturoy,62.192,-6.7434,P,46,FAE,
+Gøtuvík,Eysturoy,62.1762,-6.6884,H,,FAE,
+Gásadalur,Vágar,62.1124,-7.4325,P,11,FAE,
+Gásdalsbarmur,Sandoy,61.7664,-6.7058,H,,FAE,
+Gáshólmur,Vágar,62.0798,-7.4612,I,,FAE,Gaasholm|Gasholm
+Gerðar,Eysturoy,62.1041,-6.7689,P,,FAE,
+Gerðar,Norðoyar,62.2333,-6.5667,P,,FAE,
+Gjánoyri,Streymoy,62.2253,-7.0388,P,55,FAE,
+Gjógv,Eysturoy,62.3229,-6.9358,P,53,FAE,
+Gjógvin,Streymoy,62.1418,-7.027,P,,FAE,
+Glyvrar,Eysturoy,62.1247,-6.7215,P,456,FAE,
+Grønhólmur,Streymoy,62.2,-7.0,I,,FAE,Gromholm|Gronholmur
+Grógv,Eysturoy,62.1806,-6.7508,P,,FAE,
+Grótvík,Sandoy,61.8342,-6.8311,H,,FAE,
+Haldarsvík,Streymoy,62.2756,-7.0933,P,119,FAE,
+Hamar,Streymoy,62.1199,-6.9048,P,,FAE,
+Hamar,Suðuroy,61.6,-6.95,P,,FAE,
+Hamrabyrgi,Suðuroy,61.4406,-6.7258,P,,FAE,
+Haraldssund,Norðoyar,62.2725,-6.603,P,69,FAE,
+Hattarvík,Norðoyar,62.3294,-6.2757,P,11,FAE,
+Hellur,Eysturoy,62.2625,-6.8414,P,30,FAE,
+Hestur,Streymoy,61.9558,-6.8826,P,44,FAE,
+Hestur,Streymoy,61.9544,-6.895,I,,FAE,Hesto|hstwr
+Heyggjur,Streymoy,62.1026,-6.9443,P,,FAE,
+Heyggjur,Streymoy,62.108,-6.7638,P,,FAE,
+Hólar,Suðuroy,61.6051,-6.9506,P,,FAE,
+Hósvík,Streymoy,62.1519,-6.9453,P,335,FAE,
+Hov,Suðuroy,61.5068,-6.7599,A,149,FAE,Hove
+Hoyvík,Streymoy,62.0341,-6.7813,P,4712,FAE,
+Húsar,Eysturoy,62.2627,-6.6891,P,33,FAE,
+Húsavík,Sandoy,61.8076,-6.6709,P,115,FAE,
+Hvalba,Suðuroy,61.6024,-6.9606,A,673,FAE,Hvalbour|Kvalbo
+Hvalvík,Streymoy,62.1878,-7.0328,P,266,FAE,
+Hvannasund,Norðoyar,62.2969,-6.5185,P,271,FAE,
+Hvannhólmur,Sandoy,61.9124,-6.9382,I,,FAE,
+Hvannhólmur,Suðuroy,61.5917,-6.8381,I,,FAE,Kvannholm
+Hvítanes,Streymoy,62.0455,-6.763,P,99,FAE,
+Hvítanes,Suðuroy,61.5586,-6.8368,P,,FAE,
+Í Botni,Suðuroy,61.4833,-6.7833,P,,FAE,
+Í Fámara,Suðuroy,61.4667,-6.8667,P,,FAE,
+Í Hørg,Suðuroy,61.4072,-6.723,P,,FAE,
+Í Húsi,Streymoy,62.0486,-7.1631,P,,FAE,
+Innan Glyvur,Eysturoy,62.1333,-6.75,P,81,FAE,
+Jansagerði,Vágar,62.0438,-7.1859,P,,FAE,
+Kaldbak,Streymoy,62.0606,-6.8281,P,258,FAE,
+Kalsoy,Norðoyar,62.3133,-6.76,I,,FAE,Kal'soj|Kallsoy|Kalso
+Kirkja,Norðoyar,62.3185,-6.3165,A,31,FAE,Kirke
+Kirkjubøur,Streymoy,61.9531,-6.7908,P,81,FAE,
+Kjalnes,Streymoy,62.1167,-6.8667,P,,FAE,
+Klaksvík,Norðoyar,62.2266,-6.589,A,5013,FAE,Klakksvik|Klaksvig|Klaksvikas
+Kolbeinagjógv,Streymoy,62.1,-6.7833,P,28,FAE,
+Kollafjørður,Streymoy,62.1117,-6.9107,P,830,FAE,
+Koltur,Streymoy,61.9865,-6.9624,P,2,FAE,
+Koltur,Streymoy,61.9911,-6.9814,I,,FAE,Insula Koltur|Kol'tur|Kolter
+Kráir,Suðuroy,61.4674,-6.8138,P,,FAE,
+Kranagjógvin,Vágar,62.0966,-7.6737,H,,FAE,
+Krosslið,Suðuroy,61.4738,-6.8038,P,,FAE,
+Kunoy,Norðoyar,62.3039,-6.6475,A,70,FAE,Kounoi|Kuno|Kuno Bygd
+Kunoy,Norðoyar,62.3036,-6.645,I,,FAE,Kounoi|Kuno|Kunoj
+Kvívík,Streymoy,62.1173,-7.0747,P,608,FAE,
+Lambareiði,Eysturoy,62.1333,-6.7167,P,7,FAE,
+Lambavík,Eysturoy,62.1303,-6.6447,H,,FAE,
+Lambi,Eysturoy,62.1397,-6.6997,P,157,FAE,
+Langasandur,Eysturoy,62.1623,-6.7872,P,,FAE,
+Langasandur,Streymoy,62.2335,-7.0465,P,41,FAE,
+Láturgjógvin Heimara,Vágar,62.0958,-7.6765,H,,FAE,
+Leirvík,Eysturoy,62.2099,-6.6928,P,1048,FAE,
+Leiti,Suðuroy,61.45,-6.7517,P,,FAE,
+Leynar,Streymoy,62.1165,-7.0405,P,112,FAE,
+Líðin,Suðuroy,61.55,-6.8333,P,60,FAE,
+Lítla Dímun,Suðuroy,61.6315,-6.7074,I,,FAE,Kis-Dimun|Lille Dimon|Litla Ntimoun
+Ljósá,Eysturoy,62.2672,-7.0624,P,36,FAE,
+Lónin,Suðuroy,61.5881,-6.8391,H,,FAE,
+Lopra,Suðuroy,61.4436,-6.7713,P,124,FAE,
+Lopranshólmur,Suðuroy,61.4408,-6.7918,I,,FAE,Lopra Holm
+Miðgerði,Streymoy,62.1191,-6.8842,P,,FAE,
+Miðvágur,Vágar,62.0511,-7.1939,A,1040,FAE,Midvaag|Midvag|Midvaguras
+Mikladalur,Eysturoy,62.3334,-6.7596,P,27,FAE,
+millum Gilja,Streymoy,62.0345,-6.7897,P,,FAE,
+Morskranes,Eysturoy,62.1324,-6.8414,P,45,FAE,
+Múli,Norðoyar,62.3506,-6.5769,P,4,FAE,
+Mykines,Vágar,62.1049,-7.6342,P,25,FAE,
+Mykines,Vágar,62.1034,-7.6042,I,,FAE,Insula Mykines|Michines|Micinesas
+Mykineshólmur,Vágar,62.0985,-7.673,I,,FAE,Myggenaes Holm|Myggenæs Holm|Mykinsholmur
+Mýrarfjørður,Suðuroy,61.4237,-6.6906,H,,FAE,
+Myrkjanoyri,Norðoyar,62.2291,-6.5773,P,,FAE,
+Navarin,Norðoyar,62.3585,-6.6604,I,,FAE,
+Nes,Eysturoy,62.082,-6.7272,P,366,FAE,
+Nes,Suðuroy,61.5927,-6.927,P,366,FAE,
+Nes,Suðuroy,61.4726,-6.7544,P,,FAE,
+Nesið,Streymoy,62.1501,-7.1549,P,,FAE,
+Nesvík,Streymoy,62.2167,-7.0167,P,2,FAE,
+Nólsoy,Streymoy,62.0094,-6.6702,P,227,FAE,
+Nólsoy,Streymoy,61.9806,-6.6478,I,,FAE,Njol'soj|Nol'soj|Nolsey
+Norðdepil,Norðoyar,62.2947,-6.5251,P,163,FAE,
+Norðoyar,Norðoyar,62.291,-6.5561,I,,FAE,Norderoer|Norderoerne|Norderøer
+Norðoyri,Norðoyar,62.2167,-6.5333,P,156,FAE,
+Norðradalur,Streymoy,62.0389,-6.9255,P,19,FAE,
+Norðragøta,Eysturoy,62.2007,-6.7419,P,668,FAE,
+Norðskáli,Eysturoy,62.2219,-7.0051,P,331,FAE,
+Norðtoftir,Norðoyar,62.2755,-6.5081,P,2,FAE,
+Oman fyri Kirkju,Suðuroy,61.526,-6.8799,P,,FAE,
+Oyndarfjørður,Eysturoy,62.2779,-6.8464,P,136,FAE,
+Oyndarfjørður,Eysturoy,62.2667,-6.8333,H,,FAE,
+Oyrarbakki,Eysturoy,62.2099,-7.0,P,171,FAE,
+Oyrareingir,Streymoy,62.0992,-6.9455,P,38,FAE,
+Oyrargjógv,Vágar,62.1167,-7.1667,P,,FAE,
+Oyri,Streymoy,62.1903,-6.9776,P,172,FAE,
+Porkeri,Suðuroy,61.4813,-6.745,A,396,FAE,Porkere
+Punthavn,Suðuroy,61.55,-6.8167,P,,FAE,
+Øravík,Suðuroy,61.5348,-6.8077,P,36,FAE,
+Øravík,Suðuroy,61.5333,-6.8,H,,FAE,
+Ritugjógvin,Vágar,62.0985,-7.6654,H,,FAE,
+Rituvík,Eysturoy,62.1045,-6.687,P,327,FAE,
+Runavík,Eysturoy,62.1089,-6.7212,P,591,FAE,
+Ryggur,Vágar,62.0507,-7.2038,P,,FAE,
+Søldarfjørður,Eysturoy,62.1632,-6.7543,P,365,FAE,
+Søltuvík,Sandoy,61.8469,-6.8873,P,,FAE,
+Søltuvík,Sandoy,61.85,-6.8833,H,,FAE,
+Sørvágur,Vágar,62.072,-7.3075,P,1148,FAE,
+Sakshøvn,Streymoy,62.2447,-7.2296,H,,FAE,
+Saksun,Streymoy,62.2482,-7.1724,P,37,FAE,
+Saltangará,Eysturoy,62.1165,-6.718,P,1116,FAE,
+Saltnes,Streymoy,62.103,-6.7395,P,152,FAE,
+Sandavágur,Vágar,62.0537,-7.1498,A,779,FAE,Sadevaag|Sandavaguras|Sandavoavur
+Sandoy,Sandoy,61.8544,-6.779,I,,FAE,Sando|Sando Island
+Sandsvágur,Sandoy,61.8302,-6.7964,H,,FAE,
+Sandur,Sandoy,61.8425,-6.8078,A,608,FAE,Sand|Sanduras
+Sandvík,Suðuroy,61.6328,-6.9246,P,116,FAE,
+Selabarmur,Sandoy,61.7723,-6.6637,H,,FAE,
+Selatrað,Eysturoy,62.1564,-6.8716,P,71,FAE,
+Sevlendi,Streymoy,62.1128,-6.7553,P,,FAE,
+Signabøur,Streymoy,62.0962,-6.9273,P,152,FAE,
+Sjóvartoftir,Suðuroy,61.4746,-6.7496,P,,FAE,
+Skælingur,Streymoy,62.0964,-7.0061,P,11,FAE,
+Skálafjørður,Eysturoy,62.195,-6.8477,P,133,FAE,
+Skálar,Suðuroy,61.603,-6.9571,P,,FAE,
+Skálavík,Sandoy,61.8314,-6.6623,A,171,FAE,Skaalevig|Skalevig
+Skáli,Eysturoy,62.1554,-6.7794,P,751,FAE,
+Skarð,Norðoyar,62.3234,-6.6425,P,,FAE,
+Skarðsvík,Norðoyar,62.3438,-6.2955,H,,FAE,
+Skarvanes,Sandoy,61.7942,-6.7454,P,4,FAE,
+Skipanes,Eysturoy,62.1721,-6.765,P,55,FAE,
+Skopun,Sandoy,61.9029,-6.8823,A,457,FAE,Skopen
+Skúli,Sandoy,61.8374,-6.8072,P,,FAE,
+Skúvoy,Sandoy,61.771,-6.805,A,53,FAE,Skuo|Skuo Bygd|Skuvoyarbygd
+Skúvoy,Sandoy,61.7682,-6.8257,I,,FAE,Skouvoi|Skugvoy|Skuo
+Slættanes,Streymoy,62.1537,-7.2451,P,,FAE,
+Stakkur,Streymoy,62.3094,-7.1714,I,,FAE,Stakken
+Stóra Dímun,Sandoy,61.6922,-6.7556,I,,FAE,Didysis Duimunas|Dimon Sogn|Insula Stora Dimun
+Strendur,Eysturoy,62.1073,-6.7572,P,970,FAE,
+Streymnes,Streymoy,62.1915,-7.0315,P,319,FAE,
+Streymoy,Streymoy,62.1168,-6.9792,I,,FAE,Straumey|Strejmoj|Stromo
+Stykkið,Streymoy,62.1176,-7.0601,P,42,FAE,
+Suðuroy,Suðuroy,61.5179,-6.8304,I,,FAE,Juzhno ostrvo|Sudero|Suderø
+Suduroy,Suðuroy,61.5188,-6.8301,P,,FAE,
+Sumba,Suðuroy,61.4032,-6.712,P,349,FAE,
+Sumbiarhólmur,Suðuroy,61.3984,-6.7264,I,,FAE,Sumbo Holm|Sunnbiarholmur
+Sund,Streymoy,62.0473,-6.8366,P,1,FAE,
+Svínáir,Eysturoy,62.2316,-7.0284,P,43,FAE,
+Svínoy,Norðoyar,62.2786,-6.3339,P,95,FAE,
+Svínoy,Norðoyar,62.2676,-6.3521,I,,FAE,Svino|swynwy
+Svínoyarvík,Norðoyar,62.2748,-6.3209,H,,FAE,
+Syðradalur,Eysturoy,62.245,-6.6606,P,14,FAE,
+Syðradalur,Streymoy,62.0188,-6.9086,P,7,FAE,
+Syðrugøta,Eysturoy,62.1837,-6.7515,P,491,FAE,
+Teigar,Suðuroy,61.5219,-6.8847,P,,FAE,
+Thorshavn Red,Streymoy,62.0167,-6.7667,H,,FAE,
+Tindhólmur,Vágar,62.078,-7.4376,I,,FAE,Tindholm|Tyndholm
+Tjørnuvík,Streymoy,62.289,-7.1456,P,66,FAE,
+Tjaldavík,Suðuroy,61.5333,-6.7833,H,,FAE,
+Tjaldavíkshólmur,Suðuroy,61.5311,-6.7756,I,,FAE,Tjaldevig-Holm
+Todnes,Streymoy,62.1183,-6.8851,P,,FAE,
+Toftanes,Eysturoy,62.2117,-6.7097,P,,FAE,
+Toftir,Eysturoy,62.0928,-6.7348,P,964,FAE,
+Torkilsheyggjur,Streymoy,62.0845,-6.7342,P,,FAE,
+Tórshavn,Streymoy,62.0097,-6.7716,C,13200,FAE,Havn|THorshoefn|THunreshaefen
+Trøllanes,Eysturoy,62.3609,-6.7827,P,13,FAE,
+Trøllhøvdi,Streymoy,61.9173,-6.9574,I,,FAE,Troldhoved|Trollhovdi
+Traðir,Sandoy,61.8437,-6.7908,P,,FAE,
+Trongisvágur,Suðuroy,61.5626,-6.8479,P,533,FAE,
+Tvøroyri,Suðuroy,61.5556,-6.8111,A,862,FAE,Tvaera|Tvaeraa|Tvaora
+Uppsalir,Norðoyar,62.222,-6.5842,P,,FAE,
+Uti á Fløtum,Streymoy,62.0333,-6.95,P,,FAE,
+Æðuvík,Eysturoy,62.0692,-6.6861,P,,FAE,
+Vágar,Vágar,62.0946,-7.26,I,,FAE,Vaago|Vago
+Vágsheygur,Norðoyar,62.2213,-6.5694,P,,FAE,
+Vágur,Norðoyar,62.224,-6.5863,P,,FAE,
+Vágur,Suðuroy,61.4732,-6.8118,P,1333,FAE,
+Válur,Streymoy,62.1503,-7.1439,P,55,FAE,
+Vatnsoyrar,Vágar,62.0667,-7.2333,P,44,FAE,
+Velbastaður,Streymoy,61.9808,-6.8526,P,252,FAE,
+Vestmanna,Streymoy,62.1535,-7.1729,P,1260,FAE,
+Viðareiði,Norðoyar,62.36,-6.5313,A,,FAE,Videreide|Viderejde|Vidhareidhi
+Við Garð,Eysturoy,62.2094,-6.7208,P,,FAE,
+Við Garð,Norðoyar,62.3665,-6.5433,P,,FAE,
+Við Kirkjar,Vágar,62.0455,-7.1955,P,,FAE,
+Við Neyst,Suðuroy,61.5987,-6.9497,P,,FAE,
+Viðoy,Norðoyar,62.3271,-6.5115,I,,FAE,Norderoer videro|Videro|Vidhoy
+Við Sjógv,Eysturoy,62.1197,-6.75,P,1158,FAE,
+Við Sjógv,Streymoy,62.1182,-6.8974,P,,FAE,
+Viðvík,Norðoyar,62.3127,-6.4667,H,,FAE,
+Vikar,Vágar,62.1333,-7.3667,P,,FAE,
+Víkarbyrgi,Suðuroy,61.4427,-6.7238,P,2,FAE,
+Víkarfjørður,Suðuroy,61.4469,-6.7145,H,,FAE,
+Ytri Skáli,Streymoy,62.1585,-6.783,P,621,FAE,

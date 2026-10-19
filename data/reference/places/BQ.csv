@@ -1,0 +1,45 @@
+name,region,lat,lon,kind,population,airports,alt
+Barkadera,Bonaire,12.1992,-68.3041,P,,BON,
+Bel Nem,Bonaire,12.1186,-68.2918,P,,BON,
+Bella Vista,Bonaire,12.1502,-68.2626,P,,BON,
+Belnem,Bonaire,12.1233,-68.2874,P,881,BON,
+Bocht van Goto,Bonaire,12.1889,-68.3083,H,,BON,
+Boka Onima,Bonaire,12.2542,-68.3104,H,,BON,
+Boka Slagbaai,Bonaire,12.2648,-68.4145,H,,BON,
+Boka Washikemba,Bonaire,12.1736,-68.2089,H,,BON,
+Bonaire Island,Bonaire,12.1911,-68.2567,I,,BON,BON|Bonair|Bonaire
+Boven Baai,Sint Eustatius,17.5242,-62.9921,H,,EUX SAB,
+Caranjito,Bonaire,12.136,-68.2644,P,,BON,
+Concordia,Sint Eustatius,17.493,-62.9786,P,,EUX SAB,
+Concordia Baai,Sint Eustatius,17.5063,-62.9794,H,,EUX SAB,
+Crispeen,Saba,17.6257,-63.2417,P,283,SAB EUX,
+Dorp Antriol,Bonaire,12.1663,-68.2704,P,3811,BON,
+Dorp Nikiboko,Bonaire,12.1444,-68.2612,P,3475,BON,
+Dorp Nor’i Saliña,Bonaire,12.176,-68.2749,P,,BON,
+Dorp Rincon,Bonaire,12.2376,-68.3306,P,1875,BON,
+Dorp Sabana,Bonaire,12.1491,-68.2695,P,,BON,
+Dorp Tera Kora,Bonaire,12.1373,-68.2604,P,1186,BON,
+Eiland Rancho,Bonaire,12.1167,-68.2333,I,,BON,Eil Rancho|Rancho|Rancho Island
+English Quarter,Saba,17.6324,-63.229,P,,SAB EUX,
+Green Island,Saba,17.6491,-63.23,I,,SAB EUX,Groen Eil|Groen Eiland
+Hoop,Bonaire,12.1235,-68.2873,P,,BON,
+Jan Doran,Bonaire,12.2167,-68.35,P,,BON,
+Klein Bonaire,Bonaire,12.1585,-68.3084,I,,BON,Little Bonaire
+Kralendijk,Bonaire,12.15,-68.2667,C,10620,BON,Kralendajk|Kralendehjk|Kralendeikas
+Leeuwarden,Bonaire,12.2243,-68.2729,P,,BON,
+Little Island,Saba,17.6477,-63.2334,I,,SAB EUX,
+Lower Hell's Gate,Saba,17.6397,-63.2299,P,,SAB EUX,
+Onima,Bonaire,12.248,-68.3122,P,,BON,
+Oranjestad,Sint Eustatius,17.483,-62.9864,A,1097,EUX SAB,Aran'estad|EUX|Oran'estad
+Plaja Bengé,Bonaire,12.2833,-68.4,H,,BON,
+Roozendaal,Bonaire,12.1436,-68.2686,P,,BON,
+Saba Island,Saba,17.6303,-63.2407,I,,SAB EUX,Ile de Saba|Illa de Saba|SAB
+Saint John's Flat,Saba,17.6206,-63.2434,P,186,SAB EUX,
+Sint Eustatius,Sint Eustatius,17.4909,-62.9787,I,,EUX SAB,Ermis Eustatius|Eustatius Island|Saint Eustatius
+Subi di Rincon,Bonaire,12.2274,-68.3337,P,,BON,
+The Bottom,Saba,17.6265,-63.2497,A,488,SAB EUX,Bottom|De-Bottom|Leverock Town
+The Gap,Saba,17.6299,-63.2533,P,,SAB EUX,
+The Level,Saba,17.6261,-63.2272,P,283,SAB EUX,
+Upper Hell's Gate,Saba,17.643,-63.2265,P,2810,SAB EUX,
+Windward Side,Saba,17.6286,-63.2314,P,418,SAB EUX,
+Withbaai,Sint Eustatius,17.4667,-62.95,H,,EUX SAB,

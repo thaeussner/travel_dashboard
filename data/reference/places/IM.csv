@@ -1,0 +1,61 @@
+name,region,lat,lon,kind,population,airports,alt
+Andreas,Andreas,54.3667,-4.4333,A,,IOM,
+Ballabeg,Arbory,54.1,-4.6833,A,,IOM,
+Ballacannell,Lonan,54.2173,-4.405,P,,IOM,
+Ballacarnane Beg,Michael,54.2623,-4.6151,P,,IOM,
+Ballakinnag,Ballaugh,54.3333,-4.55,P,,IOM,
+Ballasalla,Malew,54.0959,-4.6296,A,,IOM,
+Ballaugh,Ballaugh,54.3119,-4.5446,A,,IOM,
+Barregarrow,Michael,54.2625,-4.5827,P,,IOM,
+Bay ny Carrickey,,54.0667,-4.7167,H,,IOM,
+Bride,Bride,54.3826,-4.3892,A,,IOM,
+Calf of Man,Rushen,54.0532,-4.8145,I,,IOM,An Cholu|Eireag Mhanainn|Kaf of Menas
+Castletown,Castletown,54.0744,-4.6536,A,3100,IOM,Baile Chaistil|Balley Chashtal|Castletoun
+Castletown Bay,,54.064,-4.6422,H,,IOM,
+Colby,Arbory,54.0966,-4.7059,P,289,IOM,
+Cranstal,Bride,54.3956,-4.3695,P,,IOM,
+Cregneish,Rushen,54.0696,-4.7684,P,,IOM,
+Cronk-y-Voddy,German,54.2409,-4.6089,P,,IOM,
+Crosby,Marown,54.1833,-4.5667,A,,IOM,
+Dalby,Patrick,54.1688,-4.7292,P,,IOM,
+Derby Haven,,54.0763,-4.6136,H,,IOM,
+Derbyhaven,Malew,54.0765,-4.6235,P,,IOM,
+Dog Mills,Lezayre,54.35,-4.3833,P,,IOM,
+Douglas,Douglas,54.15,-4.4833,C,26218,IOM,Daglas|Daglasa|Daglasas
+Douglas Bay,,54.15,-4.45,H,,IOM,
+Douglas Harbour,Douglas,54.1464,-4.4694,H,,IOM,
+Fleshwick Bay,,54.1084,-4.7524,H,,IOM,
+Foxdale,Malew,54.1667,-4.6167,P,,IOM,
+Glen Maye,Patrick,54.1833,-4.7,P,,IOM,
+Isle of Man,,54.2242,-4.5357,I,,IOM,IOM
+Jurby,Jurby,54.3594,-4.522,A,,IOM,
+Kirk Braddan,Braddan,54.1667,-4.5167,A,,IOM,Kirk Braddon|Saint Braddon
+Kirkmichael,Michael,54.2856,-4.5875,A,,IOM,
+Laxey,Laxey,54.2302,-4.3998,A,1768,IOM,Laksaa|Laksi
+Laxey Bay,,54.2167,-4.3833,H,,IOM,
+Lezayre,Lezayre,54.3167,-4.4167,A,,IOM,
+Little London,Michael,54.2441,-4.5798,P,,IOM,
+Maughold,Maughold,54.2988,-4.3184,A,,IOM,Saint Maughold
+Onchan,Onchan,54.1733,-4.4532,A,,IOM,Conchan|Kione Droghad|Onkan
+Orrisdale,Michael,54.3048,-4.5752,P,,IOM,
+Patrick,Patrick,54.2045,-4.6942,A,,IOM,Saint Patrick
+Peel,Peel,54.2221,-4.691,A,5374,IOM,Pil|Purt na hInse|Purt ny h-Inshey
+Perwick Bay,,54.0675,-4.7464,H,,IOM,
+Port Cornaa,,54.2631,-4.3457,H,,IOM,
+Port Erin,Port Erin,54.0849,-4.751,A,3530,IOM,Port-Ehrin
+Port Mooar,,54.2877,-4.3212,H,,IOM,
+Port Saint Mary,,54.0737,-4.7342,H,,IOM,
+Port Saint Mary,Port St Mary,54.074,-4.7386,A,,IOM,
+Port Saint Mary Bay,,54.0748,-4.7318,H,,IOM,
+Port Soderick,Braddan,54.1287,-4.5411,P,,IOM,
+Ramsey,Ramsey,54.3227,-4.3853,A,7845,IOM,Ramsi|Ramsis|Rhumsaa
+Ramsey Bay,,54.3331,-4.3512,H,,IOM,
+Ronaldsway,Malew,54.0833,-4.6167,P,,IOM,
+Saint Johns,German,54.2,-4.6333,P,,IOM,
+Saint Marks,Malew,54.1333,-4.6,P,,IOM,
+Saint Michaels Island,,54.0745,-4.6059,I,,IOM,Saint Michael Island
+Santon,Santon,54.1167,-4.5833,A,,IOM,Saint Anne
+Shoughlaige-e-Caine,Michael,54.2531,-4.5866,P,,IOM,
+Sulby,Lezayre,54.3228,-4.4797,P,,IOM,
+The Niarbyl,,54.1626,-4.7434,I,,IOM,
+Union Mills,Braddan,54.1696,-4.5202,P,,IOM,

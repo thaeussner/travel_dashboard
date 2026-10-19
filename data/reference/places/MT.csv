@@ -1,0 +1,218 @@
+name,region,lat,lon,kind,population,airports,alt
+Ħal Far,Birżebbuġa,35.8167,14.5067,P,,MLA,
+Ħal Ġinwi,Marsaxlokk,35.8467,14.5425,P,,MLA,
+Ħalq Dieri,Ħaż-Żebbuġ,35.8686,14.4236,P,,MLA,
+Ħamrun,Il-Ħamrun,35.8845,14.485,A,9743,MLA,Ham Rum|Hamrun|Il-Hamrun
+Ħas-Sajd,Ħaż-Żabbar,35.8708,14.5433,P,,MLA,
+Attard,Attard,35.8897,14.4425,A,11377,MLA,Casal Attard|H'Attard|atarada
+Baħar iċ-Ċagħaq,In-Naxxar,35.9386,14.4542,P,1250,MLA,
+Balzan,Balzan,35.9021,14.4521,A,4689,MLA,Casal Balzan|Hal Balzan|balajana
+Beżbeżija,Il-Mosta,35.9122,14.4086,P,,MLA,
+Bighi,Il-Kalkara,35.8924,14.5246,P,,MLA,
+Bighi Bay,,35.8958,14.5225,H,,MLA,
+Binġemma,L-Imġarr,35.91,14.3736,P,,MLA,
+Birbuba,L-Għarb,36.0642,14.1986,P,,MLA,
+Birkirkara,Birkirkara,35.8971,14.4611,A,24356,MLA,B'Kara|Birchircara|Casal Birchircara
+Birżebbuġa,Birżebbuġa,35.8255,14.5268,A,12915,MLA,B'Buga|B'Bugia|Birzbbu
+Biskra,Il-Mellieħa,35.9664,14.3469,P,,MLA,
+Borġ in-Nadur,Birżebbuġa,35.8339,14.5303,P,,MLA,
+Bubaqra,Iż-Żurrieq,35.8247,14.4781,P,,MLA,
+Buġibba,Saint Paul’s Bay,35.9514,14.4106,P,,MLA,
+Bur Magħtab,Ħal Għaxaq,35.8428,14.5136,P,,MLA,
+Bur Marrad,Saint Paul’s Bay,35.9358,14.4139,P,,MLA,
+Comino,Ghajnsielem,36.0147,14.3357,P,10,MLA,
+Comino Island,Ghajnsielem,36.0123,14.3367,I,,MLA,Comino|Cumminu|Insula Comino
+Cospicua,Bormla,35.8856,14.5275,A,6096,MLA,Bormla|Cospiosa|Kospikoua
+Debba,Saint Lawrence,36.0506,14.2006,P,65,MLA,
+Delimara,Marsaxlokk,35.8247,14.5597,P,,MLA,
+Dingli,Dingli,35.8615,14.3821,A,3711,MLA,Casal Dingli|Had-Dingli|digali
+Dwejra,L-Imġarr,35.9053,14.3836,P,,MLA,
+Dwejra,Saint Lawrence,36.0521,14.1909,P,121,MLA,
+Fanal,L-Għasri,36.0637,14.2214,P,,MLA,
+Fgura,Il-Fgura,35.8703,14.5133,P,12877,MLA,
+Floriana,Floriana,35.8958,14.5083,A,2032,MLA,Furjana|Il-Furjana|flwrana
+Fontana,Il-Fontana,36.038,14.236,A,922,MLA,fwntana|phantana|phauntana
+Għajn il-Kbira,Is-Siġġiewi,35.8544,14.4081,P,,MLA,
+Għajn il-Kbira,Victoria,36.0386,14.2397,P,,MLA,
+Għajn Klieb,Ir-Rabat,35.8856,14.3847,P,,MLA,
+Għajn Qajjied,Ir-Rabat,35.8861,14.3867,P,,MLA,
+Għajn Tuffieħa,L-Imġarr,35.9258,14.3533,P,,MLA,
+Għajn Żejtuna,Il-Mellieħa,35.9664,14.3672,P,,MLA,
+Għajnsielem,Ghajnsielem,36.0257,14.2864,A,2931,MLA,Ainsielem|Ghain Sielem|Ghajnsielem
+Għammar,L-Għasri,36.0661,14.2183,P,,MLA,
+Għar Mundu,Is-Siġġiewi,35.8494,14.4061,P,,MLA,
+Għar Ram,Ħaż-Żebbuġ,35.8722,14.4583,P,,MLA,
+Għarb,L-Għarb,36.0597,14.2092,A,1298,MLA,Garb|Gharb|Il-Gharb
+Għasri,L-Għasri,36.0578,14.2264,P,631,MLA,
+Għaxaq,Ħal Għaxaq,35.8493,14.5169,A,4860,MLA,Ashiak|Axiak|Casal Asciak
+Għemieri,Ir-Rabat,35.8922,14.3658,P,,MLA,
+Gebla,Saint Lawrence,36.0533,14.2021,P,112,MLA,
+Ghonoq,Saint Lawrence,36.0577,14.2009,P,76,MLA,
+Ġnien il-Kbir,Ir-Rabat,35.8708,14.3964,P,,MLA,
+Gozo,,36.0494,14.25,I,,MLA,Calypso's Island|Gaulos|Ghaudesh
+Gudja,Il-Gudja,35.8505,14.5059,A,3184,MLA,Gudia|Gudzha|Il-Gudja
+Gżejjer Selmunett,Il-Mellieħa,35.9662,14.4024,I,,MLA,Ghezzejjer Selmunet|Gzeier Island|Gzeir
+Gżira,Il-Gżira,35.9058,14.4881,A,11669,MLA,Il-Gzira|gajira|gazira
+Hal Gharghur,Ħal Għargħur,35.9241,14.4512,A,2857,MLA,Gharghur|Għargħur|Khal Gargur
+Haz-Zebbug,Ħaż-Żebbuġ,35.8719,14.4411,A,11079,MLA,Khaz-Zebbug|Lebbug|Zebbudzh
+Id-Daħar,Il-Mellieħa,35.9764,14.3328,P,,MLA,
+Il-Ħammieri,Qormi,35.8822,14.4608,P,,MLA,
+Il-Ħamrija,Is-Siġġiewi,35.8589,14.4233,P,,MLA,
+Il-Baħrija,Ir-Rabat,35.8944,14.3486,P,,MLA,
+Il-Bajja Fomm ir-Riħ,Ir-Rabat,35.9072,14.3372,H,,MLA,
+Il-Bajja ta’ Marsaxlokk,Birżebbuġa,35.8246,14.5475,H,,MLA,
+Il-Bajja ta’ San Ġilġan,Saint Julian,35.9178,14.4956,H,,MLA,
+Il-Bajja ta’ San Ġorġ,Birżebbuġa,35.8297,14.5361,H,,MLA,
+Il-Bajja ta’ San-Pawl il-Baħar,Saint Paul’s Bay,35.9539,14.3967,H,,MLA,
+Il-Bajja ta’ San Tumas,Marsaskala,35.8525,14.5661,H,,MLA,
+Il-Bajja tal-Ġnejna,L-Imġarr,35.9242,14.3406,H,,MLA,
+Il-Bajja tal-Mellieħa,Il-Mellieħa,35.9751,14.3669,H,,MLA,
+Il-Bidni,Ħaż-Żabbar,35.8689,14.5544,P,,MLA,
+Il-Brolli,Birżebbuġa,35.8306,14.5214,P,,MLA,
+Il-Fawwara,Is-Siġġiewi,35.8403,14.4019,P,,MLA,
+Il-Gżira,Ta’ Xbiex,35.9,14.5,P,,MLA,
+Il-Gżira ta’ Forti Manoel,Il-Gżira,35.9039,14.5028,I,,MLA,Gzira|Gzira Manoel|Illa Manoel
+Il-Madliena,Is-Swieqi,35.9275,14.4661,P,,MLA,
+Il-Miżieb,Iż-Żurrieq,35.8172,14.4953,P,,MLA,
+Il-Ħofra,Ħaż-Żabbar,35.8819,14.5447,P,,MLA,
+Il-Palma,L-Imġarr,35.9356,14.3672,P,,MLA,
+Il-Port il-Kbir,,35.8922,14.5134,H,,MLA,
+Il-Port ta’ Marsamxett,Il-Gżira,35.901,14.5067,H,,MLA,
+Il-Qajjenza,Birżebbuġa,35.8339,14.535,P,,MLA,
+Il-Qattara,Il-Mosta,35.9025,14.4089,P,,MLA,
+Il-Qortin ta’ Għajn Żejtuna,Il-Mellieħa,35.9639,14.3714,P,,MLA,
+Il-Wilġa,L-Għarb,36.0575,14.2094,P,,MLA,
+Imdina,L-Imdina,35.8864,14.4031,A,193,MLA,Citta Notabile|Citta Vecchia|Citta Vechia
+Imġarr,L-Imġarr,35.9215,14.365,A,3802,MLA,Imgiar|Imjar|Imqarr
+Imsida,L-Imsida,35.8925,14.4828,A,13713,MLA,L-Imsida|Misida|Msida
+Imtarfa,Mtarfa,35.8924,14.3982,A,2615,MLA,Imtarfa Barracks|L-Imtarfa|Mtarfa
+In-Naħħalija,Il-Mellieħa,35.9353,14.3428,P,,MLA,
+Ir-Ramla,Ix-Xagħra,36.0631,14.2828,H,,MLA,
+Is-Sellum,Il-Mellieħa,35.9664,14.3589,P,,MLA,
+Ix-Xagħra ta’ l-Isqof,Ir-Rabat,35.8653,14.4064,P,,MLA,
+Ix-Xgħajriet,Is-Swieqi,35.9214,14.4628,P,,MLA,
+Ix-Xlejli,Il-Gudja,35.8511,14.5072,P,,MLA,
+Iż-Żebbiegħ,L-Imġarr,35.9203,14.3794,P,,MLA,
+Kalafrana,Birżebbuġa,35.8181,14.5344,P,,MLA,
+Kalkara,Il-Kalkara,35.8892,14.5328,A,3059,MLA,Calcara|Il-Kalkara|kalakara
+Kemmunett,Il-Qala,36.0136,14.3194,I,,MLA,Cominotto|Comminotto|Ishulli Cominotto
+Kerċem,Ta’ Kerċem,36.0416,14.2269,A,1627,MLA,Kerchem|kerasema|kerusemu
+Kirkop,Kirkop,35.8423,14.4856,A,2397,MLA,Casal Chircop|Hal-Kirkop|kakuoppu
+L-Aħrax tal-Għajn,Il-Mellieħa,35.9811,14.3322,P,,MLA,
+L-Andrijiet,Ir-Rabat,35.8861,14.3658,P,,MLA,
+L-Iklin,L-Iklin,35.9041,14.4542,A,3422,MLA,Iklin|L'Inglin|L-Iclin
+L-Imbordin,Saint Paul’s Bay,35.9433,14.3717,P,,MLA,
+L-Iskorvit,L-Imġarr,35.9131,14.3556,P,,MLA,
+Lija,Lija,35.9005,14.4463,A,3202,MLA,Casal Lia|Hal Lija|Lia
+Luqa,Luqa,35.8599,14.489,A,6162,MLA,Casal Luca|Hal Luqa|Luca
+Magħtab,In-Naxxar,35.9364,14.4478,P,,MLA,
+Malta,,35.8818,14.4491,I,388232,MLA,Eiland Malta|Ile de Malte|Ilha de Malta
+Maltese Islands,,35.9167,14.4333,I,,MLA,Arcipelago di Malta|Il-Gzejjer ta' Malta|Malta
+Manikata,Il-Mellieħa,35.94,14.3533,P,539,MLA,
+Manresa,Il-Fontana,36.0381,14.2391,P,,MLA,
+Marfa,Il-Mellieħa,35.9858,14.3462,P,,MLA,
+Marfa Bay,,35.9902,14.3355,H,,MLA,
+Marsa,Il-Marsa,35.8792,14.4946,A,5454,MLA,Il-Marsa|ma er sa|maleusa
+Marsalforn,Iż-Żebbuġ,36.0711,14.2586,P,168,MLA,
+Marsaskala,Marsaskala,35.8622,14.567,A,10024,MLA,M'Skala|Marsa Scala|Marsascala
+Marsaxlokk,Marsaxlokk,35.8421,14.543,A,3660,MLA,M'Xloxx|Marsa Scirocco|Marsa Shlok
+Mellieħa,Il-Mellieħa,35.9566,14.3626,A,11389,MLA,Il-Mellieha|Il-Mellieħa|Mellieha
+Mġarr,L-Imġarr,36.0253,14.295,P,2868,MLA,
+Misraħ Ħlantun,Safi,35.8281,14.4908,P,,MLA,
+Misraħ Strejnu,Iż-Żejtun,35.8506,14.5453,P,,MLA,
+Misraħ Suffara,Dingli,35.8686,14.3736,P,,MLA,
+Miżieb,Il-Mellieħa,35.95,14.3581,P,,MLA,
+Mosta,Il-Mosta,35.9094,14.4257,A,23482,MLA,Il-Mosta|Masta|Musta
+Mqabba,L-Imqabba,35.8476,14.4682,A,3339,MLA,Casal Micabiba|Imkabba|L-Imqabba
+Msieraħ,L-Imsida,35.9,14.4833,P,,MLA,
+Munxar,Il-Munxar,36.0305,14.2347,A,1707,MLA,Monsciar|Munksa|Munshar
+Nadur,In-Nadur,36.0379,14.2938,A,3933,MLA,In-Nadur|nadouru|nadura
+Naxxar,In-Naxxar,35.9137,14.4438,A,14890,MLA,In-Naxxar|Naksar|Nasaras
+Nigred,Ir-Rabat,35.8828,14.3858,P,,MLA,
+Ħofret ir-Rizz,Ir-Rabat,35.8733,14.3767,P,,MLA,
+Paceville,Saint Julian,35.9238,14.4895,P,,MLA,
+Paola,Paola,35.873,14.499,A,8706,MLA,Casal Paola|Casal Paolo|Casal Paula
+Pawluzzu,Saint Lawrence,36.0551,14.2066,P,56,MLA,
+Pembroke,Pembroke,35.9302,14.4779,A,3842,MLA,Pembruk|Pembrukas|Pemproouk
+Pietà,Tal-Pietà,35.893,14.4936,A,4892,MLA,P'eta|Tal-Pieta|byta
+Qala,Il-Qala,36.0361,14.3094,P,1929,MLA,
+Qbajjar,Iż-Żebbuġ,36.0778,14.2503,P,,MLA,
+Qormi,Qormi,35.876,14.472,A,16801,MLA,Hal Qormi|Kormi|Kormis
+Qrendi,Il-Qrendi,35.8345,14.4578,A,3148,MLA,Casal Krendi|Crendi|Il-Qrendi
+Rabat,Ir-Rabat,35.8815,14.3987,P,11936,MLA,
+Ramla tal-Mġarr,Ghajnsielem,36.0258,14.2994,H,,MLA,
+Ras in-Niexfa Bay,Il-Mellieħa,35.9664,14.3311,H,,MLA,
+Rinella Bay,Il-Kalkara,35.8936,14.5267,H,,MLA,
+Rosa,Saint Lawrence,36.0594,14.1983,P,32,MLA,
+Safi,Safi,35.8331,14.4849,A,2280,MLA,Casal Safi|Hal Safi|safy
+Saint Lucia,Saint Lucia,36.0431,14.2172,P,,MLA,
+Salina Bay,Saint Paul’s Bay,35.9533,14.4278,H,,MLA,
+San Ġiljan,Saint Julian,35.9184,14.4898,A,13792,MLA,Saint Julian|Saint Julian's|San Gilian
+San Ġwann,Saint John,35.9056,14.4761,A,14720,MLA,San-Gvann|san ghwan|san gwan
+San Katald,L-Għarb,36.0656,14.2058,P,,MLA,
+San Lawrenz,Saint Lawrence,36.0554,14.2039,A,530,MLA,Saint Lawrence|San Laurenz|San-Lavrenc
+San Leonardo,Ħaż-Żabbar,35.8783,14.5558,P,,MLA,
+San Pawl il-Baħar,Saint Paul’s Bay,35.9506,14.4156,A,32042,MLA,Baia di San Paolo|Saint Paul's Bay|San Paul Amere
+Sannat,Sannat,36.0245,14.2428,A,1681,MLA,Is-Sannat|Sanatas|Ta' Sannat
+Santa Katarina,Ir-Rabat,35.8713,14.3859,P,350,MLA,
+Santa Venera,Saint Venera,35.89,14.4729,A,7590,MLA,Saint Venera|Santa Vennera|St. Venera
+Santu Pietru,L-Għarb,36.0608,14.2011,P,,MLA,
+Santu Rokku,Il-Kalkara,35.8908,14.5406,P,,MLA,
+Senglea,Senglea,35.8878,14.5159,A,2720,MLA,Isla|L-Isla|Sen'nklea
+Siġġiewi,Is-Siġġiewi,35.8555,14.4361,A,8721,MLA,Is-Siggiewi|Sidzhievi|Sidzivis
+Sliema,Tas-Sliema,35.9125,14.5017,A,22591,MLA,Slijema|Slima|Tas-Sliema
+Smart City,Il-Kalkara,35.8903,14.5403,P,,MLA,
+South West Extension,Il-Marsa,35.8806,14.4993,H,,MLA,
+Swieqi,Is-Swieqi,35.9215,14.48,A,14452,MLA,Is Suieki|Is-Swieki|Is-Swieqi
+Ta’ Ħamet,Ix-Xewkija,36.04,14.2647,P,,MLA,
+Ta’ Ħaxxluq,Is-Siġġiewi,35.8467,14.445,P,,MLA,
+Ta’ Bir Miftuħ,Luqa,35.8528,14.4906,P,,MLA,
+Ta’ Brared,Il-Mosta,35.9289,14.4022,P,,MLA,
+Ta’ Ċantar,Ħaż-Żabbar,35.8697,14.5367,P,,MLA,
+Ta’ l-Abatija,L-Imġarr,35.9075,14.3503,P,,MLA,
+Ta’ Qali,Attard,35.8942,14.4272,P,,MLA,
+Ta’ San Ġwakkin,Qormi,35.8867,14.4658,P,,MLA,
+Ta’ San Niklaw,Il-Qrendi,35.8356,14.4417,P,,MLA,
+Ta’ Xbiex,Tarxien,35.8991,14.4946,A,2012,MLA,Ta Kbieks|Ta' Shbiesh|Ta-Shbish
+Taċ-Ċawla,Victoria,36.0375,14.2406,P,,MLA,
+Tad-Dawl,L-Imqabba,35.8508,14.4722,P,,MLA,
+Tal-Ħandaq,Qormi,35.8708,14.4681,P,,MLA,
+Tal-Bajjada,Is-Siġġiewi,35.8372,14.4256,P,,MLA,
+Tal-Barrani,Iż-Żejtun,35.8564,14.5203,P,,MLA,
+Tal-Blata,Il-Mellieħa,35.9639,14.3911,P,,MLA,
+Tal-Borġ,Ta’ Xbiex,35.8711,14.5147,P,,MLA,
+Tal-Ibraġ,Is-Swieqi,35.9156,14.4644,P,,MLA,
+Tal-Kittienija,Il-Qrendi,35.8369,14.4683,P,,MLA,
+Tal-Ħlas,Ħaż-Żebbuġ,35.8731,14.4517,P,,MLA,
+Tal-Liebru,Safi,35.8347,14.4944,P,,MLA,
+Tal-Mejda,Is-Swieqi,35.9161,14.4689,P,,MLA,
+Tal-Merħla,Ir-Rabat,35.8789,14.3439,P,,MLA,
+Tal-Milord,Il-Mosta,35.9269,14.3983,P,,MLA,
+Tal-Munxar,Marsaskala,35.8494,14.5622,P,,MLA,
+Tal-Papa,Birżebbuġa,35.8178,14.5228,P,,MLA,
+Tal-Pitkal,Dingli,35.86,14.3706,P,,MLA,
+Tal-Veċċa,Dingli,35.8561,14.3769,P,,MLA,
+Tarxien,Ta’ Xbiex,35.8656,14.5151,A,8627,MLA,Casal Tarxien|Hal Tarxien|Tark'en
+Tas-Salvatur,Is-Siġġiewi,35.8508,14.4519,P,,MLA,
+Tas-Santi,L-Imġarr,35.9061,14.3564,P,,MLA,
+The Marsa,Il-Marsa,35.8839,14.5019,H,,MLA,
+Valletta,Valletta,35.8997,14.5148,C,6794,MLA,A Valeta|A Valletta|Baleta
+Valletta Harbours,,35.9044,14.5256,H,,MLA,
+Victoria,Victoria,36.0447,14.2412,A,6596,MLA,Ir-Rabat|Rabat|Victoria Town
+Vittoriosa,Il-Birgu,35.8916,14.5176,A,2489,MLA,Birgu|Il-Birgu|Vittorioza
+Wardija Crossroads,Saint Paul’s Bay,35.9381,14.4111,P,,MLA,
+Wied Fulija,Iż-Żurrieq,35.8183,14.4775,P,,MLA,
+Wied Għammieq,Il-Kalkara,35.8969,14.5294,P,,MLA,
+Wied l-Arkata,Il-Mosta,35.9247,14.4144,P,,MLA,
+Wileg,Saint Lawrence,36.0564,14.2023,P,98,MLA,
+Xagħra,Ix-Xagħra,36.05,14.2642,A,3680,MLA,Caccia|Ix-Xaghra|Ix-Xagħra
+Xemxija,Saint Paul’s Bay,35.9496,14.3803,P,,MLA,
+Xewkija,Ix-Xewkija,36.0341,14.2559,A,3303,MLA,Ix-Xewkija|K'jukija|Seukidza
+Xgħajra,Ix-Xgħajra,35.8856,14.5475,A,1830,MLA,Ix-Xghara|Ix-Xgħara|Kkhajra
+Xlendi,Il-Munxar,36.0288,14.218,P,120,MLA,
+Xrobb il-Għaġin,Marsaxlokk,35.8406,14.5697,P,,MLA,
+Żabbar,Ħaż-Żabbar,35.8769,14.5359,A,15648,MLA,Haz-Zabbar|Zabar|Zabaras
+Żebbuġ,Iż-Żebbuġ,36.0719,14.237,A,1770,MLA,Iz-Zebbug|Zebbuj|Zebudzas
+Żejtun,Iż-Żejtun,35.8555,14.5334,A,11549,MLA,Casal Zeitun|Iz Zeitun|Iz-Zejtun
+Żonqor,Marsaskala,35.8708,14.565,P,,MLA,
+Żurrieq,Iż-Żurrieq,35.8296,14.4759,A,10962,MLA,Casal Zurrico|Iz-Zurrieq|Zebbudzh

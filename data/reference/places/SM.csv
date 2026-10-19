@@ -1,0 +1,25 @@
+name,region,lat,lon,kind,population,airports,alt
+Acquaviva,Acquaviva,43.9459,12.4185,A,1530,RMI FRL AOI,Akkvavviva|akavaviva|akkuavuivua
+Borgo Maggiore,Borgo Maggiore,43.9419,12.4474,A,6424,RMI FRL AOI,Borga-Madzhoreh|Borgo Madzhore|Borgo Madzore
+Cà Rigo,Borgo Maggiore,43.9428,12.4455,P,,RMI FRL AOI,
+Cailungo,Borgo Maggiore,43.9519,12.4536,P,2076,RMI FRL AOI,
+Casole,San Marino,43.917,12.4444,P,,RMI FRL AOI,
+Cerbaiola,Montegiardino,43.9035,12.4768,P,,RMI FRL AOI,
+Dogana,Serravalle,43.9803,12.4905,P,7000,RMI FRL AOI,
+Domagnano,Domagnano,43.9496,12.4683,A,3161,RMI FRL AOI,Doman'jano|Montelupo|domaganano
+Faetano,Faetano,43.9283,12.498,A,1177,RMI FRL AOI,Faehtana|Faehtano|Faetan
+Falciano,Serravalle,43.9833,12.5,P,1000,RMI FRL AOI,
+Fiorentino,Fiorentino,43.91,12.4574,A,2510,RMI FRL AOI,F'jorehntyna|F'orentino|Fiorendine
+Fiorina,Serravalle,43.958,12.4769,P,889,RMI FRL AOI,
+Gualdicciolo,Acquaviva,43.9498,12.4073,P,,RMI FRL AOI,
+Lesignano,,43.9618,12.4842,P,,RMI FRL AOI,
+Monte Giardino,Montegiardino,43.9088,12.482,A,910,RMI FRL AOI,Mondesciardine|Mons Viridarium|Monte Dzhardino
+Murata,San Marino,43.9201,12.4515,P,1580,RMI FRL AOI,
+Piandivello,Domagnano,43.95,12.4867,P,,RMI FRL AOI,
+Poggio di Chiesanuova,Chiesanuova,43.9045,12.4214,A,951,RMI FRL AOI,Chiesanuova|Ciesanova|Ecclesia Nova
+San Marino,San Marino,43.9367,12.4464,C,4500,RMI FRL AOI,Agios Marinos|Altepetl San Marino|Cathair San Mairine
+Santa Mustiola,San Marino,43.9339,12.4386,P,,RMI FRL AOI,
+Serravalle,Serravalle,43.969,12.4817,A,9258,RMI FRL AOI,Olnanum|Seravale|Seravałe
+Torraccia,,43.9524,12.5073,P,150,RMI FRL AOI,
+Valdragone,Borgo Maggiore,43.9402,12.4562,P,6983,RMI FRL AOI,
+Ventoso,,43.9546,12.4405,P,200,RMI FRL AOI,

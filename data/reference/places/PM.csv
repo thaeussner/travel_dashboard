@@ -1,0 +1,29 @@
+name,region,lat,lon,kind,population,airports,alt
+Anse à Rodrigue,,46.7824,-56.1685,H,,FSP MQC,
+Anse aux Soldats,,46.8871,-56.2561,H,,FSP MQC,
+Anse Coudreville,,46.7799,-56.1695,H,,FSP MQC,
+Anse de Miquelon,,47.1069,-56.3692,H,,MQC FSP,
+Anse du Gouvernement,,46.8943,-56.2917,H,,FSP MQC,
+Anse du Sud-Ouest,,46.8226,-56.3839,H,,FSP MQC,
+Barachois,,46.7767,-56.1719,H,,FSP MQC,
+Ferme de Mirande,,47.065,-56.2903,P,76,MQC FSP,
+Grand Colombier,,46.823,-56.1661,I,,FSP MQC,Gran Kolombje
+Île aux Marins,,46.7871,-56.1485,I,,FSP MQC,Ile aux chiens
+Île aux Pigeons,,46.7966,-56.1319,I,,FSP MQC,
+Île aux Vainqueurs,,46.7907,-56.1284,I,,FSP MQC,
+Île Saint-Pierre,Saint-Pierre,46.7812,-56.1945,I,,FSP MQC,
+L'Île aux Chevaux,,46.9969,-56.3128,I,,MQC FSP,Ile aux Chevaux
+La Croix,,46.8772,-56.3071,P,95,FSP MQC,
+La Ferme de la Pointe au Cheval,,47.0083,-56.3686,P,69,MQC FSP,
+La Ferme du Ruisseau Debons,,46.8722,-56.3458,P,102,FSP MQC,
+La Ferme Larranaga,,46.9525,-56.3267,P,30,MQC FSP,
+La Ferme Olivier,,46.8999,-56.318,P,77,FSP MQC,
+Le Palmier,,46.8633,-56.2484,P,35,FSP MQC,
+Le Ruisseau Debons,Miquelon-Langlade,46.8736,-56.3426,P,102,FSP MQC,
+Le Sprus,,46.8749,-56.2582,P,42,FSP MQC,
+Miquelon,,46.9664,-56.3278,I,,MQC FSP,Ile Miquelon
+Miquelon,Miquelon-Langlade,47.0975,-56.3814,A,1141,MQC FSP,MQC|Mikelon|Miquelao
+Nouveau Port,,46.7808,-56.1681,H,,FSP MQC,
+Petit Barachois,Miquelon-Langlade,46.8627,-56.3612,P,100,FSP MQC,
+Saint-Pierre,Saint-Pierre,46.7791,-56.1773,C,6200,FSP MQC,FSP|St Pierre|saengpieleu
+Village de l'Anse du Gouvernement,Miquelon-Langlade,46.8975,-56.3013,P,76,FSP MQC,

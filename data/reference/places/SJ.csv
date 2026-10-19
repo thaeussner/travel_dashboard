@@ -1,0 +1,525 @@
+name,region,lat,lon,kind,population,airports,alt
+Abbotøyane,,77.3875,23.2994,I,,LYR,Abbotoyane|Abbots Islands|Abbots-Inseln
+Abeløya,Svalbard,79.0061,30.2571,I,,LYR,Abeljoja|Abeloya|Abels O
+Adolfbukta,,78.6519,16.8437,H,,LYR,
+Adriabukta,,76.9855,16.1913,H,,LYR,
+Agardhbukta,,78.0215,18.5193,H,,LYR,
+Agskjera,Svalbard,78.2006,13.0222,I,,LYR,
+Akseløya,,77.7194,14.6748,I,,LYR,Akseloya|Axel Saaret|Axels Oar
+Akselhamna,,77.6833,14.75,H,,LYR,
+Albertøya,,79.7333,11.0333,I,,LYR,Alberton|Albertoya
+Albertinibukta,,80.2791,25.0061,H,,LYR,
+Aleksejevøya,,78.6307,21.3116,I,,LYR,Aleksejevoya|Ils Alexeev
+Alkeholmen,,74.35,19.1167,I,,,
+Alpiniøya,,80.3595,24.7669,I,,LYR,Alpini Island|Alpinioya|Isola degli Alpini
+Amsterdamøya,Svalbard,79.75,10.8333,I,,LYR,Amster Eiland|Amsterdam|Amsterdam adasi
+Andøyane,,79.6667,13.3333,I,,LYR,Ande Oyan|Ande Øyan|Andoyane
+Anderssonøya,Svalbard,74.3833,19.2167,I,,,Andersson Oy|Anderssonoya
+Anderssonøyane,Svalbard,78.2982,20.6543,I,,LYR,Anderson Inseln|Anderssonoyane|Anderssons Oar
+Anderssonbukta,,78.2843,20.7448,H,,LYR,
+Andréebukta,,78.878,29.4766,H,,LYR,
+Andvika,,76.9389,15.7812,H,,LYR,
+Anservika,,78.4539,16.3365,H,,LYR,
+Antarcticøya,,78.6718,26.6312,I,,LYR,Antarctic Island|Antarcticoya|Antarctics o
+Antarcticbukta,,78.8287,27.9958,H,,LYR,
+Arendtsøya,,77.2879,21.6327,I,,LYR,Arendts Island|Arendtsoya
+Augustabukta,,79.3978,20.6575,H,,LYR,
+Aurholmen,Svalbard,77.1631,14.8021,I,,LYR,
+Austervåg,Svalbard,74.4928,19.2024,H,,,
+Austre Burgerbukta,,77.0667,15.9833,H,,LYR,
+Austre Sørbremorena,Jan Mayen,71.0025,-8.1944,H,,,
+Bakanbukta,Svalbard,78.6927,20.7958,H,,LYR,
+Balanusvika,Svalbard,78.6833,11.8333,H,,LYR,
+Bardiholmen,,77.5661,14.9987,I,,LYR,Bardi Felsen
+Barentsøya,Svalbard,78.45,21.25,I,,LYR,Baren-Island|Barenco sala|Barents Island
+Barentsburg,Svalbard,78.0644,14.2117,P,297,LYR,
+Basisøya,,80.1831,18.3247,I,,LYR,Basisoya
+Bastianøyane,,79.0228,21.3345,I,,LYR,Bastian Insel|Bastianoyane|Bastion Island
+Behmøya,,79.314,20.8076,I,,LYR,Behm Insel|Behmoya
+Bellsundholmen,,77.7499,14.2422,I,,LYR,
+Berggrenøya,,79.3169,19.1706,I,,LYR,Berggren Island|Berggrenoya|Isle Bergren
+Berghausøya,,79.3529,20.5663,I,,LYR,Berghaus Island|Berghausoya
+Bjørnøya,Svalbard,74.4476,19.0402,I,9,,'t Viercandt Eyelandt|Baeren Eiland|Baeren O
+Bjørnbogen,Svalbard,79.0198,20.5525,H,,LYR,
+Bjørnholmane,,77.5,20.5,I,,LYR,Beare Islands|Bjornholmane
+Bjørnnesholmen,Svalbard,79.1287,16.1301,I,,LYR,Bjornnesholmen
+Bjørnskaubukta,,76.8463,15.674,H,,LYR,
+Bjørnvika,Svalbard,80.1695,25.7744,H,,LYR,
+Bjonahamna,,78.3837,16.8679,H,,LYR,
+Blåfjorden,,77.9474,23.498,H,,LYR,
+Blomstrandhalvøya,Svalbard,78.9759,12.1053,I,,LYR,Blomstrand's Mound|Blomstrandhalvoya|Blomstrands Halvo
+Boeckøya,,80.2252,25.6568,I,,LYR,Boeck-Insel|Boeckoya
+Bogevika,Svalbard,74.4,18.9333,H,,,
+Bölscheøya,,77.2203,22.0193,I,,LYR,Bolsche Island|Bolscheoya
+Borebukta,,78.3537,14.3232,H,,LYR,
+Brækmoholmane,,77.0669,22.4727,I,,LYR,Braekmoholmane
+Braganzavågen,,77.8938,16.8641,H,,LYR,
+Brattholmen,,76.4681,16.523,I,,LYR,Bratholme
+Bråvika,Svalbard,80.1176,17.9916,H,,LYR,
+Breøyane,Svalbard,79.0,12.1167,I,,LYR,Breoyane
+Brebukta,Svalbard,78.632,11.2048,H,,LYR,
+Breibogen,,79.8167,12.6667,H,,LYR,
+Breibukta,,78.8364,28.6711,H,,LYR,
+Breiddholmen,,79.3,14.0167,I,,LYR,Eiderholmen|Ejderholmen|Ile des Eiders
+Brepollen,,76.991,16.3579,H,,LYR,
+Brimulen,,78.18,20.7844,I,,LYR,
+Brochøya,,80.4549,25.9707,I,,LYR,Broch Island|Brochoya|Brock's Island
+Bruhnsøya,,77.2771,21.6736,I,,LYR,Bruhns Island|Bruhnsoya
+Bünsowbukta,,78.9396,28.3239,H,,LYR,
+Burgerbukta,,77.0445,15.9572,H,,LYR,
+Carlsenøya,,78.9228,21.515,I,,LYR,Carlsen Island|Carlsenoya
+Carolusbukta,Svalbard,80.1833,21.6667,H,,LYR,
+Castrénøyane,,80.4974,20.2213,I,,LYR,Castrenoyane|Castrens Oar
+Chermsideøya,Svalbard,80.5054,19.9214,I,,LYR,Chermside Island|Chermside's o|Chermsideoya
+Colesbukta,,78.1256,14.8929,H,,LYR,
+Coraholmen,,78.6796,14.6925,I,,LYR,Cora Island
+Crednermorenen,,77.8667,16.8,H,,LYR,
+Cummingøya,,79.8167,11.5667,I,,LYR,Cummingoya|Ile Cumming|Phipps Island
+Damesmorenen,Svalbard,77.8667,16.5,H,,LYR,
+Danielssenøya,,80.2348,25.8524,I,,LYR,Danielssen Island|Danielssenoya
+Danskøya,Svalbard,79.7,10.9333,I,,LYR,Danaeyju|Danes Island|Danish Island
+Deegenøya,,79.0,21.0,I,,LYR,Deegen Island|Deegenoya
+Delitschøya,,77.3872,22.4934,I,,LYR,Delitsch Island|Delitschoya
+Depotøya,,79.9879,18.0565,I,,LYR,Depot Holm|Depoton|Depotoya
+Detterbukta,Svalbard,80.1274,17.8788,H,,LYR,
+Diabasbukta,Svalbard,77.7575,14.4982,H,,LYR,
+Dianabukta,,77.3837,23.2697,H,,LYR,
+Dianahamna,,77.2874,23.2134,H,,LYR,
+Dietricholmen,,78.9167,12.3333,I,,LYR,Dietrich Island
+Diskobukta,,77.9256,21.4837,H,,LYR,
+Djevleøya,,79.8,10.65,I,,LYR,Devils Island|Djevleoya|Duyvels Eyland
+Dolomittøyane,,79.7992,18.3561,I,,LYR,Dolomittoyane|Iles Dolomite
+Donkerholmane,,79.5667,11.0667,I,,LYR,Doncker Islands|Jan Donker|Zieten-Klippe
+Dorstbukta,,78.5871,21.4455,H,,LYR,
+Drabanten,,80.6493,25.0187,I,,LYR,The Lifeguard|Trabant
+Drangane,,74.4833,18.7833,I,,,
+Dunøyane,,77.0614,14.9503,I,,LYR,Daunen-Inseln|Down Islands|Dunn-Island
+Dunøyhamna,,77.0637,14.9739,H,,LYR,
+Dunderbukta,Svalbard,77.4671,14.0181,H,,LYR,
+Dunderholmane,,77.4891,13.9016,I,,LYR,Dunderholme
+Dunérbukta,Svalbard,78.1667,19.05,H,,LYR,
+Dyna,,80.2455,25.3085,I,,LYR,
+Dynekilen,,78.3101,12.9092,H,,LYR,
+Edgeøya,Svalbard,77.75,22.5,I,,LYR,Alekseevskij Ostrov|Alexeyiewskoy Ostrow|Edge Island
+Edlundhamna,,78.6224,20.0723,H,,LYR,
+Efuglvika,Svalbard,74.4167,18.9167,H,,,
+Eholmen,,77.5987,14.9085,I,,LYR,Ile des Eders|Ile des Eiders
+Eidembukta,,78.35,12.8,H,,LYR,
+Einhyrningbukta,,78.64,21.4467,H,,LYR,
+Ekrollhamna,,77.5,20.5,H,,LYR,
+Emmaholmane,,74.5167,18.9333,I,,,Emmas Oar
+Emoholmane,,77.0121,15.9553,I,,LYR,Bird Rock|Emo Inseln
+Engeløya,,78.563,20.8302,I,,LYR,Angel Island|Engel Island|Engeloya
+Engelskbukta,,78.8338,11.8876,H,,LYR,
+Enwalløya,,79.3023,19.4707,I,,LYR,Enwalloya|Isle Envall
+Erkna,,80.1441,22.327,I,,LYR,
+Esmarkøya,Svalbard,80.2011,26.0758,I,,LYR,Esmark Island|Esmarkoya
+Esmarkmorena,Svalbard,78.3,14.0667,H,,LYR,
+Evjebukta,,74.355,19.1329,H,,,
+Fagerbukta,Svalbard,77.4951,14.7397,H,,LYR,
+Farmhamna,,78.3333,12.8833,H,,LYR,
+Fearnleyholmen,,80.2329,25.7551,I,,LYR,Fearnley Island
+Ferriermorena,Svalbard,78.6333,17.0,H,,LYR,
+Ferskvassbukta,Svalbard,78.7899,11.1424,H,,LYR,
+Fidrasteinen,,78.7055,10.7442,I,,LYR,Fidra Rocks|Frida Rock
+Fjørholmen,,77.0689,14.992,I,,LYR,Fjorholmen
+Fjellvågen,Svalbard,76.9346,17.2313,H,,LYR,
+Flakskjeret,,76.4669,16.8173,I,,LYR,
+Flatholmen,,77.1536,14.6706,I,,LYR,
+Fleur de Lyshamna,,77.563,15.014,H,,LYR,
+Flintholmen,,78.6419,14.5617,I,,LYR,Chert Island
+Flyndra,,80.016,18.3124,I,,LYR,Flundren
+Foottøya,,79.5396,17.9501,I,,LYR,Fass Island|Foot Island|Foott's Island
+Forlandsøyane,,78.3419,11.5887,I,,LYR,Edinburgh Isles|Edinburgh Oyan|Forlandsoarna
+Fosterøyane,,79.5739,19.266,I,,LYR,Eyland|Foster Islands|Fosteroyan
+Fotherbymorena,Jan Mayen,71.0186,-8.0661,H,,,
+Foynøya,,80.4504,26.1499,I,,LYR,Foyen's Island|Foyn Island|Foynoya
+Framtidsøyane,,80.2373,18.5337,I,,LYR,Framtidsoarna|Framtidsoyane
+Franzøya,,79.2863,21.1457,I,,LYR,Franzoya|Friedrich Franz Island
+Fregattholmane,,78.3173,12.8547,I,,LYR,
+Friesøyane,,79.2994,19.6012,I,,LYR,Fries Islands|Friesoyane
+Frischøya,,79.218,19.7513,I,,LYR,Frisch Island|Frischoya
+Frontholmen,Svalbard,78.2559,13.7495,I,,LYR,
+Frostøyane,,79.9608,27.0996,I,,LYR,Frosne Oer|Frostoyane|Frozen Islands
+Fugløya,,79.8167,11.4,I,,LYR,Foul Island|Fowl Island|Fuggeloya
+Fugleholmen,,79.5667,10.9333,I,,LYR,Bird Island|Fuggeloya|Fuggeløya
+Fuglesangen,,79.85,11.3333,I,,LYR,Bird's Sound|Birds Song|Branta Bernicla
+Fugleskjera,,79.8,11.3167,I,,LYR,Archipel|Archipelage|De Arssypel
+Galeiholmane,,78.3062,12.8829,I,,LYR,
+Galten,Svalbard,80.1238,22.0399,I,,LYR,
+Gåsøyane,,78.4491,16.2026,I,,LYR,Gaasoen|Gaasøen|Ganse-Inseln
+Gåshamna,,76.9437,15.8796,H,,LYR,
+Gåsholmen,,79.85,11.6667,I,,LYR,Ganzen-Eiland
+Geerabukta,Svalbard,79.5986,17.7639,H,,LYR,
+Geikiemorena,Svalbard,77.8833,16.65,H,,LYR,
+Geograføya,,78.9896,21.4695,I,,LYR,Geografoya
+Gerdøyane,,78.9833,12.2833,I,,LYR,Deer Bay Island|Gerd Island|Gerd Oy
+Ginevrabotnen,,78.5989,20.4874,H,,LYR,
+Gipsvika,,78.4273,16.539,H,,LYR,
+Gråøya,,80.0202,18.5042,I,,LYR,Graon|Graoya
+Gråholmane,,77.2885,14.1581,I,,LYR,
+Grimaldibukta,,78.6937,11.2283,H,,LYR,
+Grunnbukta,,74.4167,18.8833,H,,,
+Grunnvågen,Svalbard,76.5961,16.9426,H,,LYR,
+Grusholmen,,76.9753,16.0617,I,,LYR,
+Gudrunholmen,,78.3228,12.8445,I,,LYR,Gudrun Oy|Gudrun Øy
+Guineabukta,Jan Mayen,70.8814,-9.0131,H,,,
+Guissezholmen,,79.0667,11.6667,I,,LYR,
+Gyldénøyane,,79.6805,19.8048,I,,LYR,Gelden Islands|Gyldenoyane|Isles Gylden
+Gyllensköldholmane,,79.0121,16.2811,I,,LYR,Gyllenskold Islands
+Håøya,,76.8728,21.7025,I,,LYR,Haoya|High Rock|Hochstein
+Håkjerringa,Svalbard,79.9226,27.5833,I,,LYR,
+Halvmåneøya,,77.2751,23.1597,I,,LYR,Abbots Island|Halbmond Island|Half Moon Island
+Hamiltonbukta,Svalbard,79.75,11.95,H,,LYR,
+Hansøya,,80.1667,19.0,I,,LYR,Hansoya
+Hartogbukta,Svalbard,79.6064,25.8809,H,,LYR,
+Håsteinen,Svalbard,74.35,19.0667,I,,,
+Haugen,Svalbard,78.2143,15.6298,P,,LYR,
+Haukebukta,Svalbard,78.4493,11.2589,H,,LYR,
+Havhestholmen,Svalbard,74.5167,19.15,I,,,
+Helgolandøya,,78.7914,28.6494,I,,LYR,Helgoland Island|Helgolandon|Helgolandoya
+Hellwaldbukta,Svalbard,78.7167,20.6667,H,,LYR,
+Henckeløyane,,78.5428,20.2295,I,,LYR,Henckel Inseln|Henckeloyane
+Hermansenøya,,78.5523,12.1984,I,,LYR,Hermansen Island|Hermansenoya|May Island
+Herwighamma,Svalbard,74.5006,18.915,P,9,,
+Herwighamna,Svalbard,74.5137,19.0262,H,,,
+Holmbukta,Svalbard,78.9263,28.9626,H,,LYR,
+Holmengrå,Svalbard,74.45,18.8333,I,,,
+Holmgrenøya,,79.3826,19.5216,I,,LYR,Holmgren Island|Holmgrenoya
+Holmströmmorenen,Svalbard,78.7951,14.5311,H,,LYR,
+Hopen,Svalbard,76.5903,25.2521,I,4,LYR,'t Verlaten Eylandt|Hoffnungs Island|Hoffnungs-Insel
+Hopen,Svalbard,76.5496,25.1074,I,,LYR,
+Hopen Radio,,76.4774,24.938,P,4,LYR,
+Hornbækbukta,Svalbard,78.6909,11.8793,H,,LYR,
+Hornsund,,77.0,15.55,P,12,LYR,
+Hornvika,,74.35,19.05,H,,,
+Øienbukta,,78.3731,14.4813,H,,LYR,
+Indre Norskøya,,79.85,11.6,I,,LYR,Gaasen Eyland|Gansen Eyland|Goose Island
+Indre Russøya,,79.9852,18.3702,I,,LYR,Indre Russoya|Inre Rysson|Lille A. Rysson
+Ingebrigtsenøya,Svalbard,74.3833,19.2,I,,,Ingebrigtsenoya
+Ingvaldbukta,,77.8,16.25,H,,LYR,
+Innerholmen,,78.9314,12.3451,I,,LYR,Inner Island
+Isøyane,,77.1252,14.8319,I,,LYR,Eis Iles|Ice Islands|Iles Glace
+Isøykalven,,77.1361,14.8096,I,,LYR,Isoykalven
+Isøyskjera,,77.1191,14.8684,I,,LYR,Isoyskjera
+Isaksenøya,,78.9069,21.102,I,,LYR,Isaksen Island|Isaksenoya
+Isbjørnhamna,,77.0023,15.6028,H,,LYR,
+Isbukta,,76.8026,17.0086,H,,LYR,
+Jakimovičøyane,,78.2096,20.4507,I,,LYR,Iles Jakimovitch|Jakimovicoyane
+Jakobsenbukta,Svalbard,79.6167,14.1667,H,,LYR,
+Jan Mayen,Jan Mayen,70.9833,-8.5,I,,,Hudsons Tutches|Isle de Richelieu|Mauritius
+Jan Teunissenbukta,,79.6106,15.2591,H,,LYR,
+John Rossbukta,,78.3998,11.8617,H,,LYR,
+Johnstonbukta,,78.6102,19.6938,H,,LYR,
+Josephbukta,Svalbard,77.5256,14.5736,H,,LYR,
+Juttaholmen,,78.9441,12.2887,I,,LYR,Ile Jutta|Jutta Island|Maples Island
+Kaldøyane,,79.9167,27.5667,I,,LYR,Kaldoyane
+Kaldbukta,,77.8649,15.3992,H,,LYR,
+Kanonkulene,,78.2991,12.9259,I,,LYR,
+Karl Alexanderøya,,79.3055,21.1638,I,,LYR,Carl Alexander Island|Karl Alexanderoya
+Karl XII-øya,,80.6562,25.0019,I,,LYR,Charles XII Island|Karl XII Oya|Karl XII Oyane
+Keilhauøya,Svalbard,74.35,19.0833,I,,,Keilhauoya|Keilhaus O|Keilhaus Oy
+Kennedyøya,,78.8667,27.9,I,,LYR,Kennedy Island|Kennedyoya|Kennedys O
+Kennedybukta,,79.6667,11.1667,H,,LYR,
+Kiepertøya,,78.9782,21.7175,I,,LYR,Kiepert Island|Kiepertoya|Sivertoya
+Kilskjera,,77.6925,14.8013,I,,LYR,
+Kjerulføya,,80.2337,25.6899,I,,LYR,Kjerulf Island|Kjerulfoya
+Klockmannmorena,Svalbard,77.2238,14.8773,H,,LYR,
+Klödenøya,,78.9908,21.5622,I,,LYR,Kloden Island|Klodenoya
+Klovningen,,79.8667,11.5,I,,LYR,'t Eylant Met de Kloof|'t Eylant Met de Kof|Clifted Rock
+Knattholmen,,76.4929,16.4802,I,,LYR,
+Kobbeøya,,78.6,20.6667,I,,LYR,Buchan Inseln|Ile des Chiens Marins|Isle des Phoques
+Kohnøya,,79.2667,11.9833,I,,LYR,Isle Kohn|Kohnoya
+Kolbukta,Svalbard,74.5,19.2,H,,,
+Kolhamna,Svalbard,78.9317,11.9223,H,,LYR,
+Kong Karls Land,,78.8333,28.0,I,,LYR,Giles-Land|Gruppo delle Wiches|Iles Wilhe
+Kong Ludvigøyane,,77.2846,21.364,I,,LYR,Iles du Roi Louis|Isole del Re Luigi|Kong Ludvigoyane
+Ækongen,,77.2789,21.4159,I,,LYR,AEkongen
+Kongsøya,Svalbard,78.9167,28.6667,I,,LYR,Bjorneoen|Bjørneøen|Gilesoen
+Konstantinholmane,,76.514,16.4861,I,,LYR,
+Krokøya,,79.9521,18.4264,I,,LYR,Krokoya
+Krokholmen,,76.4969,16.4703,I,,LYR,
+Krokvika,,79.7,13.7167,H,,LYR,
+Krossøya,,79.9608,18.0483,I,,LYR,Koron|Krossoya|Ytteron
+Krossbukta,Jan Mayen,71.15,-8.1,H,,,
+Kükenthaløya,,78.6468,21.2545,I,,LYR,Ils Alexeew|Kukenthal-Insel|Kukenthaloya
+Kvaløya,,80.0,18.5,I,,LYR,Hval-on|Hvaloarna|Hwal on
+Kvalrossøya,,78.6,20.5,I,,LYR,Hvalrosoen|Hvalrosøen|Ile du Narwhal
+Kvalrossbukta,Jan Mayen,70.9674,-8.6936,H,,,
+Kvalrossbukta,Svalbard,74.3833,19.2,H,,,
+Kvalvågen,,77.4667,17.8,H,,LYR,
+Kvedfjordbukta,Svalbard,79.4167,10.9,H,,LYR,
+Kvitøya,Svalbard,80.1899,32.2593,I,,,Baltoji sala|Commander Gillies' Land|Commandeur Giles Land
+Lågøya,Svalbard,80.2866,18.4043,I,,LYR,'t Lage Eyland|Flachinsel|Isle Basse
+Lågholmane,,74.4167,18.8667,I,,,
+Lamontøya,,78.6224,20.1836,I,,LYR,Lamont Island|Lamontoya
+Landnørdingsvika,Svalbard,74.3833,18.9667,H,,,
+Lånesbukta,Svalbard,77.7425,13.8442,H,,LYR,
+Langbukta,Svalbard,74.45,18.8333,H,,,
+Langeøya,Svalbard,79.0262,21.0648,I,,LYR,Dove|Ehrenberg|Isle Jaderin
+Larvika,Svalbard,78.0278,14.268,H,,LYR,
+Leirholmen,,78.9209,12.3537,I,,LYR,Leir Island|Lerholmen
+Lemströmøya,,79.4486,19.5812,I,,LYR,Lemstrom Island|Lemstromoya
+Lernerøyane,,79.5833,12.7333,I,,LYR,Lerner Oyan|Lerner Øyan|Lerner-Inseln
+Levinhamna,,78.3497,11.6416,H,,LYR,
+Likholmen,Svalbard,79.75,10.9333,I,,LYR,Deadman Island|Deadman's Island|Dodemans Eylandt
+Lindhagenbukta,,80.3019,20.6781,H,,LYR,
+Lomfjordbotnen,Svalbard,79.3626,17.6129,H,,LYR,
+Long Island,,80.1274,22.2963,I,,LYR,Semkat Insel
+Longyearbyen,Svalbard,78.2233,15.6469,C,2368,LYR,LYR|Long'ir|Longijur
+Lovénøyane,,78.9379,12.3288,I,,LYR,Iles Loven|Kingsbayoyan|Kingsbayøyan
+Lurøya,,76.9973,21.9425,I,,LYR,Luroya
+Lusholmen,,80.0515,16.1884,I,,LYR,Lous Isle|Luizen Eilandt|Luysen Eylandt
+Lyckholmøya,,78.8779,28.7682,I,,LYR,Lyckholm Island|Lyckholmoya|Lyckholms O
+Møkkalasset,Svalbard,74.4333,18.9167,H,,,
+Mackøya,,78.8976,21.0995,I,,LYR,Mack Island|Mackoya
+Måkeøyane,,79.6167,13.5,I,,LYR,Iles des Mouettes|Maake Oyan|Makeoyane
+Måkeholmen,,74.3667,19.2,I,,,Guld Eiland|Guleholmen|Gull Eiland
+Malmeskjeret,,78.3275,12.0255,I,,LYR,Malme Oy|Malme Øy|Walker Rock
+Malmgrenøya,,79.2184,19.6964,I,,LYR,Malmgren Island|Malmgrenoya
+Marbukta,Svalbard,79.6667,11.3333,H,,LYR,
+Mariaholmen,,77.6841,14.8071,I,,LYR,Lilleoen|Little Akseloya|Maria On
+Marineholmane,,78.3333,12.8167,I,,LYR,
+Martensøya,Svalbard,80.6811,21.2491,I,,LYR,Martens O|Martensoya|Martins Island
+Marvågen,,77.8052,13.7865,H,,LYR,
+Matholmane,,74.4833,18.7833,I,,,
+Meholmen,,74.3667,19.2,I,,,Burgomaster Islet
+Meinickeøyane,,77.1079,22.0959,I,,LYR,Meinicke Inseln|Meinickeoyane
+Menkeøyane,,77.1529,22.7423,I,,LYR,Menke Islands|Menkeoyane
+Meskjeret,,76.5506,16.415,I,,LYR,Medholme
+Mickeryholmen,,78.6697,10.8509,I,,LYR,Inch Mickery
+Midtøya,,78.3398,11.5942,I,,LYR,Gross Insel|Ile Midtoya|Ile Midtøya
+Midterhukhamna,,77.6393,14.8095,H,,LYR,
+Midtholmen,,78.932,12.3156,I,,LYR,Mid Island
+Mietheholmen,Svalbard,78.9172,12.0653,I,,LYR,Miethe Isle|Mietheinsel
+Mimerbukta,Svalbard,78.64,16.3931,H,,LYR,
+Moffen,,80.0295,14.5251,I,,LYR,'t Moffen Eyland|Ile Moffen|Iles des Verdiers
+Mohnbukta,Svalbard,78.2667,18.9167,H,,LYR,
+Moseøya,,79.65,10.9333,I,,LYR,Bjornbaioya|Bjørnbaiøya|Ile de la Mousse
+Mosselbukta,,79.8909,15.955,H,,LYR,
+Nauckhofføya,Svalbard,79.244,19.756,I,,LYR,Nauckhoffoya|Nauckoff Island
+Nedrevågøya,,78.9234,21.6466,I,,LYR,Nedrevaag Island|Nedrevag Island|Nedrevagoya
+Nelsonøya,,80.6277,20.5158,I,,LYR,Nelsonoya|Nelsons-o
+Nordøya,,78.3576,11.5415,I,,LYR,Ile Nordoya|Ile Nordøya|Nord-Insel
+Nordaustlandet,Svalbard,79.8,22.4,I,,LYR,Cotes du Nord-Est|Davvinuortaeana|Het Land van Noord Oosten
+Norddalsbukta,,79.7833,12.7667,H,,LYR,
+Nordenfalkbukta,Svalbard,80.2943,24.6755,H,,LYR,
+Nordenskiöldøya,,79.2228,19.4591,I,,LYR,Nordenskiold Island|Nordenskioldoya
+Nordenskiöldbukta,,80.3852,21.3763,H,,LYR,
+Nordhamna,,74.5167,18.9667,H,,,
+Nordre Castrénøya,,80.503,20.2746,I,,LYR,Castrens o|Ile Bastren|Nordre Castrenoya
+Nordre Dunøya,,77.0663,14.9278,I,,LYR,Nordre Dunoya|Noroya|Norra Dunon
+Nordre Isøya,,77.1512,14.8044,I,,LYR,Nordre Isoya
+Nordre Nathorstmorenen,Svalbard,77.51,16.1563,H,,LYR,
+Nordre Repøya,Svalbard,80.4861,24.1355,I,,LYR,'t Reene Eyland|Nordre Repoya|Nordre Repsoya
+Nordre Russøya,,79.9946,18.1848,I,,LYR,Nordre Russoya|Norra Korson|Norra Rysson
+Nordströmøya,,79.3167,19.4822,I,,LYR,Nordstrom Island|Nordstromoya
+Nordvestøyane,,79.8833,11.5,I,,LYR,Nordvastoarna|Nordvestoyane|Northwest Islands
+Nordvestbukta,Svalbard,74.5,18.8333,H,,,
+Norskøyane,,79.85,11.6333,I,,LYR,Isole dei Norvegesi|Noren-Eilanden|Norjan Saaret
+Norskehamna,Svalbard,74.3833,19.2,H,,,
+Nottinghambukta,Svalbard,77.0772,15.1256,H,,LYR,
+Ny-Ålesund,Svalbard,78.9237,11.925,P,35,LYR,
+Nybyen,Svalbard,78.2018,15.5912,P,113,LYR,
+Nyströmøya,,79.424,19.5976,I,,LYR,Nystrom Island|Nystromoya
+Öbergøya,,79.3598,19.4985,I,,LYR,Oberg Island|Obergoya
+Observasjonsholmen,,78.9379,12.3039,I,,LYR,Beobachtungs-Inseln|Observasjons Island
+Oddholmane,,77.3999,13.9876,I,,LYR,
+Olafsonbukta,Svalbard,77.3309,14.175,H,,LYR,
+Olonkinbyen,Jan Mayen,70.9221,-8.7187,A,14,,Olonkin City|Olonkinbienas|Olonkinbiene
+Olsholmen,,77.2382,14.269,I,,LYR,
+Örnenøya,,79.8667,11.3,I,,LYR,Ornen Island|Ornenoya
+Oskarøya,,80.0,18.5,I,,LYR,Oskaroya
+Padda,Svalbard,74.5167,19.1,I,,,
+Palanderøya,,79.3194,19.5567,I,,LYR,Iles Palander|Palander Island|Palanderoya
+Parholmane,Svalbard,74.3667,19.0333,I,,,
+Parmaholmen,,77.5667,15.0017,I,,LYR,Parma Felsen
+Parryøya,,80.65,20.694,I,,LYR,Parryn Saari|Parryoya|Taaffelbergh
+Paulamorenen,Svalbard,77.8,17.0833,H,,LYR,
+Pentavika,,80.1818,18.2848,H,,LYR,
+Perthesøya,,79.342,20.6221,I,,LYR,Perthes Island|Perthesoya
+Pescheløya,,79.008,20.9418,I,,LYR,Peschel Island|Pescheloya
+Peter Winterbukta,Svalbard,78.5956,11.2659,H,,LYR,
+Petuniabukta,,78.6866,16.5323,H,,LYR,
+Phippsøya,,80.7094,20.7931,I,,LYR,Hooy Berg|Phipps O|Phippsoya
+Pikebukta,,78.8901,28.5302,H,,LYR,
+Plankeholmane,,78.2087,11.9696,I,,LYR,Iles Plankeholme|Plankeholman
+Prins Heinrichøya,Svalbard,78.9203,12.0287,I,,LYR,Isle Prince Heinrich|Isolotto Principe Enrico|Prins Heinrichoya
+Prins Karls Forland,Svalbard,78.5428,11.1751,I,,LYR,'t Lang Eylandt|'t Langh Eijlandt|Avant Terre
+Pücklerhamna,,79.2775,21.1301,H,,LYR,
+Pyttholmen,,77.0994,15.0516,I,,LYR,
+Qvaleøya,,78.9272,21.468,I,,LYR,Onale Island|Qvale Island|Qvaleoya
+Røedvika,Svalbard,74.4025,19.2052,H,,,
+Rønnbeckøyane,,78.9262,21.4788,I,,LYR,Rombaks Islands|Ronnback Inseln|Ronnbeckoyane
+Ræstadholmen,Svalbard,79.2008,15.797,I,,LYR,Ile Raestad|Ile Ræstad|Raestadholmen
+Randvika,,78.0645,13.6585,H,,LYR,
+Raschøya,,80.1971,25.9984,I,,LYR,Kap Von Otter|Rasch Island|Raschoya
+Reinholmen,,77.5,14.5667,I,,LYR,Ilot|Reen Eijlandt|Rheen Eylandt
+Reiniusøyane,,77.7514,14.2229,I,,LYR,Reinius' Oar|Reiniusoyane
+Rekvedbukta,,79.5,10.7333,H,,LYR,
+Rekvika,Svalbard,79.9836,16.0015,H,,LYR,
+Repøyane,Svalbard,80.4534,24.3338,I,,LYR,Repoyane|Reps Islands|Repsoyan
+Retrettøya,Svalbard,78.656,16.8858,I,,LYR,Retrettoya
+Revleholmen,,76.4803,16.6874,I,,LYR,
+Rindersbukta,Svalbard,77.8168,16.8675,H,,LYR,
+Ringertzøya,,80.039,18.0881,I,,LYR,Isle Ringertz|Ringertzoya
+Ringholmen,,79.6833,13.3333,I,,LYR,
+Risen,,79.9,11.5167,I,,LYR,Andree Island|Dunderoya|Dunderøya
+Röhssøya,,78.8963,28.729,I,,LYR,Rohss Island|Rohss O|Rohssoya
+Roonøya,,79.0202,19.9713,I,,LYR,Roon Island|Roonoya
+Rossøya,,80.8276,20.3621,I,,LYR,Ross Island|Rossoya
+Rundholmen,,78.9575,12.3001,I,,LYR,Rund Island
+Russøya,,79.9608,18.2196,I,,LYR,Russoya|Russoyane|Russøyane
+Russøyane,,79.9667,18.1667,I,,LYR,Isola di Rys|Russoyane|Ryss Islands
+Russebukta,,77.6101,21.1118,H,,LYR,
+Russehamna,Svalbard,74.4,19.2,H,,,
+Russeholmen,,77.2868,21.321,I,,LYR,Russo
+Ryke Yseøyane,,77.7872,25.2127,I,,LYR,Raekis-oyan|Rekis-oyane|Rekis-øyane
+Sørøya,,78.3217,11.6231,I,,LYR,Soroya|Sud-Insel
+Sørbukta,Svalbard,77.1838,14.435,H,,LYR,
+Sørdalsbukta,,79.6833,13.0333,H,,LYR,
+Søre Castrénøya,,80.4832,20.1861,I,,LYR,Sondre Castrenoya|Sore Castrenoya
+Søre Dunøya,,77.05,15.0167,I,,LYR,Sore Dunoya|Soroya|Sørøya
+Søre Gerdøya,,78.985,12.2947,I,,LYR,Sore Gerdoya
+Søre Nathorstmorenen,Svalbard,77.4737,15.9688,H,,LYR,
+Søre Repøya,Svalbard,80.4154,24.2255,I,,LYR,Sore Repoya|Sore Repsoya|Söre Repsøya
+Søre Russøya,,79.9592,18.2445,I,,LYR,Isle Rysson|Sore Russoya|Stora Russon
+Sørhamna,Svalbard,74.3661,19.176,H,,,
+Sørholmen,,76.4468,16.6492,I,,LYR,Sorholmen
+Sørkappøya,,76.492,16.5705,I,,LYR,Ile du Grand Duc Constantin|Juznaija Ostrova|L'ile du Cap Sud
+Sørkappholmane,,76.4534,16.6273,I,,LYR,Sorkapholmane|Sorkapoyan|Sorkappholmane
+Sørvika,,79.9565,18.6434,H,,LYR,
+Sætherbukta,Svalbard,80.2815,23.9014,H,,LYR,
+Sabineøyane,,80.2744,21.2041,I,,LYR,Sabine Islands|Sabine's Oar|Sabineoyane
+Sabinebukta,,80.2434,21.0162,H,,LYR,
+Samarinvågen,Svalbard,76.9616,16.2513,H,,LYR,
+Sandbukta,Svalbard,78.2685,12.0854,H,,LYR,
+Sandhamna,,76.5783,16.2799,H,,LYR,
+Sankt Hansholmane,,77.8637,13.6374,I,,LYR,Green Ilands|Sankt Hans Islets|Sankt Hansholman
+Sankt Laurentiusbukta,Svalbard,79.6333,11.4333,H,,LYR,
+Sarsholmen,,80.2597,25.4544,I,,LYR,Sars Island
+Schønningholmane,,76.949,15.8044,I,,LYR,Schonningholmane
+Schareholmane,,76.994,22.2625,I,,LYR,
+Scheelemorenen,Svalbard,77.7833,16.9167,H,,LYR,
+Scheibukta,Svalbard,79.5833,11.0,H,,LYR,
+Schivebukta,Svalbard,74.45,19.2833,H,,,
+Schübelerøya,,80.427,25.9693,I,,LYR,Schubeler Island|Schubeleroya|Schubler Island
+Scoresbyøya,,80.3484,21.3995,I,,LYR,Scoresby Island|Scoresbyoya|Scoresbys O
+Selvågen,,78.5501,11.3218,H,,LYR,
+Sentabukta,,78.6409,16.7748,H,,LYR,
+Signehamna,Svalbard,79.2833,11.5333,H,,LYR,
+Sigridholmen,,78.9366,12.3347,I,,LYR,Ile Sigrid|Sigrid Island
+Simonsenøya,,78.9268,21.6636,I,,LYR,Simonsen Island|Simonsenoya
+Sinkholmen,,77.747,14.2571,I,,LYR,Zinkholman
+Sjuøyane,Svalbard,80.7286,20.5032,I,,LYR,Le Sette Isole|Les Sept Iles|Seitsens
+Skansbukta,Svalbard,78.5156,16.026,H,,LYR,
+Skårungen,,76.4668,16.5657,I,,LYR,
+Skarvholmen,,77.175,14.5388,I,,LYR,
+Skjoldholmen,,77.3024,14.1305,I,,LYR,Rundholmen
+Skoddebukta,Svalbard,77.1244,15.0515,H,,LYR,
+Skorpa,,79.65,10.7333,I,,LYR,
+Skrøslingen,Svalbard,74.3667,19.05,I,,,Skroslingen
+Slamøyra,Svalbard,77.1915,14.5266,H,,LYR,
+Slambukta,,77.7603,15.9448,H,,LYR,
+Smeerenbukta,,79.75,11.0,H,,LYR,
+Smittøya,,79.4068,19.513,I,,LYR,Smitt Island|Smittoya
+Snøholmen,,79.9855,27.1696,I,,LYR,Sneholmen|Snoholmen
+Solovjetskibukta,Svalbard,78.0851,13.8035,H,,LYR,
+Sommerfeldtbukta,,76.5757,16.483,H,,LYR,
+Spitsbergen,Svalbard,78.75,16.0,I,,LYR,Bolschoy Broun|Cohkkavarit|Das Westland
+Stabbane,,77.9522,13.6364,I,,LYR,Stabban
+Stappen,Svalbard,74.3383,19.0716,I,,,
+Stasjonsøyane,,79.6833,13.6333,I,,LYR,Iles de la Station|Stasjonsoyane|Stations Oyan
+Steggholmane,,74.4,18.9167,I,,,
+Steggholmen,,79.8333,11.5333,I,,LYR,Duck Island|Hvido|Hvidø
+Steiløya,,79.5494,18.9345,I,,LYR,Het Steyl Eyland|Steiloya
+Steinholmane,,78.35,12.6333,I,,LYR,Steinholman
+Steinkjerholmane,Svalbard,74.4,19.2167,I,,,
+Steinpyntvika,,78.2607,12.9337,H,,LYR,
+Sterneckøya,,77.5673,15.022,I,,LYR,Sterneck Island|Sterneckoya|Tennoya
+Stjernøya,,76.536,16.4147,I,,LYR,Stjerno|Stjernoya|Stjernø
+Storøya,Svalbard,80.1432,27.7042,I,,LYR,Big Island|Grande Ile|Great High Island
+Store Dunøya,,77.0551,14.9665,I,,LYR,Stora Dunon|Store Dunoya|Storoya
+Storholmen,,78.9322,12.2476,I,,LYR,Davis Island|Stor Island
+Stormbukta,,76.6887,16.2548,H,,LYR,
+Storvika,Svalbard,77.2737,14.2647,H,,LYR,
+Stretehamna,,78.1333,21.0,H,,LYR,
+Sucaiøya,,79.9833,27.3333,I,,LYR,Sucai Isola|Sucaioya
+Sundbukta,,78.2213,20.8641,H,,LYR,
+Svalbard Archipelago,Svalbard,78.6067,15.8711,I,,LYR,
+Sveabukta,Svalbard,77.8833,16.6833,H,,LYR,
+Svenskøya,Svalbard,78.7218,26.681,I,,LYR,Det Svenske Forland|Fastiisoen|Giles-Land
+Svenske Segelselskapets Bukt,,78.9237,29.2418,H,,LYR,
+Tandbergøya,,80.1914,25.8635,I,,LYR,Tandbergoya
+Tangvika,Svalbard,78.2684,14.1025,H,,LYR,
+Tanngardmorena,Svalbard,77.234,14.9737,H,,LYR,
+Tavleøya,,80.7537,20.4631,I,,LYR,Isola della Tavola|Stolovyi Ostrov|Table Island
+Teltøya,,80.0103,18.454,I,,LYR,Teltoya
+Thomas Smithøyane,,78.1522,20.7859,I,,LYR,Islands Thomas Smith|Smith Inseln|Smiths Iles
+Thorkelsenholmen,Svalbard,77.1767,14.4507,I,,LYR,
+Tiholmane,,76.9808,21.9739,I,,LYR,
+Tinayrebukta,,79.2167,12.05,H,,LYR,
+Tirpitzøya,,78.762,28.6437,I,,LYR,Tirpitz Island|Tirpitzoya
+Tjuvfjorden,,77.4387,22.2084,H,,LYR,
+Tobiesenøya,,78.942,21.7572,I,,LYR,Tobiesen Island|Tobiesenoya
+Tobiesenholmen,Svalbard,74.4,19.2167,I,,,Tobiesenoya|Tobiesenøya
+Tokrossøya,,76.5555,16.3228,I,,LYR,Ile des Deux Croix|Tokorso|Tokorsø
+Tolkvika,,80.0555,16.3088,H,,LYR,
+Tomboloøya,,80.2365,18.8193,I,,LYR,Isle Tombola|Tombolooya
+Tommeløyane,,79.5506,18.7481,I,,LYR,Iles Duim|Steyl Eyland|Tommeloyane
+Tordenskjoldbukta,Svalbard,78.2916,12.9421,H,,LYR,
+Torellmorena,,77.8167,16.4,H,,LYR,
+Torellmorena,Svalbard,77.1847,14.9715,H,,LYR,
+Torkildsenøya,,78.8992,21.1695,I,,LYR,Torkildsen Island|Torkildsenoya|Torkudsen
+Tovikbukta,,76.45,25.0333,H,,LYR,
+Treskelbukta,,77.006,16.2821,H,,LYR,
+Tromsøya,,78.3333,12.8333,I,,LYR,Tromsoya
+Tusenøyane,,77.1056,22.0844,I,,LYR,Duizend Eilanden|Een Menigte van Eylandjes|Hopeless Islands
+Tviholmane,Svalbard,78.2167,12.9667,I,,LYR,
+Tvillingholmane,,78.3556,14.6515,I,,LYR,Kol-oarne|Twin Rocks
+Universitetsmorena,Svalbard,79.032,15.5118,H,,LYR,
+Urmstonholmane,,78.3894,11.5406,I,,LYR,Urmston Islets
+Utburden,,76.4757,16.5026,I,,LYR,
+Utstein,,74.4833,18.7667,I,,,
+Vaigattøyane,,79.2991,19.5845,I,,LYR,Iles Waygat|Isle de Waeygats|Straede-oyan
+Vaigattbogen,,79.2333,18.9667,H,,LYR,
+Van Keulenhamna,Svalbard,77.6144,14.9404,H,,LYR,
+Van Muydenbukta,,77.7656,14.1423,H,,LYR,
+Vardeholmen,,76.5286,16.5126,I,,LYR,
+Varmingbukta,,78.0124,14.276,H,,LYR,
+Värtavågen,,79.75,12.2,H,,LYR,
+Verlegenhukbukta,,80.0518,16.4386,H,,LYR,
+Vernevågen,,74.4667,18.8,H,,,
+Vesle Gåsøya,,78.45,16.2333,I,,LYR,Lilla Gason|Vesle Gasoya
+Vesle Raudfjorden,,79.7667,12.6,H,,LYR,
+Vesle Tavleøya,,80.8215,20.3767,I,,LYR,Klein-Tafeleiland|Lilla Taffelon|Lille Table Island
+Veslebukta,Svalbard,77.2305,14.3604,H,,LYR,
+Vestervågen,,77.4935,14.5376,H,,LYR,
+Vestre Burgerbukta,,77.05,15.8667,H,,LYR,
+Vestre Sørbremorena,Jan Mayen,71.0028,-8.2203,H,,,
+Vestvika,,76.8576,15.6223,H,,LYR,
+Vibebukta,,79.365,22.7845,H,,LYR,
+Victoriabukta,Svalbard,78.9035,28.7928,H,,LYR,
+Vindbukta,Svalbard,80.25,22.5,H,,LYR,
+Virgohamna,Svalbard,79.7333,10.9333,H,,LYR,
+Visingøya,,79.9839,18.198,I,,LYR,Visingoya|Visingsoya|Visingsøya
+Von Otterøyane,,79.26,20.1423,I,,LYR,Insel von Otter|Otter Islands|Otteroya
+Vossebukta,,78.431,20.558,H,,LYR,
+Vulkanhamna,,79.45,13.4333,H,,LYR,
+Wahlbergøya,,79.3496,20.055,I,,LYR,Ile de Wahlenberg|Wahlbergoya|Wahlbergs o
+Waldenøya,,80.6197,19.774,I,,LYR,Walden Island|Walden O|Waldenoya
+Westmanbukta,Svalbard,80.1784,18.6636,H,,LYR,
+Whitsonbukta,,78.2908,11.8135,H,,LYR,
+Wichebukta,,78.3762,19.1577,H,,LYR,
+Wijkanderøyane,,79.3502,19.3875,I,,LYR,Iles Wijkander|Wijkanderoyane
+Wilhelmøya,Svalbard,79.0622,20.4177,I,,LYR,Isle Guillaume|Isle Thumb Point|Isola di Guglielmo
+Wilkinsbukta,Svalbard,78.2234,13.1312,H,,LYR,
+Wordiebukta,,80.0575,22.4434,H,,LYR,
+Worsleyhamna,Svalbard,79.7,13.6333,H,,LYR,
+Ymerbukta,,78.2701,13.9544,H,,LYR,
+Yoldiabukta,,78.4982,14.5657,H,,LYR,
+Ytre Norskøya,,79.8667,11.6333,I,,LYR,Bear Island|Beare Iland|Demie Norwege
+Ytterholmane,,79.8,10.6,I,,LYR,Aussen Islands|Ilots du Large|Oterholman
+Zeiløyane,,78.2679,22.4178,I,,LYR,Zeil Islands|Zeiloyane
+Zeppelinhamna,Svalbard,78.9159,12.0357,H,,LYR,
+Zieglerøya,,77.3876,22.4325,I,,LYR,Ziegler Island|Ziegleroya
