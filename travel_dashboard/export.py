@@ -27,10 +27,10 @@ LENS_DEFS = {
          "explain": "Destinations: each journey between two destinations is compared with the alternative marked "
                     "as main for it. Stops in between only exist because of the way of travelling."},
         {"id": "stop", "label": "Every stop",
-         "hint": "Use stop-level alternatives where entered",
-         "explain": "Every stop: where alternatives between stops cover a whole journey, those are "
-                    "used instead, usually more and shorter flights. Elsewhere the destination-level alternative "
-                    "stays."},
+         "hint": "Swap single hops for the alternatives entered between stops",
+         "explain": "Every stop: alternatives entered between stops replace the legs they span, e.g. an "
+                    "inter-island flight for the ferry; the rest of that journey counts the same in both worlds. "
+                    "Elsewhere the destination-level alternative stays."},
         {"id": "direct", "label": "Direct",
          "hint": "Use alternatives that skip destinations, e.g. a flight Paris → Martinique",
          "explain": "Direct: where an alternative skips destinations, it replaces everything in "

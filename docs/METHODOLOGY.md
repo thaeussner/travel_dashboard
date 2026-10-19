@@ -72,7 +72,7 @@ question has no defensible answer.
 | level | journeys | alternative used |
 |---|---|---|
 | **Destinations** (default) | each pair of consecutive destinations | the main option spanning exactly that pair |
-| **Every stop** | inside each destination span, the finest chain of stop-level options covering it | falls back to the destination-level option where stop-level options don't cover the whole span |
+| **Every stop** | each stop-level option replaces the legs it spans, e.g. an inter-island flight for the ferry | the rest of that journey counts the same in both worlds; journeys without stop-level options keep their destination-level option |
 | **Direct** | each option that skips destinations replaces everything between its ends | the destination-level journeys elsewhere; a piece a direct option cuts off has no alternative |
 
 - An option is **direct** when a destination lies between its ends, e.g. one flight Paris →

@@ -163,14 +163,16 @@ class TestTrip(unittest.TestCase):
         self.assertEqual([x.id for x in j.legs], ["L1", "L2", "L3"])
         self.assertEqual(j.date, dt.date(2026, 9, 27))
 
-    def test_stop_level_tiles_or_falls_back(self):
+    def test_stop_level_swaps_single_hops(self):
         alts = [alt("A1", "direct", "home", "d1"),
                 alt("S1", "first", "home", "s1", main=True), alt("S2", "rest", "s1", "d1", main=True)]
         t = trip_mod.build(self.wps, self.legs + alts, [])
         self.assertEqual([j.option.id for j in t.journeys["stop"][:2]], ["first", "rest"])
-        # without the second tile the destination-level alternative is used
+        # one hop only: it replaces its leg, the rest of the journey is the same in both worlds
         t2 = trip_mod.build(self.wps, self.legs + alts[:2], [])
-        self.assertEqual(t2.journeys["stop"][0].option.id, "direct")
+        self.assertEqual([(j.start, j.end, j.option.id if j.option else None) for j in t2.journeys["stop"]],
+                         [("home", "s1", "first"), ("s1", "d1", None), ("d1", "d2", None)])
+        self.assertEqual(t2.journeys["destination"][0].option.id, "direct")    # Destinations keep the journey
 
     def test_local_travel_stays_out_of_journeys(self):
         local = leg("C1", "d1", "d1", "car", 300, "2026-10-03", occ_obs=2)

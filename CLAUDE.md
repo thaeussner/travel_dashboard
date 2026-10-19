@@ -68,8 +68,9 @@ friends' browsers ◄── GitHub Pages: site/ + site/data/*.json ◄───�
     (`montecarlo` keeps `local_total` per level for the "Local travel" row).
 - **Levels:**
   - "destination": one journey per pair of consecutive destinations.
-  - "stop": stop-level options are used where they tile a whole destination span; otherwise the
-    destination-level option is the fallback (`travel_dashboard/trip.py`).
+  - "stop": stop-level options swap single hops (an inter-island flight for the ferry); the rest
+    of that journey counts the same in both worlds, and journeys without stop-level options keep
+    their destination-level option (`travel_dashboard/trip.py`, `_overlay`, shared with "direct").
   - "direct": options that skip destinations (CDG → FDF from Paris) replace everything between
     their ends, which may be stops; elsewhere the destination-level journeys, and a cut-off piece
     (Zurich → Paris) has no alternative. It answers "the trip against flying straight there", by

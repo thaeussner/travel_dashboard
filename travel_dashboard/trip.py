@@ -6,8 +6,9 @@
   flight may start or end at a waypoint's airport instead ("TFN" for El Medano with "TFS TFN").
 - Level "destination": one journey per pair of consecutive destinations, compared against the
   main option spanning exactly that pair.
-- Level "stop": inside each destination span, stop-level options (at least one end is a stop) are
-  used when they tile the whole span; otherwise the destination-level option is the fallback.
+- Level "stop": stop-level options (at least one end is a stop) replace the legs they span, e.g.
+  an inter-island flight for the ferry; the rest of that journey counts the same in both worlds.
+  Journeys without stop-level options keep their destination-level option.
 - Level "direct": options that skip destinations (e.g. one flight Paris → Martinique) replace
   everything between their ends; elsewhere the destination-level option is the fallback. A piece
   cut off by a direct option (Zurich → Paris before a flight from Paris) has no alternative.
@@ -285,69 +286,49 @@ def _journey(level: str, a: str, b: str, legs, pos, ordered, picked) -> Journey:
 def _journeys(ordered, pos, wtype, legs, options, issues) -> dict[str, list[Journey]]:
     dests = [w.id for w in ordered if w.type == "destination"]
     spans = list(zip(dests, dests[1:]))
-    by_span: dict[tuple[str, str], list[Option]] = defaultdict(list)
-    by_direct: dict[tuple[str, str], list[Option]] = defaultdict(list)
+    by_level: dict[str, dict[tuple[str, str], list[Option]]] = {lvl: defaultdict(list) for lvl in LEVELS}
     for o in options:
-        if o.level == "direct":
-            by_direct[(o.start, o.end)].append(o)
-        elif o.level == "destination":
-            by_span[(o.start, o.end)].append(o)
-        else:
-            if not any(pos[a] <= pos[o.start] and pos[o.end] <= pos[b] for a, b in spans):
-                issues.append(Issue("travel", o.id, "stop-level alternative lies outside the destinations; not used"))
-                continue
-            by_span[(o.start, o.end)].append(o)
+        if o.level == "stop" and not any(pos[a] <= pos[o.start] and pos[o.end] <= pos[b] for a, b in spans):
+            issues.append(Issue("travel", o.id, "stop-level alternative lies outside the destinations; not used"))
+            continue
+        by_level[o.level][(o.start, o.end)].append(o)
 
     out: dict[str, list[Journey]] = {lvl: [] for lvl in LEVELS}
     for a, b in spans:
-        dest_j = _journey("destination", a, b, legs, pos, ordered, _pick(by_span.get((a, b), []), issues))
-        out["destination"].append(dest_j)
-        jlegs, main, extras = dest_j.legs, dest_j.option, dest_j.extras
-
-        # finest tiling of [a, b] by stop-level options
-        inner = [w.id for w in ordered[pos[a]:pos[b] + 1]]
-        edges = {(x, y): _pick(opts, issues) for (x, y), opts in by_span.items()
-                 if (x, y) != (a, b) and x in inner and y in inner}
-        best: dict[str, list[tuple[str, str]] | None] = {a: []}
-        for x in inner:
-            if best.get(x) is None:
-                continue
-            for (s, e) in edges:
-                if s == x and pos[e] > pos[x]:
-                    cand = best[x] + [(s, e)]
-                    if best.get(e) is None or len(cand) > len(best[e]):
-                        best[e] = cand
-        tiling = best.get(b)
-        if tiling:
-            for s, e in tiling:
-                out["stop"].append(_journey("stop", s, e, legs, pos, ordered, edges[(s, e)]))
-        else:
-            out["stop"].append(Journey("stop", a, b, jlegs, main, extras, dest_j.date, dest_j.skipped))
-
-    out["direct"] = _direct(ordered, pos, dests, legs, out["destination"],
-                            {span: _pick(opts, issues) for span, opts in by_direct.items()}, issues)
+        out["destination"].append(_journey("destination", a, b, legs, pos, ordered,
+                                           _pick(by_level["destination"].get((a, b), []), issues)))
+    for lvl, longest in (("stop", False), ("direct", True)):
+        picked = {span: _pick(opts, issues) for span, opts in by_level[lvl].items()}
+        out[lvl] = _overlay(lvl, ordered, pos, dests, legs, out["destination"], picked, longest, issues)
     return out
 
 
-def _direct(ordered, pos, dests, legs, dest_journeys, direct, issues) -> list[Journey]:
-    """Journeys of the direct level: each direct option replaces everything between its ends.
+OVERLAP = {"stop": "overlaps another alternative between stops; not used under Every stop",
+           "direct": "overlaps another alternative that skips destinations; not used under Direct"}
 
-    Overlapping direct options give way to the one marked main, then to the longer one. Between
-    them the destination-level journeys stay; a piece a direct option cuts off (Zurich → Paris
-    before a flight from Paris) is a journey without alternative, the same in both worlds."""
+
+def _overlay(level, ordered, pos, dests, legs, dest_journeys, options, longest, issues) -> list[Journey]:
+    """Journeys of the stop and direct levels: each option replaces the legs between its ends.
+
+    Every stop swaps single hops (an inter-island flight for the ferry); Direct replaces whole
+    stretches across destinations. Overlapping options give way to the one marked main, then to
+    the longer (Direct) or the shorter (Every stop) one. Elsewhere the destination-level journeys
+    stay, and a piece an option cuts off (Zurich → Paris before a flight from Paris) is a journey
+    without alternative, the same in both worlds."""
+    def span(kv) -> int:
+        return pos[kv[0][1]] - pos[kv[0][0]]
     chosen: list[tuple[str, str, tuple]] = []
-    for (s, e), picked in sorted(direct.items(), key=lambda kv: (not kv[1][0].main, pos[kv[0][0]] - pos[kv[0][1]],
-                                                                 pos[kv[0][0]])):
+    for (s, e), picked in sorted(options.items(), key=lambda kv: (not kv[1][0].main, -span(kv) if longest else span(kv),
+                                                                  pos[kv[0][0]])):
         if all(pos[e] <= pos[cs] or pos[s] >= pos[ce] for cs, ce, _ in chosen):
             chosen.append((s, e, picked))
         else:
-            issues.append(Issue("travel", picked[0].id, "overlaps another alternative that skips destinations; "
-                                                        "not used under Direct"))
+            issues.append(Issue("travel", picked[0].id, OVERLAP[level]))
     chosen.sort(key=lambda c: pos[c[0]])
     by_span = {(j.start, j.end): j for j in dest_journeys}
 
     def plain(x: int, y: int) -> list[Journey]:
-        """Positions x..y without direct options: destination journeys, plus the cut-off pieces."""
+        """Positions x..y without options of this level: destination journeys, plus the cut-off pieces."""
         inside = [d for d in dests if x <= pos[d] <= y]
         marks = [x] + [pos[d] for d in inside] + [y]
         out = []
@@ -356,8 +337,8 @@ def _direct(ordered, pos, dests, legs, dest_journeys, direct, issues) -> list[Jo
                 continue
             a, b = ordered[p].id, ordered[q].id
             j = by_span.get((a, b))
-            out.append(Journey("direct", a, b, j.legs, j.option, j.extras, j.date, j.skipped) if j
-                       else _journey("direct", a, b, legs, pos, ordered, (None, [])))
+            out.append(Journey(level, a, b, j.legs, j.option, j.extras, j.date, j.skipped) if j
+                       else _journey(level, a, b, legs, pos, ordered, (None, [])))
         return out
 
     if not dests:
@@ -367,6 +348,6 @@ def _direct(ordered, pos, dests, legs, dest_journeys, direct, issues) -> list[Jo
     out, cursor = [], lo
     for s, e, picked in chosen:
         out += plain(cursor, pos[s])
-        out.append(_journey("direct", s, e, legs, pos, ordered, picked))
+        out.append(_journey(level, s, e, legs, pos, ordered, picked))
         cursor = pos[e]
     return out + plain(cursor, hi)
